@@ -101,8 +101,23 @@ export function OpinionFeed({
                     ) : null}
                   </div>
                 </div>
-                <span className="shrink-0 text-[11px] tabular-nums text-dim">
-                  ♥ {op.likes}
+                <span className="inline-flex shrink-0 items-center gap-1 text-[11px] tabular-nums text-muted">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    className="shrink-0 text-muted"
+                    aria-hidden
+                  >
+                    <path
+                      d="M8 13.2S2.8 9.8 2.8 5.9A2.7 2.7 0 0 1 8 4.4 2.7 2.7 0 0 1 13.2 5.9C13.2 9.8 8 13.2 8 13.2Z"
+                      stroke="currentColor"
+                      strokeWidth="1.4"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {op.likes}
                 </span>
               </div>
               <p className="pl-10 text-[14px] leading-[1.45] text-white/95">
