@@ -16,9 +16,7 @@ function formatCountdown(ms: number): string {
 }
 
 export function Header({ endsAt }: HeaderProps) {
-  const [remaining, setRemaining] = useState(() =>
-    formatCountdown(new Date(endsAt).getTime() - Date.now()),
-  );
+  const [remaining, setRemaining] = useState("--:--:--");
 
   useEffect(() => {
     const tick = () => {
