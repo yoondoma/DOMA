@@ -23,3 +23,18 @@ export type ArenaState = {
 
 /** 홈 인트로 / 도전자 / 방어자 */
 export type ArenaView = "intro" | "NEXUS" | "AEGIS";
+
+/** 하루 전투 기록 (달력) */
+export type BattleDay = {
+  /** YYYY-MM-DD */
+  date: string;
+  round: number;
+  topic: string;
+  winner: Side;
+  winnerPercent: number;
+  loserPercent: number;
+  winnerAuthor: string;
+  winnerOpinion: string;
+  opponentAuthor: string;
+  opponentOpinion: string;
+};

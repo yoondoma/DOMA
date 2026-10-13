@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { ArenaBar } from "@/components/ArenaBar";
+import { BattleCalendar } from "@/components/BattleCalendar";
 import { BottomNav, type NavTab } from "@/components/BottomNav";
 import { Header } from "@/components/Header";
 import { PullRefresh } from "@/components/PullRefresh";
@@ -58,6 +59,7 @@ export function DomaHome() {
   const [toast, setToast] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [entered, setEntered] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const refreshLock = useRef(false);
 
   const lightShell = navTab === "home" && arenaView === "AEGIS";
@@ -151,7 +153,7 @@ export function DomaHome() {
           tone={lightShell ? "light" : "dark"}
           refreshing={refreshing}
           onRefresh={handleRefresh}
-          onOpenHistory={() => showToast("이전 대결 기록 (목업)")}
+          onOpenHistory={() => setCalendarOpen(true)}
           onOpenSearch={() => showToast("검색 (목업)")}
         />
 
@@ -227,6 +229,11 @@ export function DomaHome() {
           onJoin={handleJoin}
         />
       ) : null}
+
+      <BattleCalendar
+        open={calendarOpen}
+        onClose={() => setCalendarOpen(false)}
+      />
 
       <WieldBar
         open={composeOpen}
