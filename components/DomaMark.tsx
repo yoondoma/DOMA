@@ -11,8 +11,9 @@ type DomaMarkProps = {
 };
 
 /**
- * 선호 비율 세로 마크: 직사각 → (간격) → 하향 삼각 → 타원
- * 삼각이 타원을 가려 겹침 선 없음
+ * doma-logo-preferred.png 실측 비율
+ * 직사각(좁고 중간 키) → 짧은 간격 → 하향 삼각(높이≈밑변×0.67) → 타원(삼각보다 살짝 넓음)
+ * 삼각 팁이 타원 상단을 가려 겹침 선 없음
  */
 export function DomaMark({
   size = 56,
@@ -22,11 +23,12 @@ export function DomaMark({
   const stroke = light ? "#000000" : "#ffffff";
   const uid = useId().replace(/:/g, "");
   const maskId = `doma-mark-mask-${uid}`;
-  // viewBox 48×72 — 세로로 긴 마크
+  // viewBox 48×72 — preferred 마크 박스에 맞춤
   const width = Math.round(size * (48 / 72));
 
-  const tri = "M8 24h32L24 58Z";
-  const triMask = "M6 22.5h36L24 60.5Z";
+  // preferred: rect≈16.5×22.3 · gap≈0.7 · tri base≈36 h≈24 · ellipse rx≈20.5 ry≈12
+  const tri = "M6 23.2h36L24 47Z";
+  const triMask = "M4.5 21.8h39L24 49.2Z";
 
   return (
     <svg
@@ -52,31 +54,28 @@ export function DomaMark({
         </mask>
       </defs>
 
-      {/* 타원(방패) — 삼각 겹침 구간 선 제거 */}
       <ellipse
         cx="24"
-        cy="58"
-        rx="16"
-        ry="10"
+        cy="58.5"
+        rx="20.5"
+        ry="12"
         stroke={stroke}
-        strokeWidth="1.55"
+        strokeWidth="1.45"
         mask={`url(#${maskId})`}
       />
-      {/* 하향 삼각 */}
       <path
         d={tri}
         stroke={stroke}
-        strokeWidth="1.55"
+        strokeWidth="1.45"
         strokeLinejoin="miter"
       />
-      {/* 직사각 — 삼각과 간격 */}
       <rect
-        x="18.5"
-        y="2"
-        width="11"
-        height="18"
+        x="15.75"
+        y="1"
+        width="16.5"
+        height="22"
         stroke={stroke}
-        strokeWidth="1.55"
+        strokeWidth="1.45"
       />
     </svg>
   );

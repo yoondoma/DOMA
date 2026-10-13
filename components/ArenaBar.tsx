@@ -159,7 +159,9 @@ export function ArenaBar({
           </p>
           <h2
             className={`mt-1.5 text-center font-[family-name:var(--font-syne)] font-bold leading-snug tracking-tight ${
-              selected ? "text-[17px] sm:text-[18px]" : "mt-2 text-[20px] sm:text-[22px]"
+              selected
+                ? "text-[17px] sm:text-[18px]"
+                : "mt-2 text-[22px] leading-[1.35] sm:text-[24px]"
             } ${light ? "text-black" : "text-white"}`}
           >
             {arena.topic}
@@ -257,7 +259,7 @@ export function ArenaBar({
               className="flex flex-col"
               style={{
                 height:
-                  "calc(100dvh - 11.5rem - 72px - 2.25rem - 84px - 3.5rem - env(safe-area-inset-bottom, 0px))",
+                  "calc(100dvh - 3.75rem - 5rem - 72px - 2.25rem - 84px - 3.5rem - env(safe-area-inset-bottom, 0px))",
                 maxHeight: "62dvh",
               }}
             >

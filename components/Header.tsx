@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DomaMark } from "@/components/DomaMark";
 
 type HeaderProps = {
   endsAt: string;
@@ -63,6 +62,7 @@ function SearchIcon() {
   );
 }
 
+/** 메인: 마크 없음 · DOMA 텍스트만 절제 · 탭/pull 새로고침 */
 export function Header({
   endsAt,
   tone = "dark",
@@ -91,56 +91,38 @@ export function Header({
           : "border-white/12 bg-black/92"
       }`}
     >
-      <div className="relative mx-auto max-w-[560px] px-3 pb-2 pt-2.5">
-        <div className="absolute inset-x-3 top-2.5 flex items-start justify-between">
-          <button
-            type="button"
-            onClick={onOpenHistory}
-            className={`flex size-10 items-center justify-center ${
-              light ? "text-black" : "text-white"
-            }`}
-            aria-label="이전 대결 기록"
-          >
-            <CalendarIcon />
-          </button>
-          <button
-            type="button"
-            onClick={onOpenSearch}
-            className={`flex size-10 items-center justify-center ${
-              light ? "text-black" : "text-white"
-            }`}
-            aria-label="검색"
-          >
-            <SearchIcon />
-          </button>
-        </div>
-
+      <div className="relative mx-auto flex max-w-[560px] items-center px-3 py-2">
         <button
           type="button"
-          onClick={onRefresh}
-          disabled={refreshing}
-          aria-label="새로고침"
-          aria-busy={refreshing || undefined}
-          className="mx-auto flex flex-col items-center"
+          onClick={onOpenHistory}
+          className={`flex size-10 shrink-0 items-center justify-center ${
+            light ? "text-black" : "text-white"
+          }`}
+          aria-label="이전 대결 기록"
         >
-          {/* 상징 마크 탭 = pull과 동일 새로고침 */}
-          <span
-            className={refreshing ? "logo-refresh" : undefined}
-            aria-hidden
-          >
-            <DomaMark size={40} light={light} />
-          </span>
-          <h1
-            className={`mt-2 text-center font-[family-name:var(--font-brand)] text-[28px] font-semibold leading-none tracking-[0.28em] ${
-              light ? "text-black" : "text-white"
-            }`}
-          >
-            DOMA
-          </h1>
+          <CalendarIcon />
+        </button>
 
+        <div className="flex min-w-0 flex-1 flex-col items-center justify-center">
+          <button
+            type="button"
+            onClick={onRefresh}
+            disabled={refreshing}
+            aria-label="새로고침"
+            aria-busy={refreshing || undefined}
+            className={refreshing ? "logo-refresh" : undefined}
+          >
+            <h1
+              className={`font-[family-name:var(--font-brand)] text-[15px] font-semibold leading-none tracking-[0.28em] ${
+                light ? "text-black/70" : "text-white/75"
+              }`}
+            >
+              DOMA
+            </h1>
+          </button>
           {refreshing ? (
             <span
-              className={`mt-1.5 text-[10px] tracking-[0.14em] ${
+              className={`mt-1 text-[10px] tracking-[0.14em] ${
                 light ? "text-neutral-500" : "text-muted"
               }`}
             >
@@ -149,12 +131,23 @@ export function Header({
           ) : (
             <time
               dateTime={endsAt}
-              className="mt-1.5 font-mono text-[12px] font-medium tabular-nums tracking-[0.12em] text-timer"
+              className="mt-1 font-mono text-[12px] font-medium tabular-nums tracking-[0.12em] text-timer"
               aria-label={`남은 시간 ${remaining}`}
             >
               {remaining}
             </time>
           )}
+        </div>
+
+        <button
+          type="button"
+          onClick={onOpenSearch}
+          className={`flex size-10 shrink-0 items-center justify-center ${
+            light ? "text-black" : "text-white"
+          }`}
+          aria-label="검색"
+        >
+          <SearchIcon />
         </button>
       </div>
     </header>
