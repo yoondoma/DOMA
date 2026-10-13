@@ -6,6 +6,8 @@ type HeaderProps = {
   endsAt: string;
   /** 방어자 탭일 때 흰 톤 */
   tone?: "dark" | "light";
+  refreshing?: boolean;
+  onRefresh?: () => void;
   onOpenHistory?: () => void;
   onOpenSearch?: () => void;
 };
@@ -99,6 +101,8 @@ function SearchIcon() {
 export function Header({
   endsAt,
   tone = "dark",
+  refreshing,
+  onRefresh,
   onOpenHistory,
   onOpenSearch,
 }: HeaderProps) {
@@ -146,8 +150,19 @@ export function Header({
           </button>
         </div>
 
-        <div className="flex flex-col items-center">
-          <PenSpearMark light={light} />
+        <button
+          type="button"
+          onClick={onRefresh}
+          disabled={refreshing}
+          aria-label="새로고침"
+          aria-busy={refreshing || undefined}
+          className={`mx-auto flex flex-col items-center ${
+            refreshing ? "logo-refresh" : ""
+          }`}
+        >
+          <span className={refreshing ? "refresh-spin" : undefined}>
+            <PenSpearMark light={light} />
+          </span>
 
           <h1
             className={`mt-1 flex items-baseline justify-center font-[family-name:var(--font-brand)] text-[32px] font-semibold leading-none tracking-[0.22em] ${
@@ -165,14 +180,24 @@ export function Header({
             </span>
           </h1>
 
-          <time
-            dateTime={endsAt}
-            className="mt-1 font-mono text-[12px] font-medium tabular-nums tracking-[0.12em] text-timer"
-            aria-label={`남은 시간 ${remaining}`}
-          >
-            {remaining}
-          </time>
-        </div>
+          {refreshing ? (
+            <span
+              className={`mt-1 text-[10px] tracking-[0.14em] ${
+                light ? "text-neutral-500" : "text-muted"
+              }`}
+            >
+              업데이트 중
+            </span>
+          ) : (
+            <time
+              dateTime={endsAt}
+              className="mt-1 font-mono text-[12px] font-medium tabular-nums tracking-[0.12em] text-timer"
+              aria-label={`남은 시간 ${remaining}`}
+            >
+              {remaining}
+            </time>
+          )}
+        </button>
       </div>
     </header>
   );

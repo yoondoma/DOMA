@@ -106,3 +106,46 @@ body {
 .sheet-up {
   animation: sheet-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+@keyframes refresh-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.refresh-spin {
+  animation: refresh-spin 0.75s linear infinite;
+}
+
+@keyframes refresh-bounce {
+  0% {
+    transform: translateY(0);
+  }
+  35% {
+    transform: translateY(6px);
+  }
+  70% {
+    transform: translateY(-2px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.refresh-bounce {
+  animation: refresh-bounce 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes logo-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(0.94);
+  }
+}
+
+.logo-refresh {
+  animation: logo-pulse 0.5s ease-out;
+}
