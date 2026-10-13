@@ -12,7 +12,7 @@ type OpinionFeedProps = {
 
 const TABS: { id: FeedTab; label: string }[] = [
   { id: "ALL", label: "전체" },
-  { id: "TOP", label: "Top 소수의견" },
+  { id: "TOP", label: "Top 소수" },
   { id: "NEXUS", label: "NEXUS" },
   { id: "AEGIS", label: "AEGIS" },
 ];
@@ -33,10 +33,10 @@ function SideBadge({ side }: { side: Side }) {
   const isNexus = side === "NEXUS";
   return (
     <span
-      className={`inline-flex border px-1.5 py-0.5 text-[10px] font-bold tracking-[0.16em] ${
+      className={`inline-flex px-1 py-px text-[10px] font-bold tracking-[0.14em] ${
         isNexus
-          ? "border-white bg-black text-white"
-          : "border-white bg-white text-black"
+          ? "border border-white/80 text-white"
+          : "bg-white text-black"
       }`}
     >
       {side}
@@ -52,9 +52,9 @@ export function OpinionFeed({
   const visible = filterOpinions(opinions, activeTab);
 
   return (
-    <section className="mx-auto max-w-3xl px-3 pb-28 pt-3 sm:px-4 sm:pt-4">
+    <section className="mx-auto max-w-[560px]">
       <div
-        className="flex gap-0 overflow-x-auto border-b border-white/20"
+        className="sticky top-11 z-30 flex border-b border-white/12 bg-black/90 backdrop-blur-md"
         role="tablist"
         aria-label="의견 필터"
       >
@@ -67,10 +67,10 @@ export function OpinionFeed({
               role="tab"
               aria-selected={selected}
               onClick={() => onTabChange(tab.id)}
-              className={`shrink-0 border-b-2 px-2.5 py-2 text-[11px] font-semibold tracking-wide whitespace-nowrap transition-colors sm:px-3 sm:text-xs ${
+              className={`min-h-10 flex-1 px-1 text-[12px] font-semibold tracking-wide transition-colors ${
                 selected
-                  ? "border-white text-white"
-                  : "border-transparent text-muted hover:text-white"
+                  ? "border-b-2 border-white text-white"
+                  : "border-b-2 border-transparent text-muted hover:text-white"
               }`}
             >
               {tab.label}
@@ -79,39 +79,47 @@ export function OpinionFeed({
         })}
       </div>
 
-      <ul className="mt-3 space-y-2 sm:mt-4 sm:space-y-2.5">
+      <ul>
         {visible.length === 0 ? (
-          <li className="border border-dashed border-white/30 px-3 py-8 text-center text-sm text-muted">
+          <li className="px-4 py-12 text-center text-sm text-muted">
             이 탭에 표시할 진술이 없습니다.
           </li>
         ) : (
           visible.map((op, index) => (
             <li
               key={op.id}
-              className={`feed-item border bg-surface px-3 py-2.5 sm:px-3.5 sm:py-3 ${
+              className={`feed-item border-b px-4 py-3 ${
                 op.isTopMinority
-                  ? "border-white shadow-[inset_0_0_0_1px_#fff]"
-                  : "border-white/25"
+                  ? "border-l-2 border-l-white border-b-white/12 bg-white/[0.03]"
+                  : "border-white/10"
               }`}
-              style={{ animationDelay: `${index * 40}ms` }}
+              style={{ animationDelay: `${index * 30}ms` }}
             >
-              <div className="mb-1.5 flex items-center justify-between gap-2">
-                <div className="flex min-w-0 items-center gap-2">
-                  <SideBadge side={op.side} />
-                  <span className="truncate text-xs text-muted">
-                    @{op.author}
-                  </span>
-                  {op.isTopMinority ? (
-                    <span className="shrink-0 text-[10px] font-bold tracking-[0.12em] text-white">
-                      TOP 소수
+              <div className="mb-1 flex items-center gap-2">
+                <div
+                  className="flex size-8 shrink-0 items-center justify-center border border-white/30 text-[10px] font-bold text-muted"
+                  aria-hidden
+                >
+                  {op.author.slice(0, 1).toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="truncate text-[13px] font-semibold text-white">
+                      @{op.author}
                     </span>
-                  ) : null}
+                    <SideBadge side={op.side} />
+                    {op.isTopMinority ? (
+                      <span className="shrink-0 text-[10px] font-bold tracking-wide text-white/80">
+                        · TOP 소수
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
                 <span className="shrink-0 text-[11px] tabular-nums text-dim">
                   ♥ {op.likes}
                 </span>
               </div>
-              <p className="text-[13px] leading-relaxed text-white sm:text-sm">
+              <p className="pl-10 text-[14px] leading-[1.45] text-white/95">
                 {op.text}
               </p>
             </li>

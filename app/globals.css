@@ -88,3 +88,18 @@ body {
 .feed-item {
   animation: feed-in 0.35s ease-out both;
 }
+
+@keyframes sheet-up {
+  from {
+    opacity: 0.6;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sheet-up {
+  animation: sheet-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}

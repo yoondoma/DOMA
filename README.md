@@ -1,6 +1,6 @@
 # DOMA
 
-흑백 토론 아레나. 오늘의 논제에 참전하고, 280자 진술로 여론을 움직이는 웹 앱의 **메인 골격**입니다.
+흑백 토론 아레나. X / Threads / Instagram 감성의 **모바일 웹** 메인 골격입니다.
 
 ## 스택
 
@@ -9,10 +9,13 @@
 
 ## 화면 구성
 
-1. **Header** — `DOMA` 브랜드 + 실시간 카운트다운 + LIVE
-2. **ArenaBar** — 논제 / NEXUS vs AEGIS 게이지 / 참전 버튼
-3. **OpinionFeed** — 탭 필터 + Top 소수의견 고정 + 흑백 카드
-4. **WieldBar** — 하단 고정 280자 진술 입력
+1. **Header** — 슬림 `DOMA` + 실시간 카운트다운 + LIVE
+2. **ArenaBar** — 논제 / NEXUS vs AEGIS 게이지 / 참전
+3. **OpinionFeed** — 탭 필터 + Top 소수의견 + 피드형 카드
+4. **WieldBar** — 작성(+) 탭 → 바텀시트로 280자 진술 제출
+5. **BottomNav** — 홈 / 아레나 / 작성 / 알림 / 프로필
+
+중앙 컬럼 max-width ≈ 560px.
 
 ## 실행
 
@@ -22,11 +25,6 @@ npm run dev -- -p 43123 -H 127.0.0.1
 ```
 
 브라우저에서 [http://127.0.0.1:43123](http://127.0.0.1:43123) 을 엽니다.
-
-```bash
-npm run build
-npm run start -- -p 43123
-```
 
 ## 환경 변수
 

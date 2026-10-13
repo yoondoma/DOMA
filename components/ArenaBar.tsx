@@ -8,6 +8,7 @@ type ArenaBarProps = {
   aegisPercent: number;
   onJoin: (side: Side) => void;
   joined: Side | null;
+  compact?: boolean;
 };
 
 export function ArenaBar({
@@ -16,19 +17,26 @@ export function ArenaBar({
   aegisPercent,
   onJoin,
   joined,
+  compact = false,
 }: ArenaBarProps) {
   return (
-    <section className="border-b border-white/20 bg-black">
-      <div className="mx-auto max-w-3xl px-3 py-3 sm:px-4 sm:py-4">
-        <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted">
+    <section className="border-b border-white/12 bg-black">
+      <div
+        className={`mx-auto max-w-[560px] px-4 ${compact ? "py-2.5" : "py-3"}`}
+      >
+        <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
           오늘의 논제
         </p>
-        <h2 className="font-[family-name:var(--font-syne)] text-lg font-bold leading-snug tracking-tight text-white sm:text-2xl">
+        <h2
+          className={`font-[family-name:var(--font-syne)] font-bold leading-snug tracking-tight text-white ${
+            compact ? "text-[15px]" : "text-[17px]"
+          }`}
+        >
           {topic}
         </h2>
 
-        <div className="mt-3 sm:mt-4">
-          <div className="mb-1.5 flex items-end justify-between text-xs font-semibold tracking-wide sm:text-sm">
+        <div className={compact ? "mt-2" : "mt-2.5"}>
+          <div className="mb-1 flex items-center justify-between text-[11px] font-semibold tracking-wide">
             <span className="text-white">
               NEXUS <span className="tabular-nums">{nexusPercent}%</span>
             </span>
@@ -39,18 +47,18 @@ export function ArenaBar({
           </div>
 
           <div
-            className="relative flex h-8 w-full overflow-hidden border border-white sm:h-9"
+            className="relative flex h-6 w-full overflow-hidden border border-white"
             role="img"
             aria-label={`NEXUS ${nexusPercent}퍼센트, AEGIS ${aegisPercent}퍼센트`}
           >
             <div
-              className="gauge-animate flex h-full items-center justify-start bg-black pl-2 text-[10px] font-bold tracking-wider text-white sm:text-xs"
+              className="gauge-animate flex h-full items-center justify-start bg-black pl-1.5 text-[9px] font-bold tracking-wider text-white"
               style={{ width: `${nexusPercent}%` }}
             >
               <span className="truncate">검</span>
             </div>
             <div
-              className="flex h-full items-center justify-end bg-white pr-2 text-[10px] font-bold tracking-wider text-black sm:text-xs"
+              className="flex h-full items-center justify-end bg-white pr-1.5 text-[9px] font-bold tracking-wider text-black"
               style={{ width: `${aegisPercent}%` }}
             >
               <span className="truncate">흰</span>
@@ -58,14 +66,14 @@ export function ArenaBar({
           </div>
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4">
+        <div className={`grid grid-cols-2 gap-2 ${compact ? "mt-2" : "mt-2.5"}`}>
           <button
             type="button"
             onClick={() => onJoin("NEXUS")}
-            className={`h-10 border text-xs font-bold tracking-[0.14em] transition-colors sm:h-11 sm:text-sm ${
+            className={`h-10 border text-[11px] font-bold tracking-[0.12em] transition-colors ${
               joined === "NEXUS"
                 ? "border-white bg-white text-black"
-                : "border-white bg-black text-white hover:bg-white hover:text-black"
+                : "border-white bg-black text-white active:bg-white active:text-black"
             }`}
           >
             NEXUS 참전
@@ -73,10 +81,10 @@ export function ArenaBar({
           <button
             type="button"
             onClick={() => onJoin("AEGIS")}
-            className={`h-10 border text-xs font-bold tracking-[0.14em] transition-colors sm:h-11 sm:text-sm ${
+            className={`h-10 border text-[11px] font-bold tracking-[0.12em] transition-colors ${
               joined === "AEGIS"
                 ? "border-white bg-white text-black"
-                : "border-white/60 bg-transparent text-white hover:border-white hover:bg-white hover:text-black"
+                : "border-white/50 bg-transparent text-white active:border-white active:bg-white active:text-black"
             }`}
           >
             AEGIS 참전

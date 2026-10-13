@@ -30,20 +30,20 @@ export function Header({ endsAt }: HeaderProps) {
   }, [endsAt]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/20 bg-black/95 backdrop-blur-sm">
-      <div className="mx-auto flex h-12 max-w-3xl items-center justify-between px-3 sm:h-14 sm:px-4">
-        <h1 className="font-[family-name:var(--font-syne)] text-2xl font-extrabold tracking-[0.12em] text-white sm:text-3xl">
+    <header className="sticky top-0 z-40 border-b border-white/12 bg-black/90 backdrop-blur-md">
+      <div className="mx-auto flex h-11 max-w-[560px] items-center justify-between px-4">
+        <h1 className="font-[family-name:var(--font-syne)] text-[22px] font-extrabold tracking-[0.14em] text-white">
           DOMA
         </h1>
-        <div className="flex items-center gap-2.5 sm:gap-3">
+        <div className="flex items-center gap-2">
           <time
             dateTime={endsAt}
-            className="font-mono text-sm tabular-nums tracking-wider text-white sm:text-base"
+            className="font-mono text-[12px] tabular-nums tracking-wider text-white/90"
             aria-label={`남은 시간 ${remaining}`}
           >
             {remaining}
           </time>
-          <span className="inline-flex items-center gap-1.5 border border-white px-1.5 py-0.5 text-[10px] font-bold tracking-[0.18em] text-white sm:text-[11px]">
+          <span className="inline-flex items-center gap-1 px-1 py-0.5 text-[9px] font-bold tracking-[0.2em] text-white">
             <span
               className="live-dot inline-block size-1.5 rounded-full bg-white"
               aria-hidden
