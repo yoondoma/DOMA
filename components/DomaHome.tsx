@@ -25,7 +25,8 @@ export function DomaHome() {
   const [aegisPercent, setAegisPercent] = useState(INITIAL_ARENA.aegisPercent);
   const [joined, setJoined] = useState<Side | null>(null);
   const [opinions, setOpinions] = useState<Opinion[]>(INITIAL_OPINIONS);
-  const [feedTab, setFeedTab] = useState<FeedTab>("ALL");
+  const [feedTab, setFeedTab] = useState<FeedTab>("NEXUS");
+  const [focusSide, setFocusSide] = useState<Side>("NEXUS");
   const [navTab, setNavTab] = useState<NavTab>("home");
   const [composeOpen, setComposeOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -34,6 +35,11 @@ export function DomaHome() {
     setToast(message);
     window.setTimeout(() => setToast(null), 2200);
   }, []);
+
+  const handleFocusChange = (side: Side) => {
+    setFocusSide(side);
+    setFeedTab(side);
+  };
 
   const handleJoin = (side: Side) => {
     if (joined === side) return;
@@ -77,8 +83,18 @@ export function DomaHome() {
   };
 
   return (
-    <div className="min-h-full bg-black text-white">
-      <div className="mx-auto min-h-full max-w-[560px] border-x border-white/10 bg-black">
+    <div
+      className={`min-h-full ${
+        navTab === "home" && focusSide === "AEGIS" ? "bg-white" : "bg-black"
+      } text-white`}
+    >
+      <div
+        className={`mx-auto min-h-full max-w-[560px] border-x ${
+          navTab === "home" && focusSide === "AEGIS"
+            ? "border-black/10 bg-white"
+            : "border-white/10 bg-black"
+        }`}
+      >
         <Header
           endsAt={INITIAL_ARENA.endsAt}
           onOpenHistory={() => showToast("이전 대결 기록 (목업)")}
@@ -89,17 +105,18 @@ export function DomaHome() {
           <>
             <ArenaBar
               arena={INITIAL_ARENA}
-              opinions={opinions}
               nexusPercent={nexusPercent}
               aegisPercent={aegisPercent}
+              focus={focusSide}
+              onFocusChange={handleFocusChange}
               onJoin={handleJoin}
               joined={joined}
-              compact
             />
             <OpinionFeed
               opinions={opinions}
               activeTab={feedTab}
               onTabChange={setFeedTab}
+              focusSide={focusSide}
             />
           </>
         ) : null}
