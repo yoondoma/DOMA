@@ -6,6 +6,7 @@ import { BottomNav, type NavTab } from "@/components/BottomNav";
 import { Header } from "@/components/Header";
 import { PullRefresh } from "@/components/PullRefresh";
 import { SupportBar } from "@/components/SupportBar";
+import { TouchGate } from "@/components/TouchGate";
 import { WieldBar } from "@/components/WieldBar";
 import { INITIAL_ARENA, INITIAL_OPINIONS } from "@/lib/mock-data";
 import type { ArenaView, Opinion, Side } from "@/lib/types";
@@ -56,6 +57,7 @@ export function DomaHome() {
   const [composeOpen, setComposeOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [entered, setEntered] = useState(false);
   const refreshLock = useRef(false);
 
   const lightShell = navTab === "home" && arenaView === "AEGIS";
@@ -129,9 +131,13 @@ export function DomaHome() {
     setNavTab(tab);
   };
 
+  if (!entered) {
+    return <TouchGate onEnter={() => setEntered(true)} />;
+  }
+
   return (
     <div
-      className={`min-h-full ${lightShell ? "bg-white text-black" : "bg-black text-white"}`}
+      className={`arena-enter min-h-full ${lightShell ? "bg-white text-black" : "bg-black text-white"}`}
     >
       <div
         className={`mx-auto min-h-full max-w-[560px] border-x ${

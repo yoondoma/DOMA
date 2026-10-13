@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { DomaMark } from "@/components/DomaMark";
 
 type HeaderProps = {
   endsAt: string;
@@ -19,42 +20,6 @@ function formatCountdown(ms: number): string {
   const m = Math.floor((totalSec % 3600) / 60);
   const s = totalSec % 60;
   return [h, m, s].map((n) => String(n).padStart(2, "0")).join(":");
-}
-
-/** 원 안 아래로 향한 창=언론의 펜/붓 촉 */
-function PenSpearMark({ light }: { light?: boolean }) {
-  const stroke = light ? "#000000" : "#ffffff";
-  return (
-    <svg
-      width="40"
-      height="40"
-      viewBox="0 0 48 48"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <circle cx="24" cy="24" r="18.5" stroke={stroke} strokeWidth="1.4" />
-      <path
-        d="M22.2 12.5h3.6v8.2h-3.6V12.5Z"
-        stroke={stroke}
-        strokeWidth="1.35"
-        strokeLinejoin="miter"
-      />
-      <path
-        d="M20.4 20.7 24 33.2 27.6 20.7H20.4Z"
-        stroke={stroke}
-        strokeWidth="1.35"
-        strokeLinejoin="miter"
-      />
-      <path d="M24 27.2 25.35 28.9 24 30.6 22.65 28.9Z" fill="#e10600" />
-      <path
-        d="M17.5 35.6h13M18.5 37.8h11"
-        stroke={stroke}
-        strokeWidth="1.15"
-        strokeLinecap="square"
-      />
-    </svg>
-  );
 }
 
 function CalendarIcon() {
@@ -160,8 +125,8 @@ export function Header({
             refreshing ? "logo-refresh" : ""
           }`}
         >
-          <span className={refreshing ? "refresh-spin" : undefined}>
-            <PenSpearMark light={light} />
+          <span className={refreshing ? "logo-refresh" : undefined}>
+            <DomaMark size={36} light={light} />
           </span>
 
           <h1
