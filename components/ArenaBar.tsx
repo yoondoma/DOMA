@@ -67,12 +67,12 @@ function OpinionRow({
 }) {
   return (
     <li
-      className={`feed-item border-b px-4 py-3 ${
+      className={`feed-item border-b px-4 py-2.5 ${
         light ? "border-black/10" : "border-white/10"
       }`}
       style={{ animationDelay: `${index * 30}ms` }}
     >
-      <div className="mb-1 flex items-center gap-2">
+      <div className="mb-0.5 flex items-center gap-2">
         <SmallAvatar name={op.author} light={light} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
@@ -96,7 +96,7 @@ function OpinionRow({
         </span>
       </div>
       <p
-        className={`pl-10 text-[14px] leading-[1.45] ${
+        className={`line-clamp-2 pl-10 text-[13px] leading-[1.4] ${
           light ? "text-black/90" : "text-white/95"
         }`}
       >
@@ -116,6 +116,7 @@ export function ArenaBar({
   const selected: Side | null =
     view === "NEXUS" || view === "AEGIS" ? view : null;
   const light = selected === "AEGIS";
+  const sideLabel = selected === "NEXUS" ? "도전자" : "방어자";
 
   const top = useMemo(
     () => (selected ? topOpinionForSide(opinions, selected) : null),
@@ -129,13 +130,12 @@ export function ArenaBar({
       .sort((a, b) => b.likes - a.likes);
   }, [opinions, selected, top]);
 
+  // 현재 올라오는 의견 — 전체(양측)가 계속 보이게
   const live = useMemo(() => {
-    if (!selected) return [];
-    return [...opinions].filter((o) => o.side === selected).reverse();
-  }, [opinions, selected]);
+    return [...opinions].reverse();
+  }, [opinions]);
 
   const selectSide = (side: Side) => {
-    // 같은 탭 다시 누르면 접기
     if (view === side) {
       onChangeView("intro");
       return;
@@ -149,7 +149,7 @@ export function ArenaBar({
       className={light ? "bg-white text-black" : "bg-black text-white"}
     >
       <div className="mx-auto max-w-[560px]">
-        <div className="px-5 pb-4 pt-6">
+        <div className={`px-5 ${selected ? "pb-2 pt-3" : "pb-3 pt-5"}`}>
           <p
             className={`text-center text-[11px] tracking-[0.18em] ${
               light ? "text-neutral-500" : "text-muted"
@@ -158,22 +158,23 @@ export function ArenaBar({
             제 {arena.round} 도마
           </p>
           <h2
-            className={`mt-3 text-center font-[family-name:var(--font-syne)] text-[22px] font-bold leading-snug tracking-tight sm:text-[24px] ${
-              light ? "text-black" : "text-white"
-            }`}
+            className={`mt-1.5 text-center font-[family-name:var(--font-syne)] font-bold leading-snug tracking-tight ${
+              selected ? "text-[17px] sm:text-[18px]" : "mt-2 text-[20px] sm:text-[22px]"
+            } ${light ? "text-black" : "text-white"}`}
           >
             {arena.topic}
           </h2>
-          <p
-            className={`mx-auto mt-4 max-w-[34em] text-center text-[14px] leading-[1.55] ${
-              light ? "text-black/70" : "text-white/75"
-            }`}
-          >
-            {arena.description}
-          </p>
+          {!selected ? (
+            <p
+              className={`mx-auto mt-3 max-w-[34em] text-center text-[13px] leading-[1.5] ${
+                light ? "text-black/70" : "text-white/75"
+              }`}
+            >
+              {arena.description}
+            </p>
+          ) : null}
         </div>
 
-        {/* 좌흑/우백 칸 톤 — 테두리 박스 없이 배경만 */}
         <div
           className="grid grid-cols-2"
           role="tablist"
@@ -185,11 +186,13 @@ export function ArenaBar({
             aria-selected={selected === "NEXUS"}
             aria-label="도전자"
             onClick={() => selectSide("NEXUS")}
-            className={`flex min-h-[128px] flex-col items-center justify-center gap-2.5 border-0 bg-black p-0 text-white shadow-none outline-none ring-0 focus:outline-none focus-visible:outline-none ${
+            className={`flex flex-col items-center justify-center gap-2 border-0 bg-black p-0 text-white shadow-none outline-none ring-0 focus:outline-none focus-visible:outline-none ${
+              selected ? "min-h-[72px]" : "min-h-[104px]"
+            } ${
               selected && selected !== "NEXUS" ? "opacity-50" : "opacity-100"
             }`}
           >
-            <SpearMark size={40} />
+            <SpearMark size={selected ? 28 : 36} />
             <span className="text-[12px] font-bold tracking-[0.18em]">
               도전자
             </span>
@@ -200,11 +203,13 @@ export function ArenaBar({
             aria-selected={selected === "AEGIS"}
             aria-label="방어자"
             onClick={() => selectSide("AEGIS")}
-            className={`flex min-h-[128px] flex-col items-center justify-center gap-2.5 border-0 bg-white p-0 text-black shadow-none outline-none ring-0 focus:outline-none focus-visible:outline-none ${
+            className={`flex flex-col items-center justify-center gap-2 border-0 bg-white p-0 text-black shadow-none outline-none ring-0 focus:outline-none focus-visible:outline-none ${
+              selected ? "min-h-[72px]" : "min-h-[104px]"
+            } ${
               selected && selected !== "AEGIS" ? "opacity-50" : "opacity-100"
             }`}
           >
-            <ShieldMark size={40} />
+            <ShieldMark size={selected ? 28 : 36} />
             <span className="text-[12px] font-bold tracking-[0.18em]">
               방어자
             </span>
@@ -212,111 +217,169 @@ export function ArenaBar({
         </div>
 
         {!selected ? (
-          <p className="bg-black px-5 py-5 text-center text-[11px] tracking-[0.14em] text-muted">
-            진영을 누르면 TOP 의견이 펼쳐집니다
+          <p className="bg-black px-5 py-4 text-center text-[11px] tracking-[0.14em] text-muted">
+            진영을 누르면 TOP 의견이 펼쳐집니다 · 다시 누르면 닫힙니다
           </p>
         ) : null}
 
-        {/* 인플레이스: TOP + 피드 */}
         {selected ? (
-          <div className="feed-item">
+          <>
+            {/* 닫기 — 본래 화면으로 (재탭도 동일) */}
             <div
-              className={`border-t px-4 py-4 ${
-                light ? "border-black/12" : "border-white/12"
+              className={`flex items-center justify-between border-t px-3 py-1.5 ${
+                light ? "border-black/12 bg-white" : "border-white/12 bg-black"
               }`}
             >
               <p
-                className={`mb-2 text-[10px] font-bold tracking-[0.18em] ${
+                className={`text-[10px] font-bold tracking-[0.16em] ${
                   light ? "text-neutral-500" : "text-muted"
                 }`}
               >
-                TOP 의견 · {selected === "NEXUS" ? "도전자" : "방어자"}
+                {sideLabel} · 펼침
               </p>
-              {top ? (
-                <article>
-                  <div className="mb-2 flex items-center gap-2">
-                    <SmallAvatar name={top.author} light={light} />
-                    <span
-                      className={`truncate text-[13px] font-semibold ${
-                        light ? "text-black" : "text-white"
-                      }`}
-                    >
-                      @{top.author}
-                    </span>
-                    <SideBadge side={top.side} />
-                    <span
-                      className={`ml-auto inline-flex items-center gap-1 text-[11px] tabular-nums ${
+              <button
+                type="button"
+                onClick={() => onChangeView("intro")}
+                aria-label="기본 화면으로"
+                className={`px-2 py-1 text-[12px] ${
+                  light ? "text-neutral-600" : "text-muted"
+                }`}
+              >
+                닫기 · 기본 화면
+              </button>
+            </div>
+
+            {/*
+              남은 뷰포트(헤더·주제·탭·하단바 제외)를 약 2/3 · 1/3로 분할.
+              의견만 풀스크린 금지 — 아래 실시간 칸이 항상 보이게.
+            */}
+            <div
+              className="flex flex-col"
+              style={{
+                height:
+                  "calc(100dvh - 11.5rem - 72px - 2.25rem - 84px - 3.5rem - env(safe-area-inset-bottom, 0px))",
+                maxHeight: "62dvh",
+              }}
+            >
+              {/* ~2/3: TOP + 해당 진영 글 */}
+              <div
+                className={`min-h-0 flex-[2] overflow-y-auto border-t ${
+                  light ? "border-black/12" : "border-white/12"
+                }`}
+                aria-label={`${sideLabel} 의견 영역`}
+              >
+                <div className="px-4 py-3">
+                  <p
+                    className={`mb-2 text-[10px] font-bold tracking-[0.18em] ${
+                      light ? "text-neutral-500" : "text-muted"
+                    }`}
+                  >
+                    TOP 의견 · {sideLabel}
+                  </p>
+                  {top ? (
+                    <article>
+                      <div className="mb-1.5 flex items-center gap-2">
+                        <SmallAvatar name={top.author} light={light} />
+                        <span
+                          className={`truncate text-[13px] font-semibold ${
+                            light ? "text-black" : "text-white"
+                          }`}
+                        >
+                          @{top.author}
+                        </span>
+                        <SideBadge side={top.side} />
+                        <span
+                          className={`ml-auto inline-flex items-center gap-1 text-[11px] tabular-nums ${
+                            light ? "text-neutral-500" : "text-muted"
+                          }`}
+                        >
+                          <HeartMark
+                            className={
+                              light ? "text-neutral-500" : "text-muted"
+                            }
+                          />
+                          {top.likes}
+                        </span>
+                      </div>
+                      <p
+                        className={`line-clamp-3 font-[family-name:var(--font-syne)] text-[14px] leading-[1.45] ${
+                          light ? "text-black" : "text-white"
+                        }`}
+                      >
+                        “{top.text}”
+                      </p>
+                    </article>
+                  ) : (
+                    <p
+                      className={`text-sm ${
                         light ? "text-neutral-500" : "text-muted"
                       }`}
                     >
-                      <HeartMark
-                        className={light ? "text-neutral-500" : "text-muted"}
-                      />
-                      {top.likes}
-                    </span>
-                  </div>
-                  <p
-                    className={`font-[family-name:var(--font-syne)] text-[15px] leading-[1.5] ${
-                      light ? "text-black" : "text-white"
-                    }`}
-                  >
-                    “{top.text}”
-                  </p>
-                </article>
-              ) : (
-                <p
-                  className={`text-sm ${
-                    light ? "text-neutral-500" : "text-muted"
+                      TOP 의견이 아직 없습니다.
+                    </p>
+                  )}
+                </div>
+
+                <div
+                  className={`border-t px-4 py-2 ${
+                    light ? "border-black/12" : "border-white/12"
                   }`}
                 >
-                  TOP 의견이 아직 없습니다.
-                </p>
-              )}
-            </div>
+                  <p
+                    className={`text-[10px] font-bold tracking-[0.18em] ${
+                      light ? "text-neutral-500" : "text-muted"
+                    }`}
+                  >
+                    {sideLabel} 올라오는 글
+                  </p>
+                </div>
+                <ul aria-label={`${sideLabel} 올라오는 글`}>
+                  {rising.length === 0 ? (
+                    <li
+                      className={`px-4 py-6 text-center text-sm ${
+                        light ? "text-neutral-500" : "text-muted"
+                      }`}
+                    >
+                      아직 글이 없습니다.
+                    </li>
+                  ) : (
+                    rising.map((op, i) => (
+                      <OpinionRow key={op.id} op={op} light={light} index={i} />
+                    ))
+                  )}
+                </ul>
+              </div>
 
-            <div
-              className={`border-t px-4 py-2 ${
-                light ? "border-black/12" : "border-white/12"
-              }`}
-            >
-              <p
-                className={`text-[10px] font-bold tracking-[0.18em] ${
-                  light ? "text-neutral-500" : "text-muted"
+              {/* ~1/3 남은 영역: 현재 올라오는 의견이 계속 보임 */}
+              <div
+                className={`min-h-0 flex-[1] overflow-y-auto border-t ${
+                  light
+                    ? "border-black/15 bg-neutral-50"
+                    : "border-white/15 bg-neutral-950"
                 }`}
               >
-                올라오는 글
-              </p>
+                <div className="sticky top-0 z-10 px-4 py-2 backdrop-blur-sm">
+                  <p
+                    className={`text-[10px] font-bold tracking-[0.18em] ${
+                      light ? "text-neutral-500" : "text-muted"
+                    }`}
+                  >
+                    현재 올라오는 의견
+                  </p>
+                </div>
+                <ul aria-label="현재 올라오는 의견">
+                  {live.slice(0, 6).map((op, i) => (
+                    <OpinionRow
+                      key={`live-${op.id}`}
+                      op={op}
+                      light={light}
+                      index={i}
+                    />
+                  ))}
+                </ul>
+              </div>
             </div>
-            <ul aria-label="올라오는 글">
-              {rising.map((op, i) => (
-                <OpinionRow key={op.id} op={op} light={light} index={i} />
-              ))}
-            </ul>
-
-            <div
-              className={`border-y px-4 py-2 ${
-                light ? "border-black/12" : "border-white/12"
-              }`}
-            >
-              <p
-                className={`text-[10px] font-bold tracking-[0.18em] ${
-                  light ? "text-neutral-500" : "text-muted"
-                }`}
-              >
-                현재 올라오는 의견
-              </p>
-            </div>
-            <ul aria-label="현재 올라오는 의견">
-              {live.map((op, i) => (
-                <OpinionRow
-                  key={`live-${op.id}`}
-                  op={op}
-                  light={light}
-                  index={i}
-                />
-              ))}
-            </ul>
-          </div>
+          </>
         ) : null}
       </div>
     </section>

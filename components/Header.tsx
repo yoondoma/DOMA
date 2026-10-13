@@ -121,12 +121,15 @@ export function Header({
           disabled={refreshing}
           aria-label="새로고침"
           aria-busy={refreshing || undefined}
-          className={`mx-auto flex flex-col items-center ${
-            refreshing ? "logo-refresh" : ""
-          }`}
+          className="mx-auto flex flex-col items-center"
         >
-          {/* 마크 위 · DOMA 한가운데 (메인에서는 .kr 없음) */}
-          <DomaMark size={40} light={light} />
+          {/* 상징 마크 탭 = pull과 동일 새로고침 */}
+          <span
+            className={refreshing ? "logo-refresh" : undefined}
+            aria-hidden
+          >
+            <DomaMark size={40} light={light} />
+          </span>
           <h1
             className={`mt-2 text-center font-[family-name:var(--font-brand)] text-[28px] font-semibold leading-none tracking-[0.28em] ${
               light ? "text-black" : "text-white"
