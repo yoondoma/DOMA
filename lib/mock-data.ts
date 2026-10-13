@@ -47,4 +47,18 @@ export const INITIAL_OPINIONS: Opinion[] = [
     text: "대체는 한 번에 오지 않는다. 업무·학습·창작이 조금씩 위임되고, 어느 날 '인간만의 영역'이 좁아져 있을 것이다. 그 곡선이 이미 시작됐다.",
     likes: 329,
   },
+  {
+    id: "op-5",
+    side: "NEXUS",
+    author: "nova",
+    text: "지금 이 순간에도 판단이 위임되고 있다. 실시간으로 올라오는 증거만 보라.",
+    likes: 88,
+  },
+  {
+    id: "op-6",
+    side: "AEGIS",
+    author: "reed",
+    text: "속도가 정당성을 대신하지 않는다. HOT한 글일수록 더 천천히 읽어야 한다.",
+    likes: 120,
+  },
 ];

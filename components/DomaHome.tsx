@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { ArenaBar } from "@/components/ArenaBar";
 import { BottomNav, type NavTab } from "@/components/BottomNav";
 import { Header } from "@/components/Header";
-import { OpinionFeed, type FeedTab } from "@/components/OpinionFeed";
+import { OpinionFeed } from "@/components/OpinionFeed";
 import { WieldBar } from "@/components/WieldBar";
 import { INITIAL_ARENA, INITIAL_OPINIONS } from "@/lib/mock-data";
 import type { Opinion, Side } from "@/lib/types";
@@ -25,8 +25,8 @@ export function DomaHome() {
   const [aegisPercent, setAegisPercent] = useState(INITIAL_ARENA.aegisPercent);
   const [joined, setJoined] = useState<Side | null>(null);
   const [opinions, setOpinions] = useState<Opinion[]>(INITIAL_OPINIONS);
-  const [feedTab, setFeedTab] = useState<FeedTab>("NEXUS");
-  const [focusSide, setFocusSide] = useState<Side>("NEXUS");
+  const [openChallenger, setOpenChallenger] = useState(true);
+  const [openDefender, setOpenDefender] = useState(false);
   const [navTab, setNavTab] = useState<NavTab>("home");
   const [composeOpen, setComposeOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -35,11 +35,6 @@ export function DomaHome() {
     setToast(message);
     window.setTimeout(() => setToast(null), 2200);
   }, []);
-
-  const handleFocusChange = (side: Side) => {
-    setFocusSide(side);
-    setFeedTab(side);
-  };
 
   const handleJoin = (side: Side) => {
     if (joined === side) return;
@@ -53,7 +48,9 @@ export function DomaHome() {
       setAegisPercent(100 - next);
       return next;
     });
-    showToast(side === "NEXUS" ? "창 진영에 참전했습니다" : "방패 진영에 참전했습니다");
+    showToast(
+      side === "NEXUS" ? "도전자 진영에 참전했습니다" : "방어자 진영에 참전했습니다",
+    );
   };
 
   const handleSubmit = (text: string) => {
@@ -65,11 +62,7 @@ export function DomaHome() {
       text,
       likes: 0,
     };
-    setOpinions((prev) => {
-      const top = prev.filter((o) => o.isTopMinority);
-      const rest = prev.filter((o) => !o.isTopMinority);
-      return [...top, next, ...rest];
-    });
+    setOpinions((prev) => [...prev, next]);
     setNavTab("home");
     showToast("진술이 피드에 추가되었습니다");
   };
@@ -83,18 +76,8 @@ export function DomaHome() {
   };
 
   return (
-    <div
-      className={`min-h-full ${
-        navTab === "home" && focusSide === "AEGIS" ? "bg-white" : "bg-black"
-      } text-white`}
-    >
-      <div
-        className={`mx-auto min-h-full max-w-[560px] border-x ${
-          navTab === "home" && focusSide === "AEGIS"
-            ? "border-black/10 bg-white"
-            : "border-white/10 bg-black"
-        }`}
-      >
+    <div className="min-h-full bg-black text-white">
+      <div className="mx-auto min-h-full max-w-[560px] border-x border-white/10 bg-black">
         <Header
           endsAt={INITIAL_ARENA.endsAt}
           onOpenHistory={() => showToast("이전 대결 기록 (목업)")}
@@ -108,18 +91,14 @@ export function DomaHome() {
               opinions={opinions}
               nexusPercent={nexusPercent}
               aegisPercent={aegisPercent}
-              focus={focusSide}
-              onFocusChange={handleFocusChange}
+              openChallenger={openChallenger}
+              openDefender={openDefender}
+              onToggleChallenger={() => setOpenChallenger((v) => !v)}
+              onToggleDefender={() => setOpenDefender((v) => !v)}
               onJoin={handleJoin}
               joined={joined}
             />
-            <OpinionFeed
-              opinions={opinions}
-              activeTab={feedTab}
-              onTabChange={setFeedTab}
-              focusSide={focusSide}
-              peekCount={2}
-            />
+            <OpinionFeed opinions={opinions} />
           </>
         ) : null}
 
