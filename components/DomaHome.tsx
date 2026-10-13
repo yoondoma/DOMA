@@ -25,8 +25,7 @@ export function DomaHome() {
   const [aegisPercent, setAegisPercent] = useState(INITIAL_ARENA.aegisPercent);
   const [joined, setJoined] = useState<Side | null>(null);
   const [opinions, setOpinions] = useState<Opinion[]>(INITIAL_OPINIONS);
-  const [openChallenger, setOpenChallenger] = useState(true);
-  const [openDefender, setOpenDefender] = useState(false);
+  const [selectedSide, setSelectedSide] = useState<Side>("NEXUS");
   const [navTab, setNavTab] = useState<NavTab>("home");
   const [composeOpen, setComposeOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -91,10 +90,8 @@ export function DomaHome() {
               opinions={opinions}
               nexusPercent={nexusPercent}
               aegisPercent={aegisPercent}
-              openChallenger={openChallenger}
-              openDefender={openDefender}
-              onToggleChallenger={() => setOpenChallenger((v) => !v)}
-              onToggleDefender={() => setOpenDefender((v) => !v)}
+              selectedSide={selectedSide}
+              onSelectSide={setSelectedSide}
               onJoin={handleJoin}
               joined={joined}
             />
