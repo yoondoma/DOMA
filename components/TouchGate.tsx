@@ -28,22 +28,20 @@ export function TouchGate({ onEnter }: TouchGateProps) {
         type="button"
         onClick={handleEnter}
         aria-label="DOMA 로고를 터치하여 입장"
-        className={`flex flex-col items-center gap-6 border-0 bg-transparent p-4 outline-none transition-transform duration-200 focus-visible:outline-none ${
+        className={`flex flex-col items-center border-0 bg-transparent p-4 outline-none transition-transform duration-200 focus-visible:outline-none ${
           pressing ? "touch-press" : "active:scale-[0.96]"
         }`}
       >
-        {/* Threads형: 항상 [마크] DOMA .kr 한 줄 */}
-        <span className="flex flex-row flex-nowrap items-center gap-3">
-          <DomaMark size={36} />
-          <span className="flex flex-row flex-nowrap items-baseline whitespace-nowrap font-[family-name:var(--font-brand)] text-[36px] font-semibold leading-none tracking-[0.2em]">
-            DOMA
-            <span className="ml-[0.1em] translate-y-[-2px] font-[family-name:var(--font-space-grotesk)] text-[12px] font-semibold tracking-[0.04em] text-muted">
-              .kr
-            </span>
+        {/* 마크 위 · DOMA 아래 (세로·중앙) */}
+        <DomaMark size={72} />
+        <span className="mt-5 flex items-baseline justify-center font-[family-name:var(--font-brand)] text-[34px] font-semibold leading-none tracking-[0.28em]">
+          DOMA
+          <span className="ml-[0.08em] translate-y-[-3px] font-[family-name:var(--font-brand)] text-[12px] font-semibold tracking-[0.04em] text-white/70">
+            .kr
           </span>
         </span>
         <span
-          className={`text-[11px] tracking-[0.18em] text-muted ${
+          className={`mt-6 text-[11px] tracking-[0.18em] text-muted ${
             pressing ? "opacity-40" : "opacity-100"
           }`}
         >

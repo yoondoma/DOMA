@@ -125,25 +125,23 @@ export function Header({
             refreshing ? "logo-refresh" : ""
           }`}
         >
-          {/* Threads형: 항상 [마크] DOMA .kr 한 줄 */}
-          <span className="flex flex-row flex-nowrap items-center gap-2">
-            <DomaMark size={22} light={light} />
-            <h1
-              className={`flex flex-row flex-nowrap items-baseline whitespace-nowrap font-[family-name:var(--font-brand)] text-[26px] font-semibold leading-none tracking-[0.18em] ${
-                light ? "text-black" : "text-white"
+          {/* 마크 위 · DOMA 아래 (세로·중앙) */}
+          <DomaMark size={40} light={light} />
+          <h1
+            className={`mt-2 flex items-baseline justify-center font-[family-name:var(--font-brand)] text-[28px] font-semibold leading-none tracking-[0.28em] ${
+              light ? "text-black" : "text-white"
+            }`}
+          >
+            <span>DOMA</span>
+            <span
+              className={`ml-[0.08em] translate-y-[-2px] font-[family-name:var(--font-brand)] text-[11px] font-semibold tracking-[0.04em] ${
+                light ? "text-neutral-500" : "text-white/70"
               }`}
+              title="Korea server"
             >
-              <span>DOMA</span>
-              <span
-                className={`ml-[0.1em] translate-y-[-1px] font-[family-name:var(--font-space-grotesk)] text-[11px] font-semibold tracking-[0.04em] ${
-                  light ? "text-neutral-500" : "text-muted"
-                }`}
-                title="Korea server"
-              >
-                .kr
-              </span>
-            </h1>
-          </span>
+              .kr
+            </span>
+          </h1>
 
           {refreshing ? (
             <span
