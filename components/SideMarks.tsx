@@ -5,7 +5,7 @@ type MarkProps = {
   size?: number;
 };
 
-/** NEXUS — 창 (라인 아이콘) */
+/** NEXUS — 창날+자루 (↑ 화살표로 읽히지 않게) */
 export function SpearMark({ className = "", size = 14 }: MarkProps) {
   return (
     <svg
@@ -17,25 +17,39 @@ export function SpearMark({ className = "", size = 14 }: MarkProps) {
       className={`shrink-0 ${className}`}
       aria-hidden
     >
-      {/* tip */}
+      {/* 잎형 창날 — 중앙이 넓고 끝이 뾰족 */}
       <path
-        d="M8 1.4 5.8 5.2h4.4L8 1.4Z"
+        d="M8 1.2C8 1.2 5.4 3.6 5.4 5.6c0 1.15.9 1.9 2.6 1.9s2.6-.75 2.6-1.9C10.6 3.6 8 1.2 8 1.2Z"
         stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinejoin="miter"
+        strokeWidth="1.35"
+        strokeLinejoin="round"
       />
-      {/* shaft */}
+      {/* 창날 중앙 선(midrib) */}
       <path
-        d="M8 5.2v9.4"
+        d="M8 1.6v5.6"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="1.15"
         strokeLinecap="square"
       />
-      {/* collar */}
+      {/* 소켓/칼라 */}
       <path
-        d="M5.5 5.8h5"
+        d="M6.2 7.5h3.6"
         stroke="currentColor"
-        strokeWidth="1.4"
+        strokeWidth="1.35"
+        strokeLinecap="square"
+      />
+      {/* 자루 */}
+      <path
+        d="M8 7.5v6.2"
+        stroke="currentColor"
+        strokeWidth="1.45"
+        strokeLinecap="square"
+      />
+      {/* 자루 끝 */}
+      <path
+        d="M6.6 14.2h2.8"
+        stroke="currentColor"
+        strokeWidth="1.35"
         strokeLinecap="square"
       />
     </svg>

@@ -15,35 +15,44 @@ function formatCountdown(ms: number): string {
   return [h, m, s].map((n) => String(n).padStart(2, "0")).join(":");
 }
 
-/** 성 토마스 상징 — 삼각자(set square) 라인 아이콘 */
+/** 성 토마스 상징 — 목수 삼각자 / 트라이스퀘어(L자 자) */
 function SetSquareMark() {
   return (
     <svg
-      width="26"
-      height="26"
+      width="28"
+      height="28"
       viewBox="0 0 24 24"
       fill="none"
       className="shrink-0 text-white"
       aria-hidden
     >
+      {/* L자 몸통(두께감) — 긴 세로 날 + 짧은 가로 혀 */}
       <path
-        d="M4.5 3.5v17h17"
+        d="M5 2.5h4.2v13.3H21.5V20H5V2.5Z"
         stroke="currentColor"
-        strokeWidth="1.7"
+        strokeWidth="1.55"
+        strokeLinejoin="miter"
+      />
+      {/* 안쪽 단으로 자(tool) 형태 강조 */}
+      <path
+        d="M7.6 5v12.4H18.8"
+        stroke="currentColor"
+        strokeWidth="1.35"
         strokeLinecap="square"
         strokeLinejoin="miter"
       />
+      {/* 눈금 — 수직 날 */}
       <path
-        d="M4.5 3.5 21.5 20.5"
+        d="M5 6.5h1.6M5 9.5h1.6M5 12.5h1.6M5 15.5h1.6"
         stroke="currentColor"
-        strokeWidth="1.7"
+        strokeWidth="1.2"
         strokeLinecap="square"
       />
-      {/* 눈금 */}
+      {/* 눈금 — 수평 혀 */}
       <path
-        d="M4.5 8h2M4.5 12.5h2M4.5 17h2M9 20.5v-2M13.5 20.5v-2M18 20.5v-2"
+        d="M11 20v-1.6M14.5 20v-1.6M18 20v-1.6"
         stroke="currentColor"
-        strokeWidth="1.3"
+        strokeWidth="1.2"
         strokeLinecap="square"
       />
     </svg>
