@@ -105,6 +105,7 @@ export function DomaHome() {
           <>
             <ArenaBar
               arena={INITIAL_ARENA}
+              opinions={opinions}
               nexusPercent={nexusPercent}
               aegisPercent={aegisPercent}
               focus={focusSide}
@@ -117,6 +118,7 @@ export function DomaHome() {
               activeTab={feedTab}
               onTabChange={setFeedTab}
               focusSide={focusSide}
+              peekCount={2}
             />
           </>
         ) : null}

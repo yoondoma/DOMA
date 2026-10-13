@@ -130,10 +130,10 @@ export function Header({ endsAt, onOpenHistory, onOpenSearch }: HeaderProps) {
         <div className="flex flex-col items-center">
           <PenSpearMark />
 
-          <h1 className="mt-1 flex items-baseline justify-center gap-1 font-[family-name:var(--font-brand)] text-[32px] font-semibold leading-none tracking-[0.14em] text-white">
+          <h1 className="mt-1 flex items-baseline justify-center font-[family-name:var(--font-brand)] text-[32px] font-semibold leading-none tracking-[0.22em] text-white">
             <span>DOMA</span>
             <span
-              className="translate-y-[-1px] font-[family-name:var(--font-space-grotesk)] text-[12px] font-semibold tracking-[0.06em] text-muted"
+              className="ml-[0.12em] translate-y-[-1px] font-[family-name:var(--font-space-grotesk)] text-[12px] font-semibold tracking-[0.04em] text-muted"
               title="Korea server"
             >
               .kr
@@ -142,7 +142,7 @@ export function Header({ endsAt, onOpenHistory, onOpenSearch }: HeaderProps) {
 
           <time
             dateTime={endsAt}
-            className="mt-1.5 font-mono text-[17px] font-semibold tabular-nums tracking-[0.14em] text-timer"
+            className="mt-1 font-mono text-[12px] font-medium tabular-nums tracking-[0.12em] text-timer"
             aria-label={`남은 시간 ${remaining}`}
           >
             {remaining}

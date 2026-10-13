@@ -10,8 +10,9 @@ type OpinionFeedProps = {
   opinions: Opinion[];
   activeTab: FeedTab;
   onTabChange: (tab: FeedTab) => void;
-  /** 아레나에서 고른 진영 — 방패면 흰 톤 */
   focusSide: Side;
+  /** 첫 화면에 보이는 실시간 글 개수 */
+  peekCount?: number;
 };
 
 const TABS: { id: FeedTab; label: string; icon?: "spear" | "shield" }[] = [
@@ -33,13 +34,7 @@ function filterOpinions(opinions: Opinion[], tab: FeedTab): Opinion[] {
   return opinions.filter((o) => o.side === (tab as Side));
 }
 
-function topOpinionForSide(opinions: Opinion[], side: Side): Opinion | null {
-  const list = opinions.filter((o) => o.side === side);
-  if (list.length === 0) return null;
-  return [...list].sort((a, b) => b.likes - a.likes)[0] ?? null;
-}
-
-function HeartMark({ className = "text-muted" }: { className?: string }) {
+function HeartMark({ className }: { className: string }) {
   return (
     <svg
       width="12"
@@ -59,19 +54,95 @@ function HeartMark({ className = "text-muted" }: { className?: string }) {
   );
 }
 
-/** 스크롤 아래: Top 하이라이트 + 피드 (첫 화면에는 없음) */
+function OpinionRow({
+  op,
+  light,
+  index,
+}: {
+  op: Opinion;
+  light: boolean;
+  index: number;
+}) {
+  return (
+    <li
+      className={`feed-item border-b px-4 py-3 ${
+        light
+          ? op.isTopMinority
+            ? "border-l-2 border-l-black border-b-black/10 bg-neutral-50"
+            : "border-black/10"
+          : op.isTopMinority
+            ? "border-l-2 border-l-white border-b-white/12 bg-white/[0.03]"
+            : "border-white/10"
+      }`}
+      style={{ animationDelay: `${index * 30}ms` }}
+    >
+      <div className="mb-1 flex items-center gap-2">
+        <div
+          className={`flex size-8 shrink-0 items-center justify-center border text-[10px] font-bold ${
+            light
+              ? "border-black/30 text-neutral-500"
+              : "border-white/30 text-muted"
+          }`}
+          aria-hidden
+        >
+          {op.author.slice(0, 1).toUpperCase()}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <span
+              className={`truncate text-[13px] font-semibold ${
+                light ? "text-black" : "text-white"
+              }`}
+            >
+              @{op.author}
+            </span>
+            <SideBadge side={op.side} />
+            {op.isTopMinority ? (
+              <span
+                className={`shrink-0 text-[10px] font-bold tracking-wide ${
+                  light ? "text-neutral-600" : "text-white/80"
+                }`}
+              >
+                · TOP 소수
+              </span>
+            ) : null}
+          </div>
+        </div>
+        <span
+          className={`inline-flex shrink-0 items-center gap-1 text-[11px] tabular-nums ${
+            light ? "text-neutral-500" : "text-muted"
+          }`}
+        >
+          <HeartMark className={light ? "text-neutral-500" : "text-muted"} />
+          {op.likes}
+        </span>
+      </div>
+      <p
+        className={`pl-10 text-[14px] leading-[1.45] ${
+          light ? "text-black/90" : "text-white/95"
+        }`}
+      >
+        {op.text}
+      </p>
+    </li>
+  );
+}
+
+/** Top 아래: 실시간 글 peek + 스크롤 시 전체 피드 */
 export function OpinionFeed({
   opinions,
   activeTab,
   onTabChange,
   focusSide,
+  peekCount = 2,
 }: OpinionFeedProps) {
   const light = focusSide === "AEGIS";
-  const top = useMemo(
-    () => topOpinionForSide(opinions, focusSide),
-    [opinions, focusSide],
+  const visible = useMemo(
+    () => filterOpinions(opinions, activeTab),
+    [opinions, activeTab],
   );
-  const visible = filterOpinions(opinions, activeTab);
+  const peek = visible.slice(0, peekCount);
+  const rest = visible.slice(peekCount);
 
   return (
     <section
@@ -82,72 +153,10 @@ export function OpinionFeed({
       }`}
       aria-label="의견 피드"
     >
-      <div className="px-4 py-3">
-        <p
-          className={`mb-2 text-[10px] font-bold tracking-[0.18em] ${
-            light ? "text-neutral-500" : "text-muted"
-          }`}
-        >
-          {focusSide === "NEXUS" ? "창 · TOP 의견" : "방패 · TOP 의견"}
-        </p>
-        {top ? (
-          <article
-            className={`border px-3 py-3 ${
-              light
-                ? "border-black/20 bg-neutral-50"
-                : "border-white/20 bg-white/[0.02]"
-            }`}
-          >
-            <div className="mb-1.5 flex items-center gap-2">
-              <span
-                className={`text-[10px] font-bold tracking-[0.16em] ${
-                  light ? "text-neutral-500" : "text-muted"
-                }`}
-              >
-                TOP
-              </span>
-              <SideBadge side={top.side} />
-              <span
-                className={`truncate text-[13px] font-semibold ${
-                  light ? "text-black" : "text-white"
-                }`}
-              >
-                @{top.author}
-              </span>
-              <span
-                className={`ml-auto inline-flex items-center gap-1 text-[11px] tabular-nums ${
-                  light ? "text-neutral-500" : "text-muted"
-                }`}
-              >
-                <HeartMark className={light ? "text-neutral-500" : "text-muted"} />
-                {top.likes}
-              </span>
-            </div>
-            <p
-              className={`text-[14px] leading-[1.45] ${
-                light ? "text-black/90" : "text-white/95"
-              }`}
-            >
-              “{top.text}”
-            </p>
-          </article>
-        ) : (
-          <p
-            className={`py-4 text-center text-sm ${
-              light ? "text-neutral-500" : "text-muted"
-            }`}
-          >
-            이 진영의 인기 의견이 아직 없습니다.
-          </p>
-        )}
-      </div>
-
       <div
-        className={`flex border-y ${
-          light
-            ? "sticky top-[124px] z-30 border-black/10 bg-white/95"
-            : "sticky top-[124px] z-30 border-white/12 bg-black/90"
-        } backdrop-blur-md`}
+        className={`flex border-b ${
+          light ? "border-black/10 bg-white" : "border-white/12 bg-black"
+        }`}
         role="tablist"
         aria-label="의견 필터"
       >
@@ -161,7 +170,7 @@ export function OpinionFeed({
               aria-selected={selected}
               aria-label={tab.label}
               onClick={() => onTabChange(tab.id)}
-              className={`flex min-h-10 flex-1 items-center justify-center gap-1 px-1 text-[12px] font-semibold tracking-wide transition-colors ${
+              className={`flex min-h-9 flex-1 items-center justify-center gap-1 px-1 text-[12px] font-semibold tracking-wide ${
                 selected
                   ? light
                     ? "border-b-2 border-black text-black"
@@ -179,82 +188,53 @@ export function OpinionFeed({
         })}
       </div>
 
-      <ul>
-        {visible.length === 0 ? (
+      <p
+        className={`px-4 py-2 text-[10px] font-bold tracking-[0.16em] ${
+          light ? "text-neutral-500" : "text-muted"
+        }`}
+      >
+        실시간
+      </p>
+
+      <ul aria-label="실시간 미리보기">
+        {peek.length === 0 ? (
           <li
-            className={`px-4 py-12 text-center text-sm ${
+            className={`px-4 py-8 text-center text-sm ${
               light ? "text-neutral-500" : "text-muted"
             }`}
           >
-            이 탭에 표시할 진술이 없습니다.
+            아직 올라온 글이 없습니다.
           </li>
         ) : (
-          visible.map((op, index) => (
-            <li
-              key={op.id}
-              className={`feed-item border-b px-4 py-3 ${
-                light
-                  ? op.isTopMinority
-                    ? "border-l-2 border-l-black border-b-black/10 bg-neutral-50"
-                    : "border-black/10"
-                  : op.isTopMinority
-                    ? "border-l-2 border-l-white border-b-white/12 bg-white/[0.03]"
-                    : "border-white/10"
-              }`}
-              style={{ animationDelay: `${index * 30}ms` }}
-            >
-              <div className="mb-1 flex items-center gap-2">
-                <div
-                  className={`flex size-8 shrink-0 items-center justify-center border text-[10px] font-bold ${
-                    light
-                      ? "border-black/30 text-neutral-500"
-                      : "border-white/30 text-muted"
-                  }`}
-                  aria-hidden
-                >
-                  {op.author.slice(0, 1).toUpperCase()}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span
-                      className={`truncate text-[13px] font-semibold ${
-                        light ? "text-black" : "text-white"
-                      }`}
-                    >
-                      @{op.author}
-                    </span>
-                    <SideBadge side={op.side} />
-                    {op.isTopMinority ? (
-                      <span
-                        className={`shrink-0 text-[10px] font-bold tracking-wide ${
-                          light ? "text-neutral-600" : "text-white/80"
-                        }`}
-                      >
-                        · TOP 소수
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-                <span
-                  className={`inline-flex shrink-0 items-center gap-1 text-[11px] tabular-nums ${
-                    light ? "text-neutral-500" : "text-muted"
-                  }`}
-                >
-                  <HeartMark className={light ? "text-neutral-500" : "text-muted"} />
-                  {op.likes}
-                </span>
-              </div>
-              <p
-                className={`pl-10 text-[14px] leading-[1.45] ${
-                  light ? "text-black/90" : "text-white/95"
-                }`}
-              >
-                {op.text}
-              </p>
-            </li>
+          peek.map((op, index) => (
+            <OpinionRow key={op.id} op={op} light={light} index={index} />
           ))
         )}
       </ul>
+
+      {rest.length > 0 ? (
+        <>
+          <p
+            className={`border-t px-4 py-2 text-center text-[11px] tracking-wide ${
+              light
+                ? "border-black/10 text-neutral-400"
+                : "border-white/10 text-dim"
+            }`}
+          >
+            ↓ 더 스크롤하면 이어집니다
+          </p>
+          <ul aria-label="전체 피드">
+            {rest.map((op, index) => (
+              <OpinionRow
+                key={op.id}
+                op={op}
+                light={light}
+                index={index + peekCount}
+              />
+            ))}
+          </ul>
+        </>
+      ) : null}
     </section>
   );
 }
