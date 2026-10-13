@@ -8,6 +8,7 @@ import { BottomNav, type NavTab } from "@/components/BottomNav";
 import { ComposeChoice } from "@/components/ComposeChoice";
 import { Header } from "@/components/Header";
 import { OpinionFeed } from "@/components/OpinionFeed";
+import { ProfileScreen } from "@/components/ProfileScreen";
 import { PullRefresh } from "@/components/PullRefresh";
 import { SearchSheet } from "@/components/SearchSheet";
 import { SupportBar } from "@/components/SupportBar";
@@ -230,12 +231,7 @@ export function DomaHome() {
           />
         ) : null}
 
-        {navTab === "profile" ? (
-          <MockPanel
-            title="프로필"
-            body="로그인·진영 기록은 이후 단계에서 붙입니다. (목업)"
-          />
-        ) : null}
+        {navTab === "profile" ? <ProfileScreen /> : null}
 
         <div
           className="h-[calc(84px+3.5rem+env(safe-area-inset-bottom))]"
