@@ -6,6 +6,7 @@ import { BattleCalendar } from "@/components/BattleCalendar";
 import { BottomNav, type NavTab } from "@/components/BottomNav";
 import { Header } from "@/components/Header";
 import { PullRefresh } from "@/components/PullRefresh";
+import { SearchSheet } from "@/components/SearchSheet";
 import { SupportBar } from "@/components/SupportBar";
 import { TouchGate } from "@/components/TouchGate";
 import { WieldBar } from "@/components/WieldBar";
@@ -60,6 +61,7 @@ export function DomaHome() {
   const [refreshing, setRefreshing] = useState(false);
   const [entered, setEntered] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const refreshLock = useRef(false);
 
   const lightShell = navTab === "home" && arenaView === "AEGIS";
@@ -154,7 +156,7 @@ export function DomaHome() {
           refreshing={refreshing}
           onRefresh={handleRefresh}
           onOpenHistory={() => setCalendarOpen(true)}
-          onOpenSearch={() => showToast("검색 (목업)")}
+          onOpenSearch={() => setSearchOpen(true)}
         />
 
         {navTab === "home" ? (
@@ -234,6 +236,7 @@ export function DomaHome() {
         open={calendarOpen}
         onClose={() => setCalendarOpen(false)}
       />
+      <SearchSheet open={searchOpen} onClose={() => setSearchOpen(false)} />
 
       <WieldBar
         open={composeOpen}

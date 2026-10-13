@@ -125,22 +125,14 @@ export function Header({
             refreshing ? "logo-refresh" : ""
           }`}
         >
-          {/* 마크 위 · DOMA 아래 (세로·중앙) */}
+          {/* 마크 위 · DOMA 한가운데 (메인에서는 .kr 없음) */}
           <DomaMark size={40} light={light} />
           <h1
-            className={`mt-2 flex items-baseline justify-center font-[family-name:var(--font-brand)] text-[28px] font-semibold leading-none tracking-[0.28em] ${
+            className={`mt-2 text-center font-[family-name:var(--font-brand)] text-[28px] font-semibold leading-none tracking-[0.28em] ${
               light ? "text-black" : "text-white"
             }`}
           >
-            <span>DOMA</span>
-            <span
-              className={`ml-[0.08em] translate-y-[-2px] font-[family-name:var(--font-brand)] text-[11px] font-semibold tracking-[0.04em] ${
-                light ? "text-neutral-500" : "text-white/70"
-              }`}
-              title="Korea server"
-            >
-              .kr
-            </span>
+            DOMA
           </h1>
 
           {refreshing ? (
