@@ -6,18 +6,24 @@ import { BattleCalendar } from "@/components/BattleCalendar";
 import type { CalendarPanel } from "@/components/BattleCalendar";
 import { BottomNav, type NavTab } from "@/components/BottomNav";
 import { ComposeChoice } from "@/components/ComposeChoice";
-import { Header } from "@/components/Header";
+import { Header, type HomeSurface } from "@/components/Header";
 import { MessagesScreen } from "@/components/MessagesScreen";
 import { NotificationsScreen } from "@/components/NotificationsScreen";
 import { ProfileScreen } from "@/components/ProfileScreen";
 import { PullRefresh } from "@/components/PullRefresh";
 import { SearchSheet } from "@/components/SearchSheet";
+import { ShareResultCard } from "@/components/ShareResultCard";
 import { SupportBar } from "@/components/SupportBar";
 import { TomorrowCompose } from "@/components/TomorrowCompose";
+import { TomorrowField } from "@/components/TomorrowField";
 import { TouchGate } from "@/components/TouchGate";
 import { WieldBar } from "@/components/WieldBar";
 import { INITIAL_ARENA, INITIAL_OPINIONS } from "@/lib/mock-data";
-import type { TomorrowCandidate } from "@/lib/tomorrow-topics";
+import { MOCK_SHARE_RESULT } from "@/lib/share-result-mock";
+import {
+  INITIAL_TOMORROW_TOPICS,
+  type TomorrowCandidate,
+} from "@/lib/tomorrow-topics";
 import type { ArenaView, Opinion, Side } from "@/lib/types";
 
 function bumpPercents(
@@ -39,9 +45,13 @@ export function DomaHome() {
   const [choiceOpen, setChoiceOpen] = useState(false);
   const [todayComposeOpen, setTodayComposeOpen] = useState(false);
   const [tomorrowComposeOpen, setTomorrowComposeOpen] = useState(false);
-  const [tomorrowExtras, setTomorrowExtras] = useState<TomorrowCandidate[]>(
-    [],
+  const [tomorrowCandidates, setTomorrowCandidates] = useState<
+    TomorrowCandidate[]
+  >(INITIAL_TOMORROW_TOPICS);
+  const [supportedTomorrowId, setSupportedTomorrowId] = useState<string | null>(
+    null,
   );
+  const [homeSurface, setHomeSurface] = useState<HomeSurface>("today");
   const [toast, setToast] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [entered, setEntered] = useState(false);
@@ -49,6 +59,7 @@ export function DomaHome() {
   const [calendarPanel, setCalendarPanel] =
     useState<CalendarPanel>("history");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const refreshLock = useRef(false);
 
   const openCalendar = (panel: CalendarPanel = "history") => {
@@ -56,7 +67,8 @@ export function DomaHome() {
     setCalendarOpen(true);
   };
 
-  const lightShell = navTab === "home" && arenaView === "AEGIS";
+  const lightShell =
+    navTab === "home" && homeSurface === "today" && arenaView === "AEGIS";
 
   const showToast = useCallback((message: string) => {
     setToast(message);
@@ -126,14 +138,42 @@ export function DomaHome() {
       id: `tm-you-${Date.now()}`,
       title,
       votes: 1,
+      stewards: 1,
+      note: imageName
+        ? "필드에 새로 제안된 후보입니다. (이미지 첨부)"
+        : "필드에 새로 제안된 후보입니다.",
     };
-    setTomorrowExtras((prev) => [item, ...prev]);
+    setTomorrowCandidates((prev) => [item, ...prev]);
     setNavTab("home");
+    setHomeSurface("tomorrow");
     showToast(
       imageName
-        ? "내일 주제·이미지가 제안되었습니다"
-        : "내일 주제가 제안되었습니다",
+        ? "내일 필드에 주제·이미지가 올라갔습니다"
+        : "내일 필드에 주제가 올라갔습니다",
     );
+  };
+
+  const handleSupportTomorrow = (id: string) => {
+    if (supportedTomorrowId === id) return;
+    setTomorrowCandidates((prev) =>
+      prev.map((c) => {
+        if (c.id === id) {
+          return { ...c, votes: c.votes + 1, stewards: c.stewards + 1 };
+        }
+        if (c.id === supportedTomorrowId) {
+          return {
+            ...c,
+            votes: Math.max(0, c.votes - 1),
+            stewards: Math.max(0, c.stewards - 1),
+          };
+        }
+        return c;
+      }),
+    );
+    setSupportedTomorrowId(id);
+    const title = tomorrowCandidates.find((c) => c.id === id)?.title ?? "";
+    const short = title.length > 18 ? `${title.slice(0, 18)}…` : title;
+    showToast(`「${short}」를 지지·이끕니다`);
   };
 
   const handleNavChange = (tab: NavTab) => {
@@ -143,6 +183,7 @@ export function DomaHome() {
     }
     if (tab === "home") {
       setArenaView("intro");
+      setHomeSurface("today");
     }
     setNavTab(tab);
   };
@@ -168,11 +209,18 @@ export function DomaHome() {
           tone={lightShell ? "light" : "dark"}
           refreshing={refreshing}
           onRefresh={handleRefresh}
-          onOpenHistory={() => openCalendar("history")}
+          onOpenHistory={() =>
+            openCalendar(homeSurface === "tomorrow" ? "tomorrow" : "history")
+          }
           onOpenSearch={() => setSearchOpen(true)}
+          surface={homeSurface}
+          onSurfaceChange={(s) => {
+            setHomeSurface(s);
+            if (s === "today") setArenaView("intro");
+          }}
         />
 
-        {navTab === "home" ? (
+        {navTab === "home" && homeSurface === "today" ? (
           <PullRefresh
             refreshing={refreshing}
             onRefresh={handleRefresh}
@@ -184,18 +232,34 @@ export function DomaHome() {
               view={arenaView}
               onChangeView={setArenaView}
             />
-            {/* 초기=주제만. 피드·의견은 진영 펼침 후에 */}
           </PullRefresh>
+        ) : null}
+
+        {navTab === "home" && homeSurface === "tomorrow" ? (
+          <TomorrowField
+            candidates={tomorrowCandidates}
+            supportedId={supportedTomorrowId}
+            onSupport={handleSupportTomorrow}
+            onPropose={() => setTomorrowComposeOpen(true)}
+          />
         ) : null}
 
         {navTab === "messages" ? <MessagesScreen /> : null}
 
-        {navTab === "alerts" ? <NotificationsScreen /> : null}
+        {navTab === "alerts" ? (
+          <NotificationsScreen onOpenShareCard={() => setShareOpen(true)} />
+        ) : null}
 
-        {navTab === "profile" ? <ProfileScreen /> : null}
+        {navTab === "profile" ? (
+          <ProfileScreen onOpenShareCard={() => setShareOpen(true)} />
+        ) : null}
 
         <div
-          className="h-[calc(84px+3.5rem+env(safe-area-inset-bottom))]"
+          className={
+            navTab === "home" && homeSurface === "today"
+              ? "h-[calc(84px+3.5rem+env(safe-area-inset-bottom))]"
+              : "h-[calc(3.5rem+env(safe-area-inset-bottom))]"
+          }
           aria-hidden
         />
       </div>
@@ -204,7 +268,10 @@ export function DomaHome() {
         <div
           className="fixed inset-x-0 z-[55] flex justify-center px-4"
           style={{
-            bottom: "calc(84px + 3.5rem + env(safe-area-inset-bottom) + 8px)",
+            bottom:
+              navTab === "home" && homeSurface === "today"
+                ? "calc(84px + 3.5rem + env(safe-area-inset-bottom) + 8px)"
+                : "calc(3.5rem + env(safe-area-inset-bottom) + 8px)",
           }}
           role="status"
         >
@@ -220,7 +287,7 @@ export function DomaHome() {
         </div>
       ) : null}
 
-      {navTab === "home" ? (
+      {navTab === "home" && homeSurface === "today" ? (
         <SupportBar
           nexusPercent={nexusPercent}
           aegisPercent={aegisPercent}
@@ -234,7 +301,9 @@ export function DomaHome() {
       <BattleCalendar
         open={calendarOpen}
         initialPanel={calendarPanel}
-        tomorrowExtras={tomorrowExtras}
+        tomorrowCandidates={tomorrowCandidates}
+        onSupportTomorrow={handleSupportTomorrow}
+        supportedTomorrowId={supportedTomorrowId}
         onClose={() => setCalendarOpen(false)}
         onVotedTomorrow={(title) => {
           const short = title.length > 20 ? `${title.slice(0, 20)}…` : title;
@@ -249,7 +318,10 @@ export function DomaHome() {
         onPick={(kind) => {
           setChoiceOpen(false);
           if (kind === "today") setTodayComposeOpen(true);
-          else setTomorrowComposeOpen(true);
+          else {
+            setHomeSurface("tomorrow");
+            setTomorrowComposeOpen(true);
+          }
         }}
       />
       <WieldBar
@@ -262,6 +334,12 @@ export function DomaHome() {
         open={tomorrowComposeOpen}
         onClose={() => setTomorrowComposeOpen(false)}
         onSubmit={handleSubmitTomorrow}
+      />
+      <ShareResultCard
+        open={shareOpen}
+        result={MOCK_SHARE_RESULT}
+        onClose={() => setShareOpen(false)}
+        onToast={showToast}
       />
       <BottomNav active={navTab} onChange={handleNavChange} />
     </div>

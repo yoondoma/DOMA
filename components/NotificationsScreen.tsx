@@ -62,8 +62,15 @@ function KindMark({ kind }: { kind: AppNotification["kind"] }) {
   );
 }
 
+type NotificationsScreenProps = {
+  /** 결과 확정(전투) 알림 → 증명 카드 */
+  onOpenShareCard?: () => void;
+};
+
 /** Threads/X형 알림 리스트 — 가볍게 */
-export function NotificationsScreen() {
+export function NotificationsScreen({
+  onOpenShareCard,
+}: NotificationsScreenProps) {
   return (
     <section
       className="mx-auto max-w-[560px] bg-black text-white"
@@ -81,41 +88,71 @@ export function NotificationsScreen() {
         </p>
       ) : (
         <ul aria-label="알림 목록">
-          {APP_NOTIFICATIONS.map((n) => (
-            <li
-              key={n.id}
-              className={`flex gap-3 border-b border-white/10 px-4 py-3.5 ${
-                n.unread ? "bg-white/[0.03]" : ""
-              }`}
-            >
-              <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center border border-white/20">
-                <KindMark kind={n.kind} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold tracking-[0.14em] text-muted">
-                    {kindLabel(n.kind)}
-                  </span>
-                  <span className="ml-auto text-[11px] text-muted">
-                    {n.timeLabel}
-                  </span>
+          {APP_NOTIFICATIONS.map((n) => {
+            const opensShare =
+              Boolean(onOpenShareCard) &&
+              n.kind === "battle" &&
+              n.text.includes("결과 확정");
+            const body = (
+              <>
+                <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center border border-white/20">
+                  <KindMark kind={n.kind} />
                 </div>
-                <p className="mt-1 text-[14px] leading-[1.45] text-white/95">
-                  {n.actor !== "DOMA" ? (
-                    <span className="font-semibold">@{n.actor}</span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold tracking-[0.14em] text-muted">
+                      {kindLabel(n.kind)}
+                    </span>
+                    <span className="ml-auto text-[11px] text-muted">
+                      {n.timeLabel}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[14px] leading-[1.45] text-white/95">
+                    {n.actor !== "DOMA" ? (
+                      <span className="font-semibold">@{n.actor}</span>
+                    ) : null}
+                    {n.actor !== "DOMA" ? " " : null}
+                    {n.text}
+                  </p>
+                  {opensShare ? (
+                    <p className="mt-1.5 text-[11px] tracking-[0.08em] text-muted">
+                      탭하여 증명 카드 · 캡처
+                    </p>
                   ) : null}
-                  {n.actor !== "DOMA" ? " " : null}
-                  {n.text}
-                </p>
-              </div>
-              {n.unread ? (
-                <span
-                  className="mt-2 size-2 shrink-0 rounded-full bg-white"
-                  aria-label="읽지 않음"
-                />
-              ) : null}
-            </li>
-          ))}
+                </div>
+                {n.unread ? (
+                  <span
+                    className="mt-2 size-2 shrink-0 rounded-full bg-white"
+                    aria-label="읽지 않음"
+                  />
+                ) : null}
+              </>
+            );
+            return (
+              <li key={n.id}>
+                {opensShare ? (
+                  <button
+                    type="button"
+                    onClick={onOpenShareCard}
+                    className={`flex w-full gap-3 border-b border-white/10 px-4 py-3.5 text-left active:bg-white/[0.06] ${
+                      n.unread ? "bg-white/[0.03]" : ""
+                    }`}
+                    aria-label="결과 증명 카드 열기"
+                  >
+                    {body}
+                  </button>
+                ) : (
+                  <div
+                    className={`flex gap-3 border-b border-white/10 px-4 py-3.5 ${
+                      n.unread ? "bg-white/[0.03]" : ""
+                    }`}
+                  >
+                    {body}
+                  </div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>

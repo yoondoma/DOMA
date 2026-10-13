@@ -11,6 +11,10 @@ import {
 
 type ProfileTab = "posts" | "battles";
 
+type ProfileScreenProps = {
+  onOpenShareCard?: () => void;
+};
+
 function HeartMark() {
   return (
     <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
@@ -63,7 +67,7 @@ function AffinityBar({
 }
 
 /** Threads/X형 기본 프로필 + 전투 기록·성향 */
-export function ProfileScreen() {
+export function ProfileScreen({ onOpenShareCard }: ProfileScreenProps) {
   const [tab, setTab] = useState<ProfileTab>("posts");
   const a = PROFILE_AFFINITY;
   const u = PROFILE_USER;
@@ -254,6 +258,15 @@ export function ProfileScreen() {
                       {asChallenger ? "도전자" : "방어자"}로 참전 · 결과{" "}
                       {b.winnerPercent}%
                     </p>
+                    {onOpenShareCard && b.round === 411 ? (
+                      <button
+                        type="button"
+                        onClick={onOpenShareCard}
+                        className="mt-2 border border-white/30 px-2.5 py-1 text-[11px] font-bold tracking-[0.1em] text-white"
+                      >
+                        증명 카드
+                      </button>
+                    ) : null}
                   </div>
                 </div>
               </li>

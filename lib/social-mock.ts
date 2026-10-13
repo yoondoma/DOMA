@@ -101,7 +101,7 @@ export const APP_NOTIFICATIONS: AppNotification[] = [
     id: "n5",
     kind: "battle",
     actor: "DOMA",
-    text: "제 411 도마 결과가 확정되었습니다. (방어자 승)",
+    text: "결과 확정 · 제 411 도마 증명 카드를 확인하세요",
     timeLabel: "어제",
   },
 ];

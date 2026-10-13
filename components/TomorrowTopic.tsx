@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   INITIAL_TOMORROW_TOPICS,
   type TomorrowCandidate,
@@ -8,32 +8,25 @@ import {
 
 type TomorrowTopicProps = {
   onVoted?: (title: string) => void;
-  /** 달력 시트 안 임베드 — 항상 후보 목록 */
   embedded?: boolean;
-  /** (+)로 제안된 주제 병합 */
-  extras?: TomorrowCandidate[];
+  /** 상위(필드)와 공유하는 후보 */
+  candidates?: TomorrowCandidate[];
+  onSupport?: (id: string) => void;
+  supportedId?: string | null;
 };
 
-/** 내일의 주제 후보·투표 (목). 본문 큰 카드가 아니라 달력「미래」탭에서 사용 */
+/** 달력「미래」탭용 압축 목록 — 본 필드는 TomorrowField */
 export function TomorrowTopic({
   onVoted,
   embedded = false,
-  extras,
+  candidates: controlled,
+  onSupport,
+  supportedId = null,
 }: TomorrowTopicProps) {
-  const [candidates, setCandidates] = useState<TomorrowCandidate[]>(
-    INITIAL_TOMORROW_TOPICS,
-  );
+  const [local, setLocal] = useState<TomorrowCandidate[]>(INITIAL_TOMORROW_TOPICS);
   const [picked, setPicked] = useState<string | null>(null);
-  const [votedId, setVotedId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!extras?.length) return;
-    setCandidates((prev) => {
-      const ids = new Set(prev.map((c) => c.id));
-      const add = extras.filter((e) => !ids.has(e.id));
-      return add.length ? [...add, ...prev] : prev;
-    });
-  }, [extras]);
+  const candidates = controlled ?? local;
 
   const total = useMemo(
     () => candidates.reduce((sum, c) => sum + c.votes, 0),
@@ -46,13 +39,16 @@ export function TomorrowTopic({
   );
 
   const handleVote = () => {
-    if (!picked || votedId) return;
-    setCandidates((prev) =>
-      prev.map((c) =>
-        c.id === picked ? { ...c, votes: c.votes + 1 } : c,
-      ),
-    );
-    setVotedId(picked);
+    if (!picked || supportedId === picked) return;
+    if (onSupport) {
+      onSupport(picked);
+    } else {
+      setLocal((prev) =>
+        prev.map((c) =>
+          c.id === picked ? { ...c, votes: c.votes + 1 } : c,
+        ),
+      );
+    }
     const title = candidates.find((c) => c.id === picked)?.title ?? "";
     onVoted?.(title);
   };
@@ -74,26 +70,24 @@ export function TomorrowTopic({
           내일의 주제 정하기
         </h3>
         <p className="mt-1.5 text-[13px] leading-[1.45] text-white/70">
-          후보에 한 표를 던져 내일 아레나 주제를 고릅니다.
+          메인 「내일」 필드와 같은 후보입니다. 여기서도 지지할 수 있습니다.
         </p>
 
         <ul className="mt-4 space-y-2" aria-label="내일 주제 후보">
           {ranked.map((c, i) => {
             const pct = total > 0 ? Math.round((c.votes / total) * 100) : 0;
             const selected = picked === c.id;
-            const locked = votedId != null;
             return (
               <li key={c.id}>
                 <button
                   type="button"
-                  disabled={locked}
                   onClick={() => setPicked(c.id)}
                   aria-pressed={selected}
                   className={`relative w-full overflow-hidden border px-3 py-3 text-left transition-colors ${
                     selected
                       ? "border-white bg-white/10"
                       : "border-white/20 bg-transparent"
-                  } ${locked && votedId !== c.id ? "opacity-55" : ""}`}
+                  }`}
                 >
                   <span
                     className="absolute inset-y-0 left-0 bg-white/10"
@@ -110,7 +104,7 @@ export function TomorrowTopic({
                       </span>
                       <span className="mt-1 block text-[11px] tabular-nums text-muted">
                         {c.votes.toLocaleString("ko-KR")}표 · {pct}%
-                        {votedId === c.id ? " · 내 표" : ""}
+                        {supportedId === c.id ? " · 내 지지" : ""}
                       </span>
                     </span>
                   </span>
@@ -123,10 +117,10 @@ export function TomorrowTopic({
         <button
           type="button"
           onClick={handleVote}
-          disabled={!picked || votedId != null}
+          disabled={!picked || supportedId === picked}
           className="mt-3 w-full border border-white bg-white px-3 py-2.5 text-[13px] font-bold tracking-[0.1em] text-black disabled:border-white/25 disabled:bg-transparent disabled:text-muted"
         >
-          {votedId ? "투표 완료" : "이 주제로 투표"}
+          {supportedId && picked === supportedId ? "지지함" : "이 주제 지지"}
         </button>
       </div>
     </section>

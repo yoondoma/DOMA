@@ -157,7 +157,7 @@ export function ArenaBar({
         <div
           className={`${
             selected
-              ? "sticky top-[3.5rem] z-30 border-b px-5 pb-3 pt-3"
+              ? "sticky top-[5.75rem] z-30 border-b px-5 pb-3 pt-3"
               : "flex min-h-[42dvh] flex-col justify-center px-5 pb-8 pt-10"
           } ${
             light

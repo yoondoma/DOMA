@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+export type HomeSurface = "today" | "tomorrow";
+
 type HeaderProps = {
   endsAt: string;
   /** 방어자 탭일 때 흰 톤 */
@@ -10,6 +12,9 @@ type HeaderProps = {
   onRefresh?: () => void;
   onOpenHistory?: () => void;
   onOpenSearch?: () => void;
+  /** 오늘 아레나 | 내일 필드 — 1급 전환 */
+  surface?: HomeSurface;
+  onSurfaceChange?: (surface: HomeSurface) => void;
 };
 
 function formatCountdown(ms: number): string {
@@ -62,7 +67,7 @@ function SearchIcon() {
   );
 }
 
-/** 메인: 마크 없음 · DOMA 텍스트만 절제 · 탭/pull 새로고침 */
+/** 메인: 마크 없음 · 오늘/내일 1급 전환 · DOMA 절제 · 탭/pull 새로고침 */
 export function Header({
   endsAt,
   tone = "dark",
@@ -70,6 +75,8 @@ export function Header({
   onRefresh,
   onOpenHistory,
   onOpenSearch,
+  surface = "today",
+  onSurfaceChange,
 }: HeaderProps) {
   const [remaining, setRemaining] = useState("--:--:--");
   const light = tone === "light";
@@ -98,10 +105,10 @@ export function Header({
           className={`flex size-10 shrink-0 items-center justify-center ${
             light ? "text-black" : "text-white"
           }`}
-            aria-label="시간 축 — 전투 기록과 내일의 주제"
-          >
-            <CalendarIcon />
-          </button>
+          aria-label="시간 축 — 전투 기록과 내일의 주제"
+        >
+          <CalendarIcon />
+        </button>
 
         <div className="flex min-w-0 flex-1 flex-col items-center justify-center">
           <button
@@ -150,6 +157,46 @@ export function Header({
           <SearchIcon />
         </button>
       </div>
+
+      {/* 오늘 | 내일 — 나란한 1급 서피스 */}
+      {onSurfaceChange ? (
+        <div
+          className="mx-auto grid max-w-[560px] grid-cols-2 border-t border-white/10"
+          role="tablist"
+          aria-label="오늘과 내일"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={surface === "today"}
+            onClick={() => onSurfaceChange("today")}
+            className={`py-2 text-[12px] font-bold tracking-[0.14em] ${
+              surface === "today"
+                ? light
+                  ? "border-b-2 border-black text-black"
+                  : "border-b-2 border-white text-white"
+                : "text-muted"
+            }`}
+          >
+            오늘
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={surface === "tomorrow"}
+            onClick={() => onSurfaceChange("tomorrow")}
+            className={`py-2 text-[12px] font-bold tracking-[0.14em] ${
+              surface === "tomorrow"
+                ? light
+                  ? "border-b-2 border-black text-black"
+                  : "border-b-2 border-white text-white"
+                : "text-muted"
+            }`}
+          >
+            내일
+          </button>
+        </div>
+      ) : null}
     </header>
   );
 }
