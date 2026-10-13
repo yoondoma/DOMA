@@ -79,9 +79,12 @@ export function OpinionFeed({ opinions }: OpinionFeedProps) {
       className="mx-auto max-w-[560px] border-t border-white/12 bg-black text-white"
       aria-label="의견 피드"
     >
-      <div className="border-b border-white/12 px-4 py-2">
+      <div className="border-b border-white/12 px-4 py-2.5">
         <p className="text-[10px] font-bold tracking-[0.18em] text-muted">
           현재 올라오는 의견
+        </p>
+        <p className="mt-0.5 text-[11px] text-white/45">
+          주제 아래 · 실시간 대화
         </p>
       </div>
       <ul aria-label="실시간 의견">

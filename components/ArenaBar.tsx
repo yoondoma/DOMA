@@ -149,80 +149,103 @@ export function ArenaBar({
       className={light ? "bg-white text-black" : "bg-black text-white"}
     >
       <div className="mx-auto max-w-[560px]">
-        <div className={`px-5 ${selected ? "pb-2 pt-3" : "pb-3 pt-5"}`}>
+        {/*
+          위: 주제·설명 — sticky로 자리 고정 (헤더 아래).
+          아래: 진영·펼침·피드가 그 아래 영역을 씀.
+        */}
+        <div
+          className={`sticky top-[3.5rem] z-30 border-b px-5 ${
+            selected ? "pb-3 pt-3" : "pb-5 pt-5"
+          } ${
+            light
+              ? "border-black/12 bg-white/96 backdrop-blur-md"
+              : "border-white/12 bg-black/96 backdrop-blur-md"
+          }`}
+          aria-label="오늘 주제 영역"
+        >
           <p
-            className={`text-center text-[11px] tracking-[0.18em] ${
+            className={`text-[11px] tracking-[0.18em] ${
               light ? "text-neutral-500" : "text-muted"
             }`}
           >
             제 {arena.round} 도마
           </p>
           <h2
-            className={`mt-1.5 text-center font-[family-name:var(--font-syne)] font-bold leading-snug tracking-tight ${
+            className={`mt-2 font-[family-name:var(--font-syne)] font-bold tracking-tight ${
               selected
-                ? "text-[17px] sm:text-[18px]"
-                : "mt-2 text-[22px] leading-[1.35] sm:text-[24px]"
+                ? "text-[18px] leading-[1.35] sm:text-[19px]"
+                : "text-[24px] leading-[1.32] sm:text-[26px]"
             } ${light ? "text-black" : "text-white"}`}
           >
             {arena.topic}
           </h2>
           {!selected ? (
             <p
-              className={`mx-auto mt-3 max-w-[34em] text-center text-[13px] leading-[1.5] ${
-                light ? "text-black/70" : "text-white/75"
+              className={`mt-3 max-w-[40em] text-[14px] leading-[1.65] ${
+                light ? "text-black/72" : "text-white/78"
               }`}
             >
               {arena.description}
             </p>
+          ) : (
+            <p
+              className={`mt-1.5 line-clamp-2 text-[12px] leading-[1.45] ${
+                light ? "text-black/55" : "text-white/55"
+              }`}
+            >
+              {arena.description}
+            </p>
+          )}
+        </div>
+
+        {/* 아래: 진영 선택 + (펼침 시) 의견 */}
+        <div aria-label="진영과 의견 영역">
+          <div
+            className="grid grid-cols-2"
+            role="tablist"
+            aria-label="진영 선택"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={selected === "NEXUS"}
+              aria-label="도전자"
+              onClick={() => selectSide("NEXUS")}
+              className={`flex flex-col items-center justify-center gap-1.5 border-0 bg-black p-0 text-white shadow-none outline-none ring-0 focus:outline-none focus-visible:outline-none ${
+                selected ? "min-h-[64px]" : "min-h-[88px]"
+              } ${
+                selected && selected !== "NEXUS" ? "opacity-50" : "opacity-100"
+              }`}
+            >
+              <SpearMark size={selected ? 26 : 32} />
+              <span className="text-[12px] font-bold tracking-[0.18em]">
+                도전자
+              </span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={selected === "AEGIS"}
+              aria-label="방어자"
+              onClick={() => selectSide("AEGIS")}
+              className={`flex flex-col items-center justify-center gap-1.5 border-0 bg-white p-0 text-black shadow-none outline-none ring-0 focus:outline-none focus-visible:outline-none ${
+                selected ? "min-h-[64px]" : "min-h-[88px]"
+              } ${
+                selected && selected !== "AEGIS" ? "opacity-50" : "opacity-100"
+              }`}
+            >
+              <ShieldMark size={selected ? 26 : 32} />
+              <span className="text-[12px] font-bold tracking-[0.18em]">
+                방어자
+              </span>
+            </button>
+          </div>
+
+          {!selected ? (
+            <p className="bg-black px-5 py-3 text-center text-[11px] tracking-[0.14em] text-muted">
+              진영을 누르면 TOP 의견이 펼쳐집니다 · 다시 누르면 닫힙니다
+            </p>
           ) : null}
-        </div>
-
-        <div
-          className="grid grid-cols-2"
-          role="tablist"
-          aria-label="진영 선택"
-        >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={selected === "NEXUS"}
-            aria-label="도전자"
-            onClick={() => selectSide("NEXUS")}
-            className={`flex flex-col items-center justify-center gap-2 border-0 bg-black p-0 text-white shadow-none outline-none ring-0 focus:outline-none focus-visible:outline-none ${
-              selected ? "min-h-[72px]" : "min-h-[104px]"
-            } ${
-              selected && selected !== "NEXUS" ? "opacity-50" : "opacity-100"
-            }`}
-          >
-            <SpearMark size={selected ? 28 : 36} />
-            <span className="text-[12px] font-bold tracking-[0.18em]">
-              도전자
-            </span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={selected === "AEGIS"}
-            aria-label="방어자"
-            onClick={() => selectSide("AEGIS")}
-            className={`flex flex-col items-center justify-center gap-2 border-0 bg-white p-0 text-black shadow-none outline-none ring-0 focus:outline-none focus-visible:outline-none ${
-              selected ? "min-h-[72px]" : "min-h-[104px]"
-            } ${
-              selected && selected !== "AEGIS" ? "opacity-50" : "opacity-100"
-            }`}
-          >
-            <ShieldMark size={selected ? 28 : 36} />
-            <span className="text-[12px] font-bold tracking-[0.18em]">
-              방어자
-            </span>
-          </button>
-        </div>
-
-        {!selected ? (
-          <p className="bg-black px-5 py-4 text-center text-[11px] tracking-[0.14em] text-muted">
-            진영을 누르면 TOP 의견이 펼쳐집니다 · 다시 누르면 닫힙니다
-          </p>
-        ) : null}
 
         {selected ? (
           <>
@@ -259,8 +282,8 @@ export function ArenaBar({
               className="flex flex-col"
               style={{
                 height:
-                  "calc(100dvh - 3.75rem - 5rem - 72px - 2.25rem - 84px - 3.5rem - env(safe-area-inset-bottom, 0px))",
-                maxHeight: "62dvh",
+                  "calc(100dvh - 3.5rem - 7.5rem - 64px - 2.25rem - 84px - 3.5rem - env(safe-area-inset-bottom, 0px))",
+                maxHeight: "58dvh",
               }}
             >
               {/* ~2/3: TOP + 해당 진영 글 */}
@@ -383,6 +406,7 @@ export function ArenaBar({
             </div>
           </>
         ) : null}
+        </div>
       </div>
     </section>
   );
