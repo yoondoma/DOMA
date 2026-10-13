@@ -9,9 +9,9 @@ import { OpinionFeed } from "@/components/OpinionFeed";
 import { PullRefresh } from "@/components/PullRefresh";
 import { SearchSheet } from "@/components/SearchSheet";
 import { SupportBar } from "@/components/SupportBar";
-import { TomorrowTopic } from "@/components/TomorrowTopic";
 import { TouchGate } from "@/components/TouchGate";
 import { WieldBar } from "@/components/WieldBar";
+import type { CalendarPanel } from "@/components/BattleCalendar";
 import { INITIAL_ARENA, INITIAL_OPINIONS } from "@/lib/mock-data";
 import type { ArenaView, Opinion, Side } from "@/lib/types";
 
@@ -63,8 +63,15 @@ export function DomaHome() {
   const [refreshing, setRefreshing] = useState(false);
   const [entered, setEntered] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [calendarPanel, setCalendarPanel] =
+    useState<CalendarPanel>("history");
   const [searchOpen, setSearchOpen] = useState(false);
   const refreshLock = useRef(false);
+
+  const openCalendar = (panel: CalendarPanel = "history") => {
+    setCalendarPanel(panel);
+    setCalendarOpen(true);
+  };
 
   const lightShell = navTab === "home" && arenaView === "AEGIS";
 
@@ -157,7 +164,7 @@ export function DomaHome() {
           tone={lightShell ? "light" : "dark"}
           refreshing={refreshing}
           onRefresh={handleRefresh}
-          onOpenHistory={() => setCalendarOpen(true)}
+          onOpenHistory={() => openCalendar("history")}
           onOpenSearch={() => setSearchOpen(true)}
         />
 
@@ -173,18 +180,9 @@ export function DomaHome() {
               view={arenaView}
               onChangeView={setArenaView}
             />
-            {/* 1번 안: 오늘 아레나 아래 · 실시간 의견 근처 */}
+            {/* 오늘은 주제·진영·실시간만 — 내일 카드는 달력「미래」탭 */}
             {arenaView === "intro" ? (
-              <>
-                <TomorrowTopic
-                  onVoted={(title) => {
-                    const short =
-                      title.length > 20 ? `${title.slice(0, 20)}…` : title;
-                    showToast(`「${short}」에 투표했습니다`);
-                  }}
-                />
-                <OpinionFeed opinions={opinions} />
-              </>
+              <OpinionFeed opinions={opinions} />
             ) : null}
           </PullRefresh>
         ) : null}
@@ -249,7 +247,12 @@ export function DomaHome() {
 
       <BattleCalendar
         open={calendarOpen}
+        initialPanel={calendarPanel}
         onClose={() => setCalendarOpen(false)}
+        onVotedTomorrow={(title) => {
+          const short = title.length > 20 ? `${title.slice(0, 20)}…` : title;
+          showToast(`「${short}」에 투표했습니다`);
+        }}
       />
       <SearchSheet open={searchOpen} onClose={() => setSearchOpen(false)} />
 

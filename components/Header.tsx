@@ -98,10 +98,10 @@ export function Header({
           className={`flex size-10 shrink-0 items-center justify-center ${
             light ? "text-black" : "text-white"
           }`}
-          aria-label="이전 대결 기록"
-        >
-          <CalendarIcon />
-        </button>
+            aria-label="시간 축 — 전투 기록과 내일의 주제"
+          >
+            <CalendarIcon />
+          </button>
 
         <div className="flex min-w-0 flex-1 flex-col items-center justify-center">
           <button

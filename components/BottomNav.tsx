@@ -24,14 +24,22 @@ function NavIcon({ id, active }: { id: NavTab; active: boolean }) {
 
   switch (id) {
     case "home":
+      // 아레나로 돌아가기 — 집 형태 Strict B&W (주황 N 배지와 무관)
       return (
-        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
           <path
-            d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z"
-            fill={active ? "rgba(255,255,255,0.12)" : "none"}
+            d="M3.75 10.75 12 4.25l8.25 6.5"
             stroke={stroke}
             strokeWidth="1.75"
             strokeLinejoin="round"
+            strokeLinecap="square"
+          />
+          <path
+            d="M6 10.5V19.25h4.25v-5.5h3.5v5.5H18V10.5"
+            stroke={stroke}
+            strokeWidth="1.75"
+            strokeLinejoin="round"
+            strokeLinecap="square"
           />
         </svg>
       );
