@@ -125,11 +125,11 @@ export function Header({
             refreshing ? "logo-refresh" : ""
           }`}
         >
-          {/* Threads형: [마크] DOMA .kr */}
-          <span className="flex items-center gap-2.5">
-            <DomaMark size={34} light={light} />
+          {/* Threads형: 항상 [마크] DOMA .kr 한 줄 */}
+          <span className="flex flex-row flex-nowrap items-center gap-2">
+            <DomaMark size={22} light={light} />
             <h1
-              className={`flex items-baseline font-[family-name:var(--font-brand)] text-[28px] font-semibold leading-none tracking-[0.2em] ${
+              className={`flex flex-row flex-nowrap items-baseline whitespace-nowrap font-[family-name:var(--font-brand)] text-[26px] font-semibold leading-none tracking-[0.18em] ${
                 light ? "text-black" : "text-white"
               }`}
             >

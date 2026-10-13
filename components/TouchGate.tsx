@@ -32,10 +32,10 @@ export function TouchGate({ onEnter }: TouchGateProps) {
           pressing ? "touch-press" : "active:scale-[0.96]"
         }`}
       >
-        {/* Threads형: [마크] DOMA .kr */}
-        <span className="flex items-center gap-3">
-          <DomaMark size={52} />
-          <span className="flex items-baseline font-[family-name:var(--font-brand)] text-[36px] font-semibold leading-none tracking-[0.22em]">
+        {/* Threads형: 항상 [마크] DOMA .kr 한 줄 */}
+        <span className="flex flex-row flex-nowrap items-center gap-3">
+          <DomaMark size={36} />
+          <span className="flex flex-row flex-nowrap items-baseline whitespace-nowrap font-[family-name:var(--font-brand)] text-[36px] font-semibold leading-none tracking-[0.2em]">
             DOMA
             <span className="ml-[0.1em] translate-y-[-2px] font-[family-name:var(--font-space-grotesk)] text-[12px] font-semibold tracking-[0.04em] text-muted">
               .kr
