@@ -47,9 +47,7 @@ export function DomaHome() {
       setAegisPercent(100 - next);
       return next;
     });
-    showToast(
-      side === "NEXUS" ? "검은 진영(검사)에 참전했습니다" : "하얀 진영(변호)에 참전했습니다",
-    );
+    showToast(side === "NEXUS" ? "창 진영에 참전했습니다" : "방패 진영에 참전했습니다");
   };
 
   const handleSubmit = (text: string) => {

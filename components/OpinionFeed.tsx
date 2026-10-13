@@ -1,6 +1,6 @@
 "use client";
 
-import { SideBadge } from "@/components/SideMarks";
+import { ShieldMark, SideBadge, SpearMark } from "@/components/SideMarks";
 import type { Opinion, Side } from "@/lib/types";
 
 export type FeedTab = "ALL" | "TOP" | "NEXUS" | "AEGIS";
@@ -11,11 +11,11 @@ type OpinionFeedProps = {
   onTabChange: (tab: FeedTab) => void;
 };
 
-const TABS: { id: FeedTab; label: string }[] = [
+const TABS: { id: FeedTab; label: string; icon?: "spear" | "shield" }[] = [
   { id: "ALL", label: "전체" },
   { id: "TOP", label: "Top 소수" },
-  { id: "NEXUS", label: "NEXUS" },
-  { id: "AEGIS", label: "AEGIS" },
+  { id: "NEXUS", label: "창", icon: "spear" },
+  { id: "AEGIS", label: "방패", icon: "shield" },
 ];
 
 function filterOpinions(opinions: Opinion[], tab: FeedTab): Opinion[] {
@@ -40,7 +40,7 @@ export function OpinionFeed({
   return (
     <section className="mx-auto max-w-[560px]">
       <div
-        className="sticky top-[88px] z-30 flex border-b border-white/12 bg-black/90 backdrop-blur-md"
+        className="sticky top-[72px] z-30 flex border-b border-white/12 bg-black/90 backdrop-blur-md"
         role="tablist"
         aria-label="의견 필터"
       >
@@ -52,14 +52,17 @@ export function OpinionFeed({
               type="button"
               role="tab"
               aria-selected={selected}
+              aria-label={tab.label}
               onClick={() => onTabChange(tab.id)}
-              className={`min-h-10 flex-1 px-1 text-[12px] font-semibold tracking-wide transition-colors ${
+              className={`flex min-h-10 flex-1 items-center justify-center gap-1 px-1 text-[12px] font-semibold tracking-wide transition-colors ${
                 selected
                   ? "border-b-2 border-white text-white"
                   : "border-b-2 border-transparent text-muted hover:text-white"
               }`}
             >
-              {tab.label}
+              {tab.icon === "spear" ? <SpearMark size={14} /> : null}
+              {tab.icon === "shield" ? <ShieldMark size={14} /> : null}
+              {tab.icon ? null : tab.label}
             </button>
           );
         })}

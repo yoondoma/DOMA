@@ -15,28 +15,36 @@ function formatCountdown(ms: number): string {
   return [h, m, s].map((n) => String(n).padStart(2, "0")).join(":");
 }
 
-function ScaleMark() {
+/** 성 토마스 상징 — 삼각자(set square) 라인 아이콘 */
+function SetSquareMark() {
   return (
     <svg
-      width="22"
-      height="22"
+      width="26"
+      height="26"
       viewBox="0 0 24 24"
       fill="none"
       className="shrink-0 text-white"
       aria-hidden
     >
-      <circle cx="12" cy="12" r="10.25" stroke="currentColor" strokeWidth="1.4" />
       <path
-        d="M12 5.5v13M7 9.5h10"
+        d="M4.5 3.5v17h17"
         stroke="currentColor"
-        strokeWidth="1.4"
+        strokeWidth="1.7"
         strokeLinecap="square"
+        strokeLinejoin="miter"
       />
       <path
-        d="M7 9.5 5 13.5h4L7 9.5ZM17 9.5l-2 4h4l-2-4Z"
+        d="M4.5 3.5 21.5 20.5"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="square"
+      />
+      {/* 눈금 */}
+      <path
+        d="M4.5 8h2M4.5 12.5h2M4.5 17h2M9 20.5v-2M13.5 20.5v-2M18 20.5v-2"
         stroke="currentColor"
         strokeWidth="1.3"
-        strokeLinejoin="miter"
+        strokeLinecap="square"
       />
     </svg>
   );
@@ -56,13 +64,13 @@ export function Header({ endsAt }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/12 bg-black/92 backdrop-blur-md">
-      <div className="mx-auto flex max-w-[560px] flex-col items-center px-4 pb-2 pt-2.5">
-        <div className="flex items-center gap-2">
-          <ScaleMark />
-          <h1 className="flex items-baseline gap-1.5 font-[family-name:var(--font-syne)] text-[20px] font-extrabold leading-none tracking-[0.22em] text-white">
+      <div className="mx-auto flex max-w-[560px] flex-col items-center px-4 pb-1.5 pt-2.5">
+        <div className="flex items-center gap-2.5">
+          <SetSquareMark />
+          <h1 className="flex items-baseline gap-1.5 font-[family-name:var(--font-syne)] text-[28px] font-extrabold leading-none tracking-[0.18em] text-white">
             <span>DOMA</span>
             <span
-              className="translate-y-[-1px] text-[10px] font-semibold tracking-[0.14em] text-muted"
+              className="translate-y-[-2px] text-[11px] font-semibold tracking-[0.14em] text-muted"
               title="Korea server"
             >
               kr
@@ -70,13 +78,10 @@ export function Header({ endsAt }: HeaderProps) {
           </h1>
         </div>
 
-        <p className="mt-1.5 text-[10px] font-medium tracking-[0.35em] text-muted">
-          판결까지
-        </p>
         <time
           dateTime={endsAt}
-          className="mt-0.5 font-mono text-[22px] font-semibold tabular-nums tracking-[0.12em] text-timer"
-          aria-label={`판결까지 ${remaining}`}
+          className="mt-1 font-mono text-[13px] font-semibold tabular-nums tracking-[0.14em] text-timer"
+          aria-label={`남은 시간 ${remaining}`}
         >
           {remaining}
         </time>

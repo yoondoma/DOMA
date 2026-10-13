@@ -5,8 +5,8 @@ type MarkProps = {
   size?: number;
 };
 
-/** NEXUS — 검 (라인 아이콘, 이모지 아님) */
-export function SwordMark({ className = "", size = 14 }: MarkProps) {
+/** NEXUS — 창 (라인 아이콘) */
+export function SpearMark({ className = "", size = 14 }: MarkProps) {
   return (
     <svg
       width={size}
@@ -17,45 +17,35 @@ export function SwordMark({ className = "", size = 14 }: MarkProps) {
       className={`shrink-0 ${className}`}
       aria-hidden
     >
-      {/* blade */}
-      <path
-        d="M8 1.5v9.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="square"
-      />
       {/* tip */}
       <path
-        d="M8 1.5 6.2 3.4M8 1.5l1.8 1.9"
+        d="M8 1.4 5.8 5.2h4.4L8 1.4Z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="miter"
+      />
+      {/* shaft */}
+      <path
+        d="M8 5.2v9.4"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="square"
       />
-      {/* crossguard */}
+      {/* collar */}
       <path
-        d="M4.5 10.5h7"
+        d="M5.5 5.8h5"
         stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="square"
-      />
-      {/* grip + pommel */}
-      <path
-        d="M8 10.5v3.2"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="square"
-      />
-      <path
-        d="M6.5 14.2h3"
-        stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="1.4"
         strokeLinecap="square"
       />
     </svg>
   );
 }
 
-/** AEGIS — 방패 (라인 아이콘, 이모지 아님) */
+/** @deprecated 검 → 창으로 교체. SpearMark 사용 */
+export const SwordMark = SpearMark;
+
+/** AEGIS — 방패 (라인 아이콘) */
 export function ShieldMark({ className = "", size = 14 }: MarkProps) {
   return (
     <svg
@@ -85,26 +75,27 @@ export function ShieldMark({ className = "", size = 14 }: MarkProps) {
 
 export const SIDE_META: Record<
   Side,
-  { role: string; Mark: typeof SwordMark }
+  { label: string; Mark: typeof SpearMark }
 > = {
-  NEXUS: { role: "공격", Mark: SwordMark },
-  AEGIS: { role: "방어", Mark: ShieldMark },
+  NEXUS: { label: "창", Mark: SpearMark },
+  AEGIS: { label: "방패", Mark: ShieldMark },
 };
 
+/** 피드 뱃지 — 창/방패 심볼 위주 */
 export function SideBadge({ side }: { side: Side }) {
-  const { role, Mark } = SIDE_META[side];
+  const { label, Mark } = SIDE_META[side];
   const isNexus = side === "NEXUS";
   return (
     <span
-      className={`inline-flex items-center gap-0.5 px-1 py-px text-[10px] font-bold tracking-[0.08em] ${
+      className={`inline-flex items-center justify-center p-0.5 ${
         isNexus
           ? "border border-white/80 text-white"
           : "bg-white text-black"
       }`}
-      title={`${side} · ${role}`}
+      title={side}
+      aria-label={`${side} ${label}`}
     >
-      <Mark size={11} />
-      <span>{side}</span>
+      <Mark size={12} />
     </span>
   );
 }

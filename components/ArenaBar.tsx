@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ShieldMark, SwordMark } from "@/components/SideMarks";
+import { ShieldMark, SpearMark } from "@/components/SideMarks";
 import type { ArenaState, Side } from "@/lib/types";
 
 type ArenaBarProps = {
@@ -77,29 +77,29 @@ export function ArenaBar({
             type="button"
             role="tab"
             aria-selected={isNexus}
+            aria-label="창 진영"
             onClick={() => setFocus("NEXUS")}
-            className={`flex min-h-11 items-center justify-center gap-1.5 text-[12px] font-semibold tracking-wide ${
+            className={`flex min-h-11 items-center justify-center ${
               isNexus
                 ? "border-b-2 border-white bg-white/[0.04] text-white"
                 : "border-b-2 border-transparent text-muted"
             }`}
           >
-            <SwordMark size={13} />
-            검사 · 도전자
+            <SpearMark size={20} />
           </button>
           <button
             type="button"
             role="tab"
             aria-selected={!isNexus}
+            aria-label="방패 진영"
             onClick={() => setFocus("AEGIS")}
-            className={`flex min-h-11 items-center justify-center gap-1.5 text-[12px] font-semibold tracking-wide ${
+            className={`flex min-h-11 items-center justify-center ${
               !isNexus
                 ? "border-b-2 border-white bg-white/[0.04] text-white"
                 : "border-b-2 border-transparent text-muted"
             }`}
           >
-            <ShieldMark size={13} />
-            변호인 · 방어자
+            <ShieldMark size={20} />
           </button>
         </div>
 
@@ -135,38 +135,41 @@ export function ArenaBar({
           <button
             type="button"
             onClick={() => onJoin("NEXUS")}
-            className={`relative flex flex-1 flex-col items-start justify-center gap-0.5 bg-black px-3 py-3 text-left text-white transition-opacity ${
+            aria-label="창 진영 지지"
+            className={`relative flex flex-1 flex-col items-start justify-center gap-1 bg-black px-3 py-3 text-left text-white transition-opacity ${
               joined === "NEXUS" ? "opacity-100" : "active:opacity-80"
             }`}
             style={{ width: `${nexusPercent}%`, flexBasis: `${nexusPercent}%` }}
           >
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold tracking-wide">
-              <SwordMark size={12} />흑 {nexusPercent}%
-            </span>
-            <span className="text-[12px] font-bold tracking-wide">
-              {joined === "NEXUS" ? "참전 중" : "검은 진영 지지"}
+            <span className="inline-flex items-center gap-1.5">
+              <SpearMark size={16} />
+              <span className="text-[13px] font-bold tabular-nums tracking-wide">
+                {nexusPercent}%
+              </span>
             </span>
             <span className="text-[10px] text-muted">
-              {arena.nexusVotes.toLocaleString("ko-KR")}명의 판결
+              {joined === "NEXUS" ? "참전 중" : "지지"} ·{" "}
+              {arena.nexusVotes.toLocaleString("ko-KR")}
             </span>
           </button>
           <button
             type="button"
             onClick={() => onJoin("AEGIS")}
-            className={`relative flex flex-1 flex-col items-end justify-center gap-0.5 bg-white px-3 py-3 text-right text-black transition-opacity ${
+            aria-label="방패 진영 지지"
+            className={`relative flex flex-1 flex-col items-end justify-center gap-1 bg-white px-3 py-3 text-right text-black transition-opacity ${
               joined === "AEGIS" ? "opacity-100" : "active:opacity-80"
             }`}
             style={{ width: `${aegisPercent}%`, flexBasis: `${aegisPercent}%` }}
           >
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold tracking-wide">
-              {aegisPercent}% 백
-              <ShieldMark size={12} />
-            </span>
-            <span className="text-[12px] font-bold tracking-wide">
-              {joined === "AEGIS" ? "참전 중" : "하얀 진영 지지"}
+            <span className="inline-flex items-center gap-1.5">
+              <span className="text-[13px] font-bold tabular-nums tracking-wide">
+                {aegisPercent}%
+              </span>
+              <ShieldMark size={16} />
             </span>
             <span className="text-[10px] text-neutral-500">
-              {arena.aegisVotes.toLocaleString("ko-KR")}명의 판결
+              {joined === "AEGIS" ? "참전 중" : "지지"} ·{" "}
+              {arena.aegisVotes.toLocaleString("ko-KR")}
             </span>
           </button>
         </div>
