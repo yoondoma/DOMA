@@ -5,9 +5,11 @@ import { ArenaBar } from "@/components/ArenaBar";
 import { BattleCalendar } from "@/components/BattleCalendar";
 import { BottomNav, type NavTab } from "@/components/BottomNav";
 import { Header } from "@/components/Header";
+import { OpinionFeed } from "@/components/OpinionFeed";
 import { PullRefresh } from "@/components/PullRefresh";
 import { SearchSheet } from "@/components/SearchSheet";
 import { SupportBar } from "@/components/SupportBar";
+import { TomorrowTopic } from "@/components/TomorrowTopic";
 import { TouchGate } from "@/components/TouchGate";
 import { WieldBar } from "@/components/WieldBar";
 import { INITIAL_ARENA, INITIAL_OPINIONS } from "@/lib/mock-data";
@@ -171,6 +173,19 @@ export function DomaHome() {
               view={arenaView}
               onChangeView={setArenaView}
             />
+            {/* 1번 안: 오늘 아레나 아래 · 실시간 의견 근처 */}
+            {arenaView === "intro" ? (
+              <>
+                <TomorrowTopic
+                  onVoted={(title) => {
+                    const short =
+                      title.length > 20 ? `${title.slice(0, 20)}…` : title;
+                    showToast(`「${short}」에 투표했습니다`);
+                  }}
+                />
+                <OpinionFeed opinions={opinions} />
+              </>
+            ) : null}
           </PullRefresh>
         ) : null}
 

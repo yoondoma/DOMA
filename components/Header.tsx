@@ -91,54 +91,8 @@ export function Header({
           : "border-white/12 bg-black/92"
       }`}
     >
-      <div className="relative mx-auto flex max-w-[560px] items-center gap-2 px-3 py-2.5">
-        {/* 왼쪽 브랜드: 마크 + DOMA (메인에 .kr 없음) · 탭 = 새로고침 */}
-        <button
-          type="button"
-          onClick={onRefresh}
-          disabled={refreshing}
-          aria-label="새로고침"
-          aria-busy={refreshing || undefined}
-          className="flex min-w-0 shrink-0 items-center gap-2.5"
-        >
-          <span
-            className={refreshing ? "logo-refresh" : undefined}
-            aria-hidden
-          >
-            <DomaMark size={34} light={light} />
-          </span>
-          <h1
-            className={`font-[family-name:var(--font-brand)] text-[22px] font-semibold leading-none tracking-[0.22em] ${
-              light ? "text-black" : "text-white"
-            }`}
-          >
-            DOMA
-          </h1>
-        </button>
-
-        {/* 중앙 타이머 */}
-        <div className="flex min-w-0 flex-1 flex-col items-center justify-center">
-          {refreshing ? (
-            <span
-              className={`text-[10px] tracking-[0.14em] ${
-                light ? "text-neutral-500" : "text-muted"
-              }`}
-            >
-              업데이트 중
-            </span>
-          ) : (
-            <time
-              dateTime={endsAt}
-              className="font-mono text-[12px] font-medium tabular-nums tracking-[0.12em] text-timer"
-              aria-label={`남은 시간 ${remaining}`}
-            >
-              {remaining}
-            </time>
-          )}
-        </div>
-
-        {/* 우측 액션 */}
-        <div className="flex shrink-0 items-center gap-0.5">
+      <div className="relative mx-auto max-w-[560px] px-3 pb-2 pt-2.5">
+        <div className="absolute inset-x-3 top-2.5 flex items-start justify-between">
           <button
             type="button"
             onClick={onOpenHistory}
@@ -160,6 +114,48 @@ export function Header({
             <SearchIcon />
           </button>
         </div>
+
+        <button
+          type="button"
+          onClick={onRefresh}
+          disabled={refreshing}
+          aria-label="새로고침"
+          aria-busy={refreshing || undefined}
+          className="mx-auto flex flex-col items-center"
+        >
+          {/* 상징 마크 탭 = pull과 동일 새로고침 */}
+          <span
+            className={refreshing ? "logo-refresh" : undefined}
+            aria-hidden
+          >
+            <DomaMark size={40} light={light} />
+          </span>
+          <h1
+            className={`mt-2 text-center font-[family-name:var(--font-brand)] text-[28px] font-semibold leading-none tracking-[0.28em] ${
+              light ? "text-black" : "text-white"
+            }`}
+          >
+            DOMA
+          </h1>
+
+          {refreshing ? (
+            <span
+              className={`mt-1.5 text-[10px] tracking-[0.14em] ${
+                light ? "text-neutral-500" : "text-muted"
+              }`}
+            >
+              업데이트 중
+            </span>
+          ) : (
+            <time
+              dateTime={endsAt}
+              className="mt-1.5 font-mono text-[12px] font-medium tabular-nums tracking-[0.12em] text-timer"
+              aria-label={`남은 시간 ${remaining}`}
+            >
+              {remaining}
+            </time>
+          )}
+        </button>
       </div>
     </header>
   );
