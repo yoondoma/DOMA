@@ -47,7 +47,9 @@ export function DomaHome() {
       setAegisPercent(100 - next);
       return next;
     });
-    showToast(`${side} 진영에 참전했습니다`);
+    showToast(
+      side === "NEXUS" ? "검은 진영(검사)에 참전했습니다" : "하얀 진영(변호)에 참전했습니다",
+    );
   };
 
   const handleSubmit = (text: string) => {
@@ -84,7 +86,7 @@ export function DomaHome() {
         {navTab === "home" ? (
           <>
             <ArenaBar
-              topic={INITIAL_ARENA.topic}
+              arena={INITIAL_ARENA}
               nexusPercent={nexusPercent}
               aegisPercent={aegisPercent}
               onJoin={handleJoin}
@@ -101,7 +103,7 @@ export function DomaHome() {
 
         {navTab === "arena" ? (
           <ArenaBar
-            topic={INITIAL_ARENA.topic}
+            arena={INITIAL_ARENA}
             nexusPercent={nexusPercent}
             aegisPercent={aegisPercent}
             onJoin={handleJoin}
@@ -123,7 +125,6 @@ export function DomaHome() {
           />
         ) : null}
 
-        {/* bottom nav clearance */}
         <div className="h-16" aria-hidden />
       </div>
 

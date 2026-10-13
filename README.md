@@ -9,13 +9,13 @@
 
 ## 화면 구성
 
-1. **Header** — 슬림 `DOMA` + 실시간 카운트다운 + LIVE
-2. **ArenaBar** — 논제 / NEXUS vs AEGIS 게이지 / 참전
-3. **OpinionFeed** — 탭 필터 + Top 소수의견 + 피드형 카드
-4. **WieldBar** — 작성(+) 탭 → 바텀시트로 280자 진술 제출
+1. **Header** — `DOMA`+`kr` + 「판결까지」+ **빨간** 카운트다운
+2. **ArenaBar(판결 블록)** — 회차·논제 / 검사·변호 탭 / 대표 인용 / 흑·백 스플릿 참전
+3. **OpinionFeed** — Threads형 의견 스크롤
+4. **WieldBar** — 작성(+) 바텀시트
 5. **BottomNav** — 홈 / 아레나 / 작성 / 알림 / 프로필
 
-중앙 컬럼 max-width ≈ 560px.
+빨강은 타이머에만. 중앙 컬럼 max-width ≈ 560px.
 
 ## 실행
 

@@ -40,7 +40,7 @@ export function OpinionFeed({
   return (
     <section className="mx-auto max-w-[560px]">
       <div
-        className="sticky top-[52px] z-30 flex border-b border-white/12 bg-black/90 backdrop-blur-md"
+        className="sticky top-[88px] z-30 flex border-b border-white/12 bg-black/90 backdrop-blur-md"
         role="tablist"
         aria-label="의견 필터"
       >

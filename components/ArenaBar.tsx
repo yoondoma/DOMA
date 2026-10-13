@@ -1,10 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { ShieldMark, SwordMark } from "@/components/SideMarks";
-import type { Side } from "@/lib/types";
+import type { ArenaState, Side } from "@/lib/types";
 
 type ArenaBarProps = {
-  topic: string;
+  arena: ArenaState;
   nexusPercent: number;
   aegisPercent: number;
   onJoin: (side: Side) => void;
@@ -12,97 +13,161 @@ type ArenaBarProps = {
   compact?: boolean;
 };
 
+function CrackDivider() {
+  return (
+    <svg
+      className="pointer-events-none absolute inset-y-0 left-1/2 z-10 h-full w-5 -translate-x-1/2"
+      viewBox="0 0 20 100"
+      preserveAspectRatio="none"
+      aria-hidden
+    >
+      <path
+        d="M10 0 7 12 12 22 6 38 13 52 8 68 14 82 10 100"
+        fill="none"
+        stroke="#ffffff"
+        strokeWidth="1.6"
+        vectorEffect="non-scaling-stroke"
+      />
+      <path
+        d="M10 0 8 12 13 22 7 38 14 52 9 68 15 82 10 100"
+        fill="none"
+        stroke="#a3a3a3"
+        strokeWidth="0.8"
+        vectorEffect="non-scaling-stroke"
+        opacity="0.7"
+      />
+    </svg>
+  );
+}
+
 export function ArenaBar({
-  topic,
+  arena,
   nexusPercent,
   aegisPercent,
   onJoin,
   joined,
   compact = false,
 }: ArenaBarProps) {
+  const [focus, setFocus] = useState<Side>("NEXUS");
+  const rep = arena.representatives[focus];
+  const isNexus = focus === "NEXUS";
+
   return (
     <section className="border-b border-white/12 bg-black">
-      <div
-        className={`mx-auto max-w-[560px] px-4 ${compact ? "py-2.5" : "py-3"}`}
-      >
-        <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
-          오늘의 논제
-        </p>
-        <h2
-          className={`font-[family-name:var(--font-syne)] font-bold leading-snug tracking-tight text-white ${
-            compact ? "text-[15px]" : "text-[17px]"
-          }`}
-        >
-          {topic}
-        </h2>
-
-        <div className={compact ? "mt-2" : "mt-2.5"}>
-          <div className="mb-1 flex items-center justify-between text-[11px] font-semibold tracking-wide">
-            <span className="inline-flex items-center gap-1 text-white">
-              <SwordMark size={13} />
-              NEXUS
-              <span className="text-muted">공격</span>
-              <span className="tabular-nums">{nexusPercent}%</span>
-            </span>
-            <span className="text-muted">vs</span>
-            <span className="inline-flex items-center gap-1 text-white">
-              <span className="tabular-nums">{aegisPercent}%</span>
-              <span className="text-muted">방어</span>
-              AEGIS
-              <ShieldMark size={13} />
-            </span>
-          </div>
-
-          <div
-            className="relative flex h-7 w-full overflow-hidden border border-white"
-            role="img"
-            aria-label={`NEXUS 검·공격 ${nexusPercent}퍼센트, AEGIS 방패·방어 ${aegisPercent}퍼센트`}
+      <div className={`mx-auto max-w-[560px] ${compact ? "pt-3" : "pt-4"}`}>
+        <div className="px-4 text-center">
+          <p className="text-[11px] tracking-[0.18em] text-muted">
+            제 {arena.round} 도마
+          </p>
+          <h2
+            className={`mt-1 font-[family-name:var(--font-syne)] font-bold leading-snug tracking-tight text-white ${
+              compact ? "text-[17px]" : "text-[19px]"
+            }`}
           >
-            <div
-              className="gauge-animate flex h-full items-center justify-start gap-1 bg-black pl-1.5 text-white"
-              style={{ width: `${nexusPercent}%` }}
-            >
-              <SwordMark size={12} />
-              <span className="truncate text-[9px] font-bold tracking-wider">
-                검
-              </span>
-            </div>
-            <div
-              className="flex h-full items-center justify-end gap-1 bg-white pr-1.5 text-black"
-              style={{ width: `${aegisPercent}%` }}
-            >
-              <span className="truncate text-[9px] font-bold tracking-wider">
-                방패
-              </span>
-              <ShieldMark size={12} />
-            </div>
-          </div>
+            {arena.topic}
+          </h2>
         </div>
 
-        <div className={`grid grid-cols-2 gap-2 ${compact ? "mt-2" : "mt-2.5"}`}>
+        <div
+          className="mt-3 grid grid-cols-2 border-y border-white/20"
+          role="tablist"
+          aria-label="진영 선택"
+        >
           <button
             type="button"
-            onClick={() => onJoin("NEXUS")}
-            className={`flex h-10 items-center justify-center gap-1.5 border text-[11px] font-bold tracking-[0.1em] transition-colors ${
-              joined === "NEXUS"
-                ? "border-white bg-white text-black"
-                : "border-white bg-black text-white active:bg-white active:text-black"
+            role="tab"
+            aria-selected={isNexus}
+            onClick={() => setFocus("NEXUS")}
+            className={`flex min-h-11 items-center justify-center gap-1.5 text-[12px] font-semibold tracking-wide ${
+              isNexus
+                ? "border-b-2 border-white bg-white/[0.04] text-white"
+                : "border-b-2 border-transparent text-muted"
             }`}
           >
             <SwordMark size={13} />
-            NEXUS 참전
+            검사 · 도전자
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={!isNexus}
+            onClick={() => setFocus("AEGIS")}
+            className={`flex min-h-11 items-center justify-center gap-1.5 text-[12px] font-semibold tracking-wide ${
+              !isNexus
+                ? "border-b-2 border-white bg-white/[0.04] text-white"
+                : "border-b-2 border-transparent text-muted"
+            }`}
+          >
+            <ShieldMark size={13} />
+            변호인 · 방어자
+          </button>
+        </div>
+
+        <div className="px-4 py-4 text-center">
+          <div
+            className={`mx-auto flex size-[72px] items-center justify-center rounded-full border text-[22px] font-bold tracking-wide ${
+              isNexus
+                ? "border-white bg-black text-white"
+                : "border-white bg-white text-black"
+            }`}
+            aria-hidden
+          >
+            {rep.monogram}
+          </div>
+          <p className="mt-2.5 font-[family-name:var(--font-syne)] text-[16px] font-bold tracking-wide text-white">
+            {rep.name}
+          </p>
+          <p className="mt-0.5 text-[11px] text-muted">{rep.role}</p>
+
+          <div className="mx-auto my-3 flex max-w-[220px] items-center gap-2">
+            <span className="h-px flex-1 bg-white/25" />
+            <span className="size-1 rotate-45 bg-white/70" />
+            <span className="h-px flex-1 bg-white/25" />
+          </div>
+
+          <blockquote className="px-1 font-[family-name:var(--font-syne)] text-[15px] font-semibold leading-relaxed tracking-tight text-white">
+            “{rep.quote}”
+          </blockquote>
+        </div>
+
+        <div className="relative flex min-h-[88px] w-full overflow-hidden border-t border-white/20">
+          <CrackDivider />
+          <button
+            type="button"
+            onClick={() => onJoin("NEXUS")}
+            className={`relative flex flex-1 flex-col items-start justify-center gap-0.5 bg-black px-3 py-3 text-left text-white transition-opacity ${
+              joined === "NEXUS" ? "opacity-100" : "active:opacity-80"
+            }`}
+            style={{ width: `${nexusPercent}%`, flexBasis: `${nexusPercent}%` }}
+          >
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold tracking-wide">
+              <SwordMark size={12} />흑 {nexusPercent}%
+            </span>
+            <span className="text-[12px] font-bold tracking-wide">
+              {joined === "NEXUS" ? "참전 중" : "검은 진영 지지"}
+            </span>
+            <span className="text-[10px] text-muted">
+              {arena.nexusVotes.toLocaleString("ko-KR")}명의 판결
+            </span>
           </button>
           <button
             type="button"
             onClick={() => onJoin("AEGIS")}
-            className={`flex h-10 items-center justify-center gap-1.5 border text-[11px] font-bold tracking-[0.1em] transition-colors ${
-              joined === "AEGIS"
-                ? "border-white bg-white text-black"
-                : "border-white/50 bg-transparent text-white active:border-white active:bg-white active:text-black"
+            className={`relative flex flex-1 flex-col items-end justify-center gap-0.5 bg-white px-3 py-3 text-right text-black transition-opacity ${
+              joined === "AEGIS" ? "opacity-100" : "active:opacity-80"
             }`}
+            style={{ width: `${aegisPercent}%`, flexBasis: `${aegisPercent}%` }}
           >
-            <ShieldMark size={13} />
-            AEGIS 참전
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold tracking-wide">
+              {aegisPercent}% 백
+              <ShieldMark size={12} />
+            </span>
+            <span className="text-[12px] font-bold tracking-wide">
+              {joined === "AEGIS" ? "참전 중" : "하얀 진영 지지"}
+            </span>
+            <span className="text-[10px] text-neutral-500">
+              {arena.aegisVotes.toLocaleString("ko-KR")}명의 판결
+            </span>
           </button>
         </div>
       </div>

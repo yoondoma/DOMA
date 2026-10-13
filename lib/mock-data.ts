@@ -1,6 +1,6 @@
 import type { ArenaState, Opinion } from "./types";
 
-/** 데모용: 자정까지 카운트다운 (서버/클라이언트 공통 문자열) */
+/** 데모용: 자정까지 카운트다운 */
 function endOfTodayIso(): string {
   const d = new Date();
   d.setHours(23, 59, 59, 999);
@@ -8,10 +8,29 @@ function endOfTodayIso(): string {
 }
 
 export const INITIAL_ARENA: ArenaState = {
+  round: 412,
   topic: "인공지능은 인간의 지성을 완전히 대체할 것인가?",
   endsAt: endOfTodayIso(),
   nexusPercent: 58,
   aegisPercent: 42,
+  nexusVotes: 4821,
+  aegisVotes: 4519,
+  representatives: {
+    NEXUS: {
+      side: "NEXUS",
+      name: "세베루스",
+      role: "검사 · 상처를 짚는 자",
+      quote: "대체는 이미 시작됐다. 기준을 감정으로 낮추지 마라.",
+      monogram: "S",
+    },
+    AEGIS: {
+      side: "AEGIS",
+      name: "미라",
+      role: "변호인 · 경계를 지키는 자",
+      quote: "도구가 손을 대신해도, 책임은 인간에게 남는다.",
+      monogram: "M",
+    },
+  },
 };
 
 export const INITIAL_OPINIONS: Opinion[] = [
