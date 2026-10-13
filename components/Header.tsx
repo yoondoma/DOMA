@@ -125,29 +125,29 @@ export function Header({
             refreshing ? "logo-refresh" : ""
           }`}
         >
-          <span className={refreshing ? "logo-refresh" : undefined}>
-            <DomaMark size={48} light={light} />
-          </span>
-
-          <h1
-            className={`mt-1 flex items-baseline justify-center font-[family-name:var(--font-brand)] text-[32px] font-semibold leading-none tracking-[0.22em] ${
-              light ? "text-black" : "text-white"
-            }`}
-          >
-            <span>DOMA</span>
-            <span
-              className={`ml-[0.12em] translate-y-[-1px] font-[family-name:var(--font-space-grotesk)] text-[12px] font-semibold tracking-[0.04em] ${
-                light ? "text-neutral-500" : "text-muted"
+          {/* Threads형: [마크] DOMA .kr */}
+          <span className="flex items-center gap-2.5">
+            <DomaMark size={34} light={light} />
+            <h1
+              className={`flex items-baseline font-[family-name:var(--font-brand)] text-[28px] font-semibold leading-none tracking-[0.2em] ${
+                light ? "text-black" : "text-white"
               }`}
-              title="Korea server"
             >
-              .kr
-            </span>
-          </h1>
+              <span>DOMA</span>
+              <span
+                className={`ml-[0.1em] translate-y-[-1px] font-[family-name:var(--font-space-grotesk)] text-[11px] font-semibold tracking-[0.04em] ${
+                  light ? "text-neutral-500" : "text-muted"
+                }`}
+                title="Korea server"
+              >
+                .kr
+              </span>
+            </h1>
+          </span>
 
           {refreshing ? (
             <span
-              className={`mt-1 text-[10px] tracking-[0.14em] ${
+              className={`mt-1.5 text-[10px] tracking-[0.14em] ${
                 light ? "text-neutral-500" : "text-muted"
               }`}
             >
@@ -156,7 +156,7 @@ export function Header({
           ) : (
             <time
               dateTime={endsAt}
-              className="mt-1 font-mono text-[12px] font-medium tabular-nums tracking-[0.12em] text-timer"
+              className="mt-1.5 font-mono text-[12px] font-medium tabular-nums tracking-[0.12em] text-timer"
               aria-label={`남은 시간 ${remaining}`}
             >
               {remaining}
