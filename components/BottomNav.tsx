@@ -1,6 +1,6 @@
 "use client";
 
-export type NavTab = "home" | "arena" | "compose" | "alerts" | "profile";
+export type NavTab = "home" | "messages" | "compose" | "alerts" | "profile";
 
 type BottomNavProps = {
   active: NavTab;
@@ -13,7 +13,7 @@ const TABS: {
   compose?: boolean;
 }[] = [
   { id: "home", label: "홈" },
-  { id: "arena", label: "아레나" },
+  { id: "messages", label: "메시지" },
   { id: "compose", label: "작성", compose: true },
   { id: "alerts", label: "알림" },
   { id: "profile", label: "프로필" },
@@ -21,7 +21,6 @@ const TABS: {
 
 function NavIcon({ id, active }: { id: NavTab; active: boolean }) {
   const stroke = active ? "#fff" : "#737373";
-  const fill = active ? "#fff" : "none";
 
   switch (id) {
     case "home":
@@ -29,24 +28,29 @@ function NavIcon({ id, active }: { id: NavTab; active: boolean }) {
         <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
           <path
             d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z"
-            fill={active ? fill : "none"}
+            fill={active ? "rgba(255,255,255,0.12)" : "none"}
             stroke={stroke}
             strokeWidth="1.75"
             strokeLinejoin="round"
           />
         </svg>
       );
-    case "arena":
+    case "messages":
       return (
         <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
           <path
-            d="M4 19V7l8-3 8 3v12l-8 3-8-3Z"
-            fill="none"
+            d="M4.5 6.5h15v9.5H9.2L5.5 19.2V6.5Z"
+            fill={active ? "rgba(255,255,255,0.12)" : "none"}
             stroke={stroke}
             strokeWidth="1.75"
             strokeLinejoin="round"
           />
-          <path d="M12 4v18" stroke={stroke} strokeWidth="1.75" />
+          <path
+            d="M8 10.2h8M8 13.2h5.5"
+            stroke={stroke}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
         </svg>
       );
     case "compose":

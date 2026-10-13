@@ -79,7 +79,11 @@ export function DomaHome() {
   return (
     <div className="min-h-full bg-black text-white">
       <div className="mx-auto min-h-full max-w-[560px] border-x border-white/10 bg-black">
-        <Header endsAt={INITIAL_ARENA.endsAt} />
+        <Header
+          endsAt={INITIAL_ARENA.endsAt}
+          onOpenHistory={() => showToast("이전 대결 기록 (목업)")}
+          onOpenSearch={() => showToast("검색 (목업)")}
+        />
 
         {navTab === "home" ? (
           <>
@@ -100,14 +104,10 @@ export function DomaHome() {
           </>
         ) : null}
 
-        {navTab === "arena" ? (
-          <ArenaBar
-            arena={INITIAL_ARENA}
-            opinions={opinions}
-            nexusPercent={nexusPercent}
-            aegisPercent={aegisPercent}
-            onJoin={handleJoin}
-            joined={joined}
+        {navTab === "messages" ? (
+          <MockPanel
+            title="메시지"
+            body="진영·멘션 DM이 여기에 모입니다. (목업)"
           />
         ) : null}
 

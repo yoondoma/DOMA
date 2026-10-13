@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 
 type HeaderProps = {
   endsAt: string;
+  onOpenHistory?: () => void;
+  onOpenSearch?: () => void;
 };
 
 function formatCountdown(ms: number): string {
@@ -15,35 +17,31 @@ function formatCountdown(ms: number): string {
   return [h, m, s].map((n) => String(n).padStart(2, "0")).join(":");
 }
 
-/** 원 안 아래로 향한 창=언론의 펜/붓 촉 (펜이 칼보다 강하다) */
+/** 원 안 아래로 향한 창=언론의 펜/붓 촉 */
 function PenSpearMark() {
   return (
     <svg
-      width="44"
-      height="44"
+      width="40"
+      height="40"
       viewBox="0 0 48 48"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden
     >
       <circle cx="24" cy="24" r="18.5" stroke="#ffffff" strokeWidth="1.4" />
-      {/* 펜/창 몸통(위) */}
       <path
         d="M22.2 12.5h3.6v8.2h-3.6V12.5Z"
         stroke="#ffffff"
         strokeWidth="1.35"
         strokeLinejoin="miter"
       />
-      {/* 아래로 향한 촉 */}
       <path
         d="M20.4 20.7 24 33.2 27.6 20.7H20.4Z"
         stroke="#ffffff"
         strokeWidth="1.35"
         strokeLinejoin="miter"
       />
-      {/* 촉 안 작은 빨간 다이아 */}
       <path d="M24 27.2 25.35 28.9 24 30.6 22.65 28.9Z" fill="#e10600" />
-      {/* 아래 얇은 가로선 2줄 */}
       <path
         d="M17.5 35.6h13M18.5 37.8h11"
         stroke="#ffffff"
@@ -54,7 +52,48 @@ function PenSpearMark() {
   );
 }
 
-export function Header({ endsAt }: HeaderProps) {
+function CalendarIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <rect
+        x="3.75"
+        y="5.5"
+        width="16.5"
+        height="14.75"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <path
+        d="M3.75 9.75h16.5M8 3.75v3.5M16 3.75v3.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="square"
+      />
+      <path
+        d="M8.2 13.2h2.2M13.6 13.2h2.2M8.2 16.4h2.2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="square"
+      />
+    </svg>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="11" cy="11" r="6.25" stroke="currentColor" strokeWidth="1.6" />
+      <path
+        d="M15.8 15.8 20 20"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="square"
+      />
+    </svg>
+  );
+}
+
+export function Header({ endsAt, onOpenHistory, onOpenSearch }: HeaderProps) {
   const [remaining, setRemaining] = useState("--:--:--");
 
   useEffect(() => {
@@ -68,26 +107,47 @@ export function Header({ endsAt }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/12 bg-black/92 backdrop-blur-md">
-      <div className="mx-auto flex max-w-[560px] flex-col items-center px-4 pb-2 pt-3">
-        <PenSpearMark />
-
-        <h1 className="mt-1.5 flex items-baseline justify-center gap-2 font-[family-name:var(--font-brand)] text-[34px] font-semibold leading-none tracking-[0.42em] text-white">
-          <span className="pl-[0.42em]">D O M A</span>
-          <span
-            className="translate-y-[-1px] font-[family-name:var(--font-space-grotesk)] text-[11px] font-semibold tracking-[0.14em] text-muted"
-            title="Korea server"
+      <div className="relative mx-auto max-w-[560px] px-3 pb-2 pt-2.5">
+        <div className="absolute inset-x-3 top-2.5 flex items-start justify-between">
+          <button
+            type="button"
+            onClick={onOpenHistory}
+            className="flex size-10 items-center justify-center text-white"
+            aria-label="이전 대결 기록"
           >
-            kr
-          </span>
-        </h1>
+            <CalendarIcon />
+          </button>
+          <button
+            type="button"
+            onClick={onOpenSearch}
+            className="flex size-10 items-center justify-center text-white"
+            aria-label="검색"
+          >
+            <SearchIcon />
+          </button>
+        </div>
 
-        <time
-          dateTime={endsAt}
-          className="mt-1.5 font-mono text-[14px] font-medium tabular-nums tracking-[0.16em] text-timer"
-          aria-label={`남은 시간 ${remaining}`}
-        >
-          {remaining}
-        </time>
+        <div className="flex flex-col items-center">
+          <PenSpearMark />
+
+          <h1 className="mt-1 flex items-baseline justify-center gap-1 font-[family-name:var(--font-brand)] text-[32px] font-semibold leading-none tracking-[0.14em] text-white">
+            <span>DOMA</span>
+            <span
+              className="translate-y-[-1px] font-[family-name:var(--font-space-grotesk)] text-[12px] font-semibold tracking-[0.06em] text-muted"
+              title="Korea server"
+            >
+              .kr
+            </span>
+          </h1>
+
+          <time
+            dateTime={endsAt}
+            className="mt-1.5 font-mono text-[17px] font-semibold tabular-nums tracking-[0.14em] text-timer"
+            aria-label={`남은 시간 ${remaining}`}
+          >
+            {remaining}
+          </time>
+        </div>
       </div>
     </header>
   );
