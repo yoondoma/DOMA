@@ -153,13 +153,18 @@ export function ArenaBar({
           위: 주제·설명 — sticky로 자리 고정 (헤더 아래).
           아래: 진영·펼침·피드가 그 아래 영역을 씀.
         */}
+        {/* 초기: 주제가 주인공 · 펼침 후엔 압축 sticky */}
         <div
-          className={`sticky top-[3.5rem] z-30 border-b px-5 ${
-            selected ? "pb-3 pt-3" : "pb-5 pt-5"
+          className={`${
+            selected
+              ? "sticky top-[3.5rem] z-30 border-b px-5 pb-3 pt-3"
+              : "flex min-h-[42dvh] flex-col justify-center px-5 pb-8 pt-10"
           } ${
             light
               ? "border-black/12 bg-white/96 backdrop-blur-md"
-              : "border-white/12 bg-black/96 backdrop-blur-md"
+              : selected
+                ? "border-white/12 bg-black/96 backdrop-blur-md"
+                : "bg-black"
           }`}
           aria-label="오늘 주제 영역"
         >
@@ -171,17 +176,17 @@ export function ArenaBar({
             제 {arena.round} 도마
           </p>
           <h2
-            className={`mt-2 font-[family-name:var(--font-syne)] font-bold tracking-tight ${
+            className={`mt-3 font-[family-name:var(--font-syne)] font-bold tracking-tight ${
               selected
                 ? "text-[18px] leading-[1.35] sm:text-[19px]"
-                : "text-[24px] leading-[1.32] sm:text-[26px]"
+                : "text-[26px] leading-[1.28] sm:text-[28px]"
             } ${light ? "text-black" : "text-white"}`}
           >
             {arena.topic}
           </h2>
           {!selected ? (
             <p
-              className={`mt-3 max-w-[40em] text-[14px] leading-[1.65] ${
+              className={`mt-4 max-w-[36em] text-[15px] leading-[1.7] ${
                 light ? "text-black/72" : "text-white/78"
               }`}
             >
@@ -198,8 +203,14 @@ export function ArenaBar({
           )}
         </div>
 
-        {/* 아래: 진영 선택 + (펼침 시) 의견 */}
+        {/* 다음 액션: 진영 선택 → 펼치면 그 진영 의견을 하나하나 */}
         <div aria-label="진영과 의견 영역">
+          {!selected ? (
+            <p className="px-5 pb-3 text-center text-[11px] tracking-[0.16em] text-muted">
+              다음 · 진영을 골라 의견을 살펴보세요
+            </p>
+          ) : null}
+
           <div
             className="grid grid-cols-2"
             role="tablist"
@@ -212,12 +223,12 @@ export function ArenaBar({
               aria-label="도전자"
               onClick={() => selectSide("NEXUS")}
               className={`flex flex-col items-center justify-center gap-1.5 border-0 bg-black p-0 text-white shadow-none outline-none ring-0 focus:outline-none focus-visible:outline-none ${
-                selected ? "min-h-[64px]" : "min-h-[88px]"
+                selected ? "min-h-[64px]" : "min-h-[100px]"
               } ${
                 selected && selected !== "NEXUS" ? "opacity-50" : "opacity-100"
               }`}
             >
-              <SpearMark size={selected ? 26 : 32} />
+              <SpearMark size={selected ? 26 : 34} />
               <span className="text-[12px] font-bold tracking-[0.18em]">
                 도전자
               </span>
@@ -229,23 +240,17 @@ export function ArenaBar({
               aria-label="방어자"
               onClick={() => selectSide("AEGIS")}
               className={`flex flex-col items-center justify-center gap-1.5 border-0 bg-white p-0 text-black shadow-none outline-none ring-0 focus:outline-none focus-visible:outline-none ${
-                selected ? "min-h-[64px]" : "min-h-[88px]"
+                selected ? "min-h-[64px]" : "min-h-[100px]"
               } ${
                 selected && selected !== "AEGIS" ? "opacity-50" : "opacity-100"
               }`}
             >
-              <ShieldMark size={selected ? 26 : 32} />
+              <ShieldMark size={selected ? 26 : 34} />
               <span className="text-[12px] font-bold tracking-[0.18em]">
                 방어자
               </span>
             </button>
           </div>
-
-          {!selected ? (
-            <p className="bg-black px-5 py-3 text-center text-[11px] tracking-[0.14em] text-muted">
-              진영을 누르면 TOP 의견이 펼쳐집니다 · 다시 누르면 닫힙니다
-            </p>
-          ) : null}
 
         {selected ? (
           <>
@@ -260,7 +265,7 @@ export function ArenaBar({
                   light ? "text-neutral-500" : "text-muted"
                 }`}
               >
-                {sideLabel} · 펼침
+                {sideLabel} · 의견 탐색
               </p>
               <button
                 type="button"
@@ -270,7 +275,7 @@ export function ArenaBar({
                   light ? "text-neutral-600" : "text-muted"
                 }`}
               >
-                닫기 · 기본 화면
+                닫기 · 주제로
               </button>
             </div>
 

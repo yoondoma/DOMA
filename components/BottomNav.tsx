@@ -12,7 +12,7 @@ const TABS: {
   label: string;
   compose?: boolean;
 }[] = [
-  { id: "home", label: "홈" },
+  { id: "home", label: "아레나" },
   { id: "messages", label: "메시지" },
   { id: "compose", label: "작성", compose: true },
   { id: "alerts", label: "알림" },
@@ -24,20 +24,26 @@ function NavIcon({ id, active }: { id: NavTab; active: boolean }) {
 
   switch (id) {
     case "home":
-      // 아레나로 돌아가기 — 집 형태 Strict B&W (주황 N 배지와 무관)
+      // 아레나(결투장): 흑/백 분할 원 + 중앙 균열 — 결투가 짧게 읽힘
       return (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <circle cx="12" cy="12" r="8.25" stroke={stroke} strokeWidth="1.7" />
           <path
-            d="M3.75 10.75 12 4.25l8.25 6.5"
+            d="M12 3.75v16.5"
             stroke={stroke}
-            strokeWidth="1.75"
-            strokeLinejoin="round"
+            strokeWidth="1.7"
             strokeLinecap="square"
           />
+          {/* 좌 흑면 느낌 — 채움 */}
           <path
-            d="M6 10.5V19.25h4.25v-5.5h3.5v5.5H18V10.5"
-            stroke={stroke}
-            strokeWidth="1.75"
+            d="M12 4.1A7.9 7.9 0 0 0 4.1 12 7.9 7.9 0 0 0 12 19.9V4.1Z"
+            fill={active ? "#fff" : "#737373"}
+          />
+          {/* 균열 */}
+          <path
+            d="M12 3.75 10.2 7.5 13.2 10.2 10.5 13.5 13 16.2 12 20.25"
+            stroke={active ? "#000" : "#0a0a0a"}
+            strokeWidth="1.35"
             strokeLinejoin="round"
             strokeLinecap="square"
           />
@@ -45,7 +51,7 @@ function NavIcon({ id, active }: { id: NavTab; active: boolean }) {
       );
     case "messages":
       return (
-        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
           <path
             d="M4.5 6.5h15v9.5H9.2L5.5 19.2V6.5Z"
             fill={active ? "rgba(255,255,255,0.12)" : "none"}
@@ -64,7 +70,7 @@ function NavIcon({ id, active }: { id: NavTab; active: boolean }) {
     case "compose":
       return (
         <span className="flex size-9 items-center justify-center rounded-full border border-white bg-white text-black">
-          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
             <path
               d="M12 5v14M5 12h14"
               stroke="currentColor"
@@ -76,7 +82,7 @@ function NavIcon({ id, active }: { id: NavTab; active: boolean }) {
       );
     case "alerts":
       return (
-        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
           <path
             d="M6 17h12l-1.2-2.1V10a4.8 4.8 0 1 0-9.6 0v4.9L6 17Z"
             fill={active ? "rgba(255,255,255,0.15)" : "none"}
@@ -94,7 +100,7 @@ function NavIcon({ id, active }: { id: NavTab; active: boolean }) {
       );
     case "profile":
       return (
-        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
           <circle
             cx="12"
             cy="8"
@@ -115,6 +121,7 @@ function NavIcon({ id, active }: { id: NavTab; active: boolean }) {
   }
 }
 
+/** 심볼만 — 화면 라벨 없음 · aria-label로 접근성 유지 */
 export function BottomNav({ active, onChange }: BottomNavProps) {
   return (
     <nav
@@ -130,18 +137,11 @@ export function BottomNav({ active, onChange }: BottomNavProps) {
               key={tab.id}
               type="button"
               onClick={() => onChange(tab.id)}
-              className="flex min-h-14 flex-col items-center justify-center gap-0.5 text-[10px] font-medium tracking-wide"
+              className="flex min-h-14 items-center justify-center"
               aria-current={isActive ? "page" : undefined}
               aria-label={tab.label}
             >
               <NavIcon id={tab.id} active={isActive || Boolean(tab.compose)} />
-              {!tab.compose ? (
-                <span className={isActive ? "text-white" : "text-neutral-500"}>
-                  {tab.label}
-                </span>
-              ) : (
-                <span className="sr-only">{tab.label}</span>
-              )}
             </button>
           );
         })}

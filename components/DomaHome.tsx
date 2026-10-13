@@ -7,7 +7,6 @@ import type { CalendarPanel } from "@/components/BattleCalendar";
 import { BottomNav, type NavTab } from "@/components/BottomNav";
 import { ComposeChoice } from "@/components/ComposeChoice";
 import { Header } from "@/components/Header";
-import { OpinionFeed } from "@/components/OpinionFeed";
 import { ProfileScreen } from "@/components/ProfileScreen";
 import { PullRefresh } from "@/components/PullRefresh";
 import { SearchSheet } from "@/components/SearchSheet";
@@ -210,10 +209,7 @@ export function DomaHome() {
               view={arenaView}
               onChangeView={setArenaView}
             />
-            {/* 오늘은 주제·진영·실시간만 — 내일 카드는 달력「미래」탭 */}
-            {arenaView === "intro" ? (
-              <OpinionFeed opinions={opinions} />
-            ) : null}
+            {/* 초기=주제만. 피드·의견은 진영 펼침 후에 */}
           </PullRefresh>
         ) : null}
 
