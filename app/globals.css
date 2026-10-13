@@ -169,14 +169,14 @@ body {
   animation: touch-press 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* transform 금지: fixed 하단바(홈/지지) containing block이 깨져
+   Next Dev Tools 배지가 홈 자리처럼 보이던 원인 */
 @keyframes arena-enter {
   from {
     opacity: 0;
-    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
