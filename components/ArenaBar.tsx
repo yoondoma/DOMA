@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { ShieldMark, SpearMark } from "@/components/SideMarks";
-import type { ArenaState, Side } from "@/lib/types";
+import { useMemo, useState } from "react";
+import { ShieldMark, SideBadge, SpearMark } from "@/components/SideMarks";
+import type { ArenaState, Opinion, Side } from "@/lib/types";
 
 type ArenaBarProps = {
   arena: ArenaState;
+  opinions: Opinion[];
   nexusPercent: number;
   aegisPercent: number;
   onJoin: (side: Side) => void;
@@ -40,8 +41,35 @@ function CrackDivider() {
   );
 }
 
+function topOpinionForSide(opinions: Opinion[], side: Side): Opinion | null {
+  const list = opinions.filter((o) => o.side === side);
+  if (list.length === 0) return null;
+  return [...list].sort((a, b) => b.likes - a.likes)[0] ?? null;
+}
+
+function HeartMark() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      className="shrink-0 text-muted"
+      aria-hidden
+    >
+      <path
+        d="M8 13.2S2.8 9.8 2.8 5.9A2.7 2.7 0 0 1 8 4.4 2.7 2.7 0 0 1 13.2 5.9C13.2 9.8 8 13.2 8 13.2Z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function ArenaBar({
   arena,
+  opinions,
   nexusPercent,
   aegisPercent,
   onJoin,
@@ -49,8 +77,11 @@ export function ArenaBar({
   compact = false,
 }: ArenaBarProps) {
   const [focus, setFocus] = useState<Side>("NEXUS");
-  const rep = arena.representatives[focus];
   const isNexus = focus === "NEXUS";
+  const top = useMemo(
+    () => topOpinionForSide(opinions, focus),
+    [opinions, focus],
+  );
 
   return (
     <section className="border-b border-white/12 bg-black">
@@ -77,7 +108,7 @@ export function ArenaBar({
             type="button"
             role="tab"
             aria-selected={isNexus}
-            aria-label="창 진영"
+            aria-label="창 진영 Top 의견"
             onClick={() => setFocus("NEXUS")}
             className={`flex min-h-11 items-center justify-center ${
               isNexus
@@ -91,7 +122,7 @@ export function ArenaBar({
             type="button"
             role="tab"
             aria-selected={!isNexus}
-            aria-label="방패 진영"
+            aria-label="방패 진영 Top 의견"
             onClick={() => setFocus("AEGIS")}
             className={`flex min-h-11 items-center justify-center ${
               !isNexus
@@ -103,31 +134,31 @@ export function ArenaBar({
           </button>
         </div>
 
-        <div className="px-4 py-4 text-center">
-          <div
-            className={`mx-auto flex size-[72px] items-center justify-center rounded-full border text-[22px] font-bold tracking-wide ${
-              isNexus
-                ? "border-white bg-black text-white"
-                : "border-white bg-white text-black"
-            }`}
-            aria-hidden
-          >
-            {rep.monogram}
-          </div>
-          <p className="mt-2.5 font-[family-name:var(--font-syne)] text-[16px] font-bold tracking-wide text-white">
-            {rep.name}
-          </p>
-          <p className="mt-0.5 text-[11px] text-muted">{rep.role}</p>
-
-          <div className="mx-auto my-3 flex max-w-[220px] items-center gap-2">
-            <span className="h-px flex-1 bg-white/25" />
-            <span className="size-1 rotate-45 bg-white/70" />
-            <span className="h-px flex-1 bg-white/25" />
-          </div>
-
-          <blockquote className="px-1 font-[family-name:var(--font-syne)] text-[15px] font-semibold leading-relaxed tracking-tight text-white">
-            “{rep.quote}”
-          </blockquote>
+        <div className="px-4 py-3">
+          {top ? (
+            <article className="border border-white/20 bg-white/[0.02] px-3 py-3">
+              <div className="mb-1.5 flex items-center gap-2">
+                <span className="text-[10px] font-bold tracking-[0.16em] text-muted">
+                  TOP
+                </span>
+                <SideBadge side={top.side} />
+                <span className="truncate text-[13px] font-semibold text-white">
+                  @{top.author}
+                </span>
+                <span className="ml-auto inline-flex items-center gap-1 text-[11px] tabular-nums text-muted">
+                  <HeartMark />
+                  {top.likes}
+                </span>
+              </div>
+              <p className="text-[14px] leading-[1.45] text-white/95">
+                “{top.text}”
+              </p>
+            </article>
+          ) : (
+            <p className="py-6 text-center text-sm text-muted">
+              이 진영의 인기 의견이 아직 없습니다.
+            </p>
+          )}
         </div>
 
         <div className="relative flex min-h-[88px] w-full overflow-hidden border-t border-white/20">

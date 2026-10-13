@@ -85,6 +85,7 @@ export function DomaHome() {
           <>
             <ArenaBar
               arena={INITIAL_ARENA}
+              opinions={opinions}
               nexusPercent={nexusPercent}
               aegisPercent={aegisPercent}
               onJoin={handleJoin}
@@ -102,6 +103,7 @@ export function DomaHome() {
         {navTab === "arena" ? (
           <ArenaBar
             arena={INITIAL_ARENA}
+            opinions={opinions}
             nexusPercent={nexusPercent}
             aegisPercent={aegisPercent}
             onJoin={handleJoin}

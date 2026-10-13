@@ -15,22 +15,6 @@ export const INITIAL_ARENA: ArenaState = {
   aegisPercent: 42,
   nexusVotes: 4821,
   aegisVotes: 4519,
-  representatives: {
-    NEXUS: {
-      side: "NEXUS",
-      name: "세베루스",
-      role: "상처를 짚는 자",
-      quote: "대체는 이미 시작됐다. 기준을 감정으로 낮추지 마라.",
-      monogram: "S",
-    },
-    AEGIS: {
-      side: "AEGIS",
-      name: "미라",
-      role: "경계를 지키는 자",
-      quote: "도구가 손을 대신해도, 책임은 인간에게 남는다.",
-      monogram: "M",
-    },
-  },
 };
 
 export const INITIAL_OPINIONS: Opinion[] = [
