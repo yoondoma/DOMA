@@ -7,6 +7,8 @@ import type { CalendarPanel } from "@/components/BattleCalendar";
 import { BottomNav, type NavTab } from "@/components/BottomNav";
 import { ComposeChoice } from "@/components/ComposeChoice";
 import { Header } from "@/components/Header";
+import { MessagesScreen } from "@/components/MessagesScreen";
+import { NotificationsScreen } from "@/components/NotificationsScreen";
 import { ProfileScreen } from "@/components/ProfileScreen";
 import { PullRefresh } from "@/components/PullRefresh";
 import { SearchSheet } from "@/components/SearchSheet";
@@ -17,33 +19,6 @@ import { WieldBar } from "@/components/WieldBar";
 import { INITIAL_ARENA, INITIAL_OPINIONS } from "@/lib/mock-data";
 import type { TomorrowCandidate } from "@/lib/tomorrow-topics";
 import type { ArenaView, Opinion, Side } from "@/lib/types";
-
-function MockPanel({
-  title,
-  body,
-  light,
-}: {
-  title: string;
-  body: string;
-  light?: boolean;
-}) {
-  return (
-    <div
-      className={`mx-auto flex max-w-[560px] flex-col items-center justify-center px-6 py-20 text-center ${
-        light ? "bg-white text-black" : "bg-black text-white"
-      }`}
-    >
-      <p className="font-[family-name:var(--font-syne)] text-lg font-bold tracking-wide">
-        {title}
-      </p>
-      <p
-        className={`mt-2 text-sm ${light ? "text-neutral-500" : "text-muted"}`}
-      >
-        {body}
-      </p>
-    </div>
-  );
-}
 
 function bumpPercents(
   nexus: number,
@@ -213,19 +188,9 @@ export function DomaHome() {
           </PullRefresh>
         ) : null}
 
-        {navTab === "messages" ? (
-          <MockPanel
-            title="메시지"
-            body="진영·멘션 DM이 여기에 모입니다. (목업)"
-          />
-        ) : null}
+        {navTab === "messages" ? <MessagesScreen /> : null}
 
-        {navTab === "alerts" ? (
-          <MockPanel
-            title="알림"
-            body="곧 참전·멘션·소수의견 알림이 여기에 모입니다. (목업)"
-          />
-        ) : null}
+        {navTab === "alerts" ? <NotificationsScreen /> : null}
 
         {navTab === "profile" ? <ProfileScreen /> : null}
 
