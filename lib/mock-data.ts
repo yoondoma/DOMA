@@ -10,6 +10,8 @@ function endOfTodayIso(): string {
 export const INITIAL_ARENA: ArenaState = {
   round: 412,
   topic: "인공지능은 인간의 지성을 완전히 대체할 것인가?",
+  description:
+    "계산·언어·창작까지 모델이 밀어붙이는 지금, ‘지성’의 경계는 어디에 남는지 묻는다. 도전자와 방어자가 같은 질문을 두고 판결을 겨룬다.",
   endsAt: endOfTodayIso(),
   nexusPercent: 58,
   aegisPercent: 42,
@@ -60,5 +62,33 @@ export const INITIAL_OPINIONS: Opinion[] = [
     author: "reed",
     text: "속도가 정당성을 대신하지 않는다. HOT한 글일수록 더 천천히 읽어야 한다.",
     likes: 120,
+  },
+  {
+    id: "op-7",
+    side: "NEXUS",
+    author: "kiln",
+    text: "전문직의 문턱이 낮아질수록 ‘인간만의 판단’은 신화가 된다. 대체는 이미 진행 중이다.",
+    likes: 64,
+  },
+  {
+    id: "op-8",
+    side: "AEGIS",
+    author: "slate",
+    text: "설명 가능한 실패와 책임의 주체가 없으면 시스템은 판단을 대신할 수 없다.",
+    likes: 91,
+  },
+  {
+    id: "op-9",
+    side: "NEXUS",
+    author: "orbit",
+    text: "창작물 평가조차 모델이 앞선다. 취향의 독점도 오래가지 않는다.",
+    likes: 52,
+  },
+  {
+    id: "op-10",
+    side: "AEGIS",
+    author: "loom",
+    text: "공동체가 합의하는 가치는 데이터셋 밖에 있다. 그 합의를 모델이 대체하진 못한다.",
+    likes: 73,
   },
 ];

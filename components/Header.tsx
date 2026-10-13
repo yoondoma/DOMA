@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 
 type HeaderProps = {
   endsAt: string;
+  /** 방어자 탭일 때 흰 톤 */
+  tone?: "dark" | "light";
   onOpenHistory?: () => void;
   onOpenSearch?: () => void;
 };
@@ -18,7 +20,8 @@ function formatCountdown(ms: number): string {
 }
 
 /** 원 안 아래로 향한 창=언론의 펜/붓 촉 */
-function PenSpearMark() {
+function PenSpearMark({ light }: { light?: boolean }) {
+  const stroke = light ? "#000000" : "#ffffff";
   return (
     <svg
       width="40"
@@ -28,23 +31,23 @@ function PenSpearMark() {
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden
     >
-      <circle cx="24" cy="24" r="18.5" stroke="#ffffff" strokeWidth="1.4" />
+      <circle cx="24" cy="24" r="18.5" stroke={stroke} strokeWidth="1.4" />
       <path
         d="M22.2 12.5h3.6v8.2h-3.6V12.5Z"
-        stroke="#ffffff"
+        stroke={stroke}
         strokeWidth="1.35"
         strokeLinejoin="miter"
       />
       <path
         d="M20.4 20.7 24 33.2 27.6 20.7H20.4Z"
-        stroke="#ffffff"
+        stroke={stroke}
         strokeWidth="1.35"
         strokeLinejoin="miter"
       />
       <path d="M24 27.2 25.35 28.9 24 30.6 22.65 28.9Z" fill="#e10600" />
       <path
         d="M17.5 35.6h13M18.5 37.8h11"
-        stroke="#ffffff"
+        stroke={stroke}
         strokeWidth="1.15"
         strokeLinecap="square"
       />
@@ -93,8 +96,14 @@ function SearchIcon() {
   );
 }
 
-export function Header({ endsAt, onOpenHistory, onOpenSearch }: HeaderProps) {
+export function Header({
+  endsAt,
+  tone = "dark",
+  onOpenHistory,
+  onOpenSearch,
+}: HeaderProps) {
   const [remaining, setRemaining] = useState("--:--:--");
+  const light = tone === "light";
 
   useEffect(() => {
     const tick = () => {
@@ -106,13 +115,21 @@ export function Header({ endsAt, onOpenHistory, onOpenSearch }: HeaderProps) {
   }, [endsAt]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/12 bg-black/92 backdrop-blur-md">
+    <header
+      className={`sticky top-0 z-40 border-b backdrop-blur-md ${
+        light
+          ? "border-black/10 bg-white/95"
+          : "border-white/12 bg-black/92"
+      }`}
+    >
       <div className="relative mx-auto max-w-[560px] px-3 pb-2 pt-2.5">
         <div className="absolute inset-x-3 top-2.5 flex items-start justify-between">
           <button
             type="button"
             onClick={onOpenHistory}
-            className="flex size-10 items-center justify-center text-white"
+            className={`flex size-10 items-center justify-center ${
+              light ? "text-black" : "text-white"
+            }`}
             aria-label="이전 대결 기록"
           >
             <CalendarIcon />
@@ -120,7 +137,9 @@ export function Header({ endsAt, onOpenHistory, onOpenSearch }: HeaderProps) {
           <button
             type="button"
             onClick={onOpenSearch}
-            className="flex size-10 items-center justify-center text-white"
+            className={`flex size-10 items-center justify-center ${
+              light ? "text-black" : "text-white"
+            }`}
             aria-label="검색"
           >
             <SearchIcon />
@@ -128,12 +147,18 @@ export function Header({ endsAt, onOpenHistory, onOpenSearch }: HeaderProps) {
         </div>
 
         <div className="flex flex-col items-center">
-          <PenSpearMark />
+          <PenSpearMark light={light} />
 
-          <h1 className="mt-1 flex items-baseline justify-center font-[family-name:var(--font-brand)] text-[32px] font-semibold leading-none tracking-[0.22em] text-white">
+          <h1
+            className={`mt-1 flex items-baseline justify-center font-[family-name:var(--font-brand)] text-[32px] font-semibold leading-none tracking-[0.22em] ${
+              light ? "text-black" : "text-white"
+            }`}
+          >
             <span>DOMA</span>
             <span
-              className="ml-[0.12em] translate-y-[-1px] font-[family-name:var(--font-space-grotesk)] text-[12px] font-semibold tracking-[0.04em] text-muted"
+              className={`ml-[0.12em] translate-y-[-1px] font-[family-name:var(--font-space-grotesk)] text-[12px] font-semibold tracking-[0.04em] ${
+                light ? "text-neutral-500" : "text-muted"
+              }`}
               title="Korea server"
             >
               .kr

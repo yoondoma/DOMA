@@ -4,18 +4,34 @@ import { useCallback, useState } from "react";
 import { ArenaBar } from "@/components/ArenaBar";
 import { BottomNav, type NavTab } from "@/components/BottomNav";
 import { Header } from "@/components/Header";
-import { OpinionFeed } from "@/components/OpinionFeed";
+import { SupportBar } from "@/components/SupportBar";
 import { WieldBar } from "@/components/WieldBar";
 import { INITIAL_ARENA, INITIAL_OPINIONS } from "@/lib/mock-data";
-import type { Opinion, Side } from "@/lib/types";
+import type { ArenaView, Opinion, Side } from "@/lib/types";
 
-function MockPanel({ title, body }: { title: string; body: string }) {
+function MockPanel({
+  title,
+  body,
+  light,
+}: {
+  title: string;
+  body: string;
+  light?: boolean;
+}) {
   return (
-    <div className="mx-auto flex max-w-[560px] flex-col items-center justify-center px-6 py-20 text-center">
+    <div
+      className={`mx-auto flex max-w-[560px] flex-col items-center justify-center px-6 py-20 text-center ${
+        light ? "bg-white text-black" : "bg-black text-white"
+      }`}
+    >
       <p className="font-[family-name:var(--font-syne)] text-lg font-bold tracking-wide">
         {title}
       </p>
-      <p className="mt-2 text-sm text-muted">{body}</p>
+      <p
+        className={`mt-2 text-sm ${light ? "text-neutral-500" : "text-muted"}`}
+      >
+        {body}
+      </p>
     </div>
   );
 }
@@ -25,10 +41,12 @@ export function DomaHome() {
   const [aegisPercent, setAegisPercent] = useState(INITIAL_ARENA.aegisPercent);
   const [joined, setJoined] = useState<Side | null>(null);
   const [opinions, setOpinions] = useState<Opinion[]>(INITIAL_OPINIONS);
-  const [selectedSide, setSelectedSide] = useState<Side>("NEXUS");
+  const [arenaView, setArenaView] = useState<ArenaView>("intro");
   const [navTab, setNavTab] = useState<NavTab>("home");
   const [composeOpen, setComposeOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+
+  const lightShell = navTab === "home" && arenaView === "AEGIS";
 
   const showToast = useCallback((message: string) => {
     setToast(message);
@@ -53,7 +71,8 @@ export function DomaHome() {
   };
 
   const handleSubmit = (text: string) => {
-    const side: Side = joined ?? "NEXUS";
+    const side: Side =
+      joined ?? (arenaView === "AEGIS" ? "AEGIS" : "NEXUS");
     const next: Opinion = {
       id: `op-${Date.now()}`,
       side,
@@ -71,32 +90,37 @@ export function DomaHome() {
       setComposeOpen(true);
       return;
     }
+    if (tab === "home") {
+      setArenaView("intro");
+    }
     setNavTab(tab);
   };
 
   return (
-    <div className="min-h-full bg-black text-white">
-      <div className="mx-auto min-h-full max-w-[560px] border-x border-white/10 bg-black">
+    <div
+      className={`min-h-full ${lightShell ? "bg-white text-black" : "bg-black text-white"}`}
+    >
+      <div
+        className={`mx-auto min-h-full max-w-[560px] border-x ${
+          lightShell
+            ? "border-black/10 bg-white"
+            : "border-white/10 bg-black"
+        }`}
+      >
         <Header
           endsAt={INITIAL_ARENA.endsAt}
+          tone={lightShell ? "light" : "dark"}
           onOpenHistory={() => showToast("이전 대결 기록 (목업)")}
           onOpenSearch={() => showToast("검색 (목업)")}
         />
 
         {navTab === "home" ? (
-          <>
-            <ArenaBar
-              arena={INITIAL_ARENA}
-              opinions={opinions}
-              nexusPercent={nexusPercent}
-              aegisPercent={aegisPercent}
-              selectedSide={selectedSide}
-              onSelectSide={setSelectedSide}
-              onJoin={handleJoin}
-              joined={joined}
-            />
-            <OpinionFeed opinions={opinions} />
-          </>
+          <ArenaBar
+            arena={INITIAL_ARENA}
+            opinions={opinions}
+            view={arenaView}
+            onChangeView={setArenaView}
+          />
         ) : null}
 
         {navTab === "messages" ? (
@@ -120,18 +144,39 @@ export function DomaHome() {
           />
         ) : null}
 
-        <div className="h-16" aria-hidden />
+        {/* SupportBar(≈84) + BottomNav(56) + safe */}
+        <div className="h-[calc(84px+3.5rem+env(safe-area-inset-bottom))]" aria-hidden />
       </div>
 
       {toast ? (
         <div
-          className="fixed inset-x-0 bottom-20 z-[55] flex justify-center px-4"
+          className="fixed inset-x-0 z-[55] flex justify-center px-4"
+          style={{
+            bottom: "calc(84px + 3.5rem + env(safe-area-inset-bottom) + 8px)",
+          }}
           role="status"
         >
-          <div className="max-w-[560px] border border-white/30 bg-black px-3 py-2 text-center text-[12px] font-medium tracking-wide text-white">
+          <div
+            className={`max-w-[560px] border px-3 py-2 text-center text-[12px] font-medium tracking-wide ${
+              lightShell
+                ? "border-black/20 bg-white text-black"
+                : "border-white/30 bg-black text-white"
+            }`}
+          >
             {toast}
           </div>
         </div>
+      ) : null}
+
+      {navTab === "home" ? (
+        <SupportBar
+          nexusPercent={nexusPercent}
+          aegisPercent={aegisPercent}
+          nexusVotes={INITIAL_ARENA.nexusVotes}
+          aegisVotes={INITIAL_ARENA.aegisVotes}
+          joined={joined}
+          onJoin={handleJoin}
+        />
       ) : null}
 
       <WieldBar
