@@ -31,14 +31,14 @@ function HeartMark() {
 function OpinionRow({ op, index }: { op: Opinion; index: number }) {
   return (
     <li
-      className={`feed-item border-b border-white/10 px-4 py-3 ${
+      className={`feed-item border-b border-white/10 px-4 py-2.5 ${
         op.isTopMinority ? "border-l-2 border-l-white bg-white/[0.03]" : ""
       }`}
       style={{ animationDelay: `${index * 30}ms` }}
     >
-      <div className="mb-1 flex items-center gap-2">
+      <div className="mb-0.5 flex items-center gap-2">
         <div
-          className="flex size-8 shrink-0 items-center justify-center border border-white/30 text-[10px] font-bold text-muted"
+          className="flex size-7 shrink-0 items-center justify-center border border-white/30 text-[10px] font-bold text-muted"
           aria-hidden
         >
           {op.author.slice(0, 1).toUpperCase()}
@@ -56,7 +56,9 @@ function OpinionRow({ op, index }: { op: Opinion; index: number }) {
           {op.likes}
         </span>
       </div>
-      <p className="pl-10 text-[14px] leading-[1.45] text-white/95">{op.text}</p>
+      <p className="line-clamp-2 pl-9 text-[13px] leading-[1.4] text-white/95">
+        {op.text}
+      </p>
     </li>
   );
 }
@@ -64,12 +66,12 @@ function OpinionRow({ op, index }: { op: Opinion; index: number }) {
 /** 실시간 올라오는 의견 + HOT 글 */
 export function OpinionFeed({ opinions }: OpinionFeedProps) {
   const live = useMemo(() => {
-    // 목: id 역순 ≈ 최근 올라온 글
-    return [...opinions].reverse();
+    // 목: id 역순 ≈ 최근 · 첫 화면 peek는 2개
+    return [...opinions].reverse().slice(0, 2);
   }, [opinions]);
 
   const hot = useMemo(() => {
-    return [...opinions].sort((a, b) => b.likes - a.likes);
+    return [...opinions].sort((a, b) => b.likes - a.likes).slice(0, 4);
   }, [opinions]);
 
   return (
@@ -100,9 +102,15 @@ export function OpinionFeed({ opinions }: OpinionFeedProps) {
         </p>
       </div>
       <ul aria-label="HOT 글">
-        {hot.map((op, index) => (
-          <OpinionRow key={`hot-${op.id}`} op={op} index={index} />
-        ))}
+        {hot.length === 0 ? (
+          <li className="px-4 py-8 text-center text-sm text-muted">
+            HOT 글이 아직 없습니다.
+          </li>
+        ) : (
+          hot.map((op, index) => (
+            <OpinionRow key={`hot-${op.id}`} op={op} index={index} />
+          ))
+        )}
       </ul>
     </section>
   );

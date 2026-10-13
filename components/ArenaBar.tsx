@@ -81,18 +81,18 @@ function TopOpinionCard({
 }) {
   return (
     <div
-      className={`px-4 py-3 ${light ? "bg-white text-black" : "bg-black text-white"}`}
+      className={`px-4 py-2.5 ${light ? "bg-white text-black" : "bg-black text-white"}`}
       aria-live="polite"
     >
       <p
-        className={`mb-2 text-[10px] font-bold tracking-[0.18em] ${
+        className={`mb-1.5 text-[10px] font-bold tracking-[0.18em] ${
           light ? "text-neutral-500" : "text-muted"
         }`}
       >
         {label}
       </p>
       <article
-        className={`border px-3 py-3 ${
+        className={`border px-3 py-2.5 ${
           light
             ? "border-black/20 bg-neutral-50"
             : "border-white/20 bg-white/[0.03]"
