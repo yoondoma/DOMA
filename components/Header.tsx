@@ -30,8 +30,14 @@ export function Header({ endsAt }: HeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-white/12 bg-black/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-[560px] flex-col items-center px-4 pb-1.5 pt-2">
-        <h1 className="font-[family-name:var(--font-syne)] text-[20px] font-extrabold leading-none tracking-[0.16em] text-white">
-          DOMA
+        <h1 className="flex items-baseline gap-1.5 font-[family-name:var(--font-syne)] text-[20px] font-extrabold leading-none tracking-[0.16em] text-white">
+          <span>DOMA</span>
+          <span
+            className="translate-y-[-1px] text-[10px] font-semibold tracking-[0.14em] text-muted"
+            title="Korea server"
+          >
+            kr
+          </span>
         </h1>
         <div className="mt-1 flex items-center gap-1.5">
           <time

@@ -1,5 +1,6 @@
 "use client";
 
+import { ShieldMark, SwordMark } from "@/components/SideMarks";
 import type { Side } from "@/lib/types";
 
 type ArenaBarProps = {
@@ -37,31 +38,43 @@ export function ArenaBar({
 
         <div className={compact ? "mt-2" : "mt-2.5"}>
           <div className="mb-1 flex items-center justify-between text-[11px] font-semibold tracking-wide">
-            <span className="text-white">
-              NEXUS <span className="tabular-nums">{nexusPercent}%</span>
+            <span className="inline-flex items-center gap-1 text-white">
+              <SwordMark size={13} />
+              NEXUS
+              <span className="text-muted">공격</span>
+              <span className="tabular-nums">{nexusPercent}%</span>
             </span>
             <span className="text-muted">vs</span>
-            <span className="text-white">
-              AEGIS <span className="tabular-nums">{aegisPercent}%</span>
+            <span className="inline-flex items-center gap-1 text-white">
+              <span className="tabular-nums">{aegisPercent}%</span>
+              <span className="text-muted">방어</span>
+              AEGIS
+              <ShieldMark size={13} />
             </span>
           </div>
 
           <div
-            className="relative flex h-6 w-full overflow-hidden border border-white"
+            className="relative flex h-7 w-full overflow-hidden border border-white"
             role="img"
-            aria-label={`NEXUS ${nexusPercent}퍼센트, AEGIS ${aegisPercent}퍼센트`}
+            aria-label={`NEXUS 검·공격 ${nexusPercent}퍼센트, AEGIS 방패·방어 ${aegisPercent}퍼센트`}
           >
             <div
-              className="gauge-animate flex h-full items-center justify-start bg-black pl-1.5 text-[9px] font-bold tracking-wider text-white"
+              className="gauge-animate flex h-full items-center justify-start gap-1 bg-black pl-1.5 text-white"
               style={{ width: `${nexusPercent}%` }}
             >
-              <span className="truncate">검</span>
+              <SwordMark size={12} />
+              <span className="truncate text-[9px] font-bold tracking-wider">
+                검
+              </span>
             </div>
             <div
-              className="flex h-full items-center justify-end bg-white pr-1.5 text-[9px] font-bold tracking-wider text-black"
+              className="flex h-full items-center justify-end gap-1 bg-white pr-1.5 text-black"
               style={{ width: `${aegisPercent}%` }}
             >
-              <span className="truncate">흰</span>
+              <span className="truncate text-[9px] font-bold tracking-wider">
+                방패
+              </span>
+              <ShieldMark size={12} />
             </div>
           </div>
         </div>
@@ -70,23 +83,25 @@ export function ArenaBar({
           <button
             type="button"
             onClick={() => onJoin("NEXUS")}
-            className={`h-10 border text-[11px] font-bold tracking-[0.12em] transition-colors ${
+            className={`flex h-10 items-center justify-center gap-1.5 border text-[11px] font-bold tracking-[0.1em] transition-colors ${
               joined === "NEXUS"
                 ? "border-white bg-white text-black"
                 : "border-white bg-black text-white active:bg-white active:text-black"
             }`}
           >
+            <SwordMark size={13} />
             NEXUS 참전
           </button>
           <button
             type="button"
             onClick={() => onJoin("AEGIS")}
-            className={`h-10 border text-[11px] font-bold tracking-[0.12em] transition-colors ${
+            className={`flex h-10 items-center justify-center gap-1.5 border text-[11px] font-bold tracking-[0.1em] transition-colors ${
               joined === "AEGIS"
                 ? "border-white bg-white text-black"
                 : "border-white/50 bg-transparent text-white active:border-white active:bg-white active:text-black"
             }`}
           >
+            <ShieldMark size={13} />
             AEGIS 참전
           </button>
         </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { SideBadge } from "@/components/SideMarks";
 import type { Opinion, Side } from "@/lib/types";
 
 export type FeedTab = "ALL" | "TOP" | "NEXUS" | "AEGIS";
@@ -27,21 +28,6 @@ function filterOpinions(opinions: Opinion[], tab: FeedTab): Opinion[] {
     return opinions.filter((o) => o.isTopMinority);
   }
   return opinions.filter((o) => o.side === (tab as Side));
-}
-
-function SideBadge({ side }: { side: Side }) {
-  const isNexus = side === "NEXUS";
-  return (
-    <span
-      className={`inline-flex px-1 py-px text-[10px] font-bold tracking-[0.14em] ${
-        isNexus
-          ? "border border-white/80 text-white"
-          : "bg-white text-black"
-      }`}
-    >
-      {side}
-    </span>
-  );
 }
 
 export function OpinionFeed({
