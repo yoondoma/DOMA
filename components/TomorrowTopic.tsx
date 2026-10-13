@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   INITIAL_TOMORROW_TOPICS,
   type TomorrowCandidate,
@@ -10,15 +10,30 @@ type TomorrowTopicProps = {
   onVoted?: (title: string) => void;
   /** 달력 시트 안 임베드 — 항상 후보 목록 */
   embedded?: boolean;
+  /** (+)로 제안된 주제 병합 */
+  extras?: TomorrowCandidate[];
 };
 
 /** 내일의 주제 후보·투표 (목). 본문 큰 카드가 아니라 달력「미래」탭에서 사용 */
-export function TomorrowTopic({ onVoted, embedded = false }: TomorrowTopicProps) {
+export function TomorrowTopic({
+  onVoted,
+  embedded = false,
+  extras,
+}: TomorrowTopicProps) {
   const [candidates, setCandidates] = useState<TomorrowCandidate[]>(
     INITIAL_TOMORROW_TOPICS,
   );
   const [picked, setPicked] = useState<string | null>(null);
   const [votedId, setVotedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!extras?.length) return;
+    setCandidates((prev) => {
+      const ids = new Set(prev.map((c) => c.id));
+      const add = extras.filter((e) => !ids.has(e.id));
+      return add.length ? [...add, ...prev] : prev;
+    });
+  }, [extras]);
 
   const total = useMemo(
     () => candidates.reduce((sum, c) => sum + c.votes, 0),

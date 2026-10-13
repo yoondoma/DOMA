@@ -9,6 +9,7 @@ import {
   BATTLE_YEAR,
   battleByDate,
 } from "@/lib/battle-history";
+import type { TomorrowCandidate } from "@/lib/tomorrow-topics";
 import type { BattleDay } from "@/lib/types";
 
 export type CalendarPanel = "history" | "tomorrow";
@@ -19,6 +20,7 @@ type BattleCalendarProps = {
   /** 과거=전투 기록 · 미래=내일의 주제 */
   initialPanel?: CalendarPanel;
   onVotedTomorrow?: (title: string) => void;
+  tomorrowExtras?: TomorrowCandidate[];
 };
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
@@ -139,6 +141,7 @@ export function BattleCalendar({
   onClose,
   initialPanel = "history",
   onVotedTomorrow,
+  tomorrowExtras,
 }: BattleCalendarProps) {
   const [panel, setPanel] = useState<CalendarPanel>(initialPanel);
   const [selected, setSelected] = useState<string | null>(null);
@@ -235,7 +238,11 @@ export function BattleCalendar({
 
         <div className="overflow-y-auto">
           {panel === "tomorrow" ? (
-            <TomorrowTopic embedded onVoted={onVotedTomorrow} />
+            <TomorrowTopic
+              embedded
+              extras={tomorrowExtras}
+              onVoted={onVotedTomorrow}
+            />
           ) : selectedBattle ? (
             <DayDetail
               battle={selectedBattle}

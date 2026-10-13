@@ -26,9 +26,10 @@ export function DomaMark({
   // viewBox 48×72 — preferred 마크 박스에 맞춤
   const width = Math.round(size * (48 / 72));
 
-  // preferred: rect≈16.5×22.3 · gap≈0.7 · tri base≈36 h≈24 · ellipse rx≈20.5 ry≈12
-  const tri = "M6 23.2h36L24 47Z";
-  const triMask = "M4.5 21.8h39L24 49.2Z";
+  // 스케일 유지 · 삼각 끝을 타원에 맞닿게/살짝 겹침 (간격만 축소)
+  // tip y≈52 · ellipse top≈ cy−ry ≈ 44.5 → tip이 원 안으로 들어감
+  const tri = "M6 23.2h36L24 52Z";
+  const triMask = "M4.2 21.6h39.6L24 55Z";
 
   return (
     <svg
@@ -56,7 +57,7 @@ export function DomaMark({
 
       <ellipse
         cx="24"
-        cy="58.5"
+        cy="56.5"
         rx="20.5"
         ry="12"
         stroke={stroke}

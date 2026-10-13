@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ImageAttach } from "@/components/ImageAttach";
 import type { Side } from "@/lib/types";
 
 const MAX_CHARS = 280;
@@ -9,11 +10,14 @@ type WieldBarProps = {
   open: boolean;
   side: Side | null;
   onClose: () => void;
-  onSubmit: (text: string) => void;
+  onSubmit: (text: string, imageName?: string) => void;
 };
 
+/** 오늘의 글(진술) 작성 — 이미지 첨부만 */
 export function WieldBar({ open, side, onClose, onSubmit }: WieldBarProps) {
   const [text, setText] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [imageName, setImageName] = useState<string | undefined>();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const remaining = MAX_CHARS - text.length;
   const canSubmit = text.trim().length > 0 && text.length <= MAX_CHARS;
@@ -33,18 +37,30 @@ export function WieldBar({ open, side, onClose, onSubmit }: WieldBarProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
+  useEffect(() => {
+    if (open) return;
+    setText("");
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setImageName(undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- clear only when closing
+  }, [open]);
+
   if (!open) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
-    onSubmit(text.trim());
+    onSubmit(text.trim(), imageName);
     setText("");
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setImageName(undefined);
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center">
+    <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center">
       <button
         type="button"
         className="absolute inset-0 bg-black/70"
@@ -54,7 +70,7 @@ export function WieldBar({ open, side, onClose, onSubmit }: WieldBarProps) {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="진술 작성"
+        aria-label="오늘의 글 작성"
         className="sheet-up relative z-10 w-full max-w-[560px] border border-white/20 border-b-0 bg-black px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:border-b sm:pb-4"
       >
         <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-white/30 sm:hidden" />
@@ -67,7 +83,7 @@ export function WieldBar({ open, side, onClose, onSubmit }: WieldBarProps) {
             취소
           </button>
           <p className="font-[family-name:var(--font-syne)] text-sm font-bold tracking-wide">
-            진술 작성
+            오늘의 글
           </p>
           <span className="min-w-10" />
         </div>
@@ -75,9 +91,7 @@ export function WieldBar({ open, side, onClose, onSubmit }: WieldBarProps) {
         <form onSubmit={handleSubmit}>
           <div className="mb-2 flex items-center justify-between text-[11px] text-muted">
             <span>
-              {side
-                ? `${side}로 진술`
-                : "미참전 시 NEXUS로 제출"}
+              {side ? `${side}로 진술` : "미참전 시 NEXUS로 제출"}
             </span>
             <span
               className={`tabular-nums ${
@@ -93,9 +107,22 @@ export function WieldBar({ open, side, onClose, onSubmit }: WieldBarProps) {
             onChange={(e) => setText(e.target.value.slice(0, MAX_CHARS))}
             rows={5}
             maxLength={MAX_CHARS}
-            placeholder="280자 이내로 진술을 입력하세요"
+            placeholder="오늘 아레나에 남길 의견을 입력하세요"
             className="w-full resize-none border border-white/25 bg-black px-3 py-3 text-[15px] leading-relaxed text-white placeholder:text-dim focus:border-white focus:outline-none"
-            aria-label="진술 입력"
+            aria-label="오늘의 글 입력"
+          />
+          <ImageAttach
+            previewUrl={previewUrl}
+            onPick={(file, url) => {
+              if (previewUrl) URL.revokeObjectURL(previewUrl);
+              setPreviewUrl(url);
+              setImageName(file.name);
+            }}
+            onClear={() => {
+              if (previewUrl) URL.revokeObjectURL(previewUrl);
+              setPreviewUrl(null);
+              setImageName(undefined);
+            }}
           />
           <button
             type="submit"

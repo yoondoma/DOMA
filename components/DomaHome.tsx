@@ -3,16 +3,19 @@
 import { useCallback, useRef, useState } from "react";
 import { ArenaBar } from "@/components/ArenaBar";
 import { BattleCalendar } from "@/components/BattleCalendar";
+import type { CalendarPanel } from "@/components/BattleCalendar";
 import { BottomNav, type NavTab } from "@/components/BottomNav";
+import { ComposeChoice } from "@/components/ComposeChoice";
 import { Header } from "@/components/Header";
 import { OpinionFeed } from "@/components/OpinionFeed";
 import { PullRefresh } from "@/components/PullRefresh";
 import { SearchSheet } from "@/components/SearchSheet";
 import { SupportBar } from "@/components/SupportBar";
+import { TomorrowCompose } from "@/components/TomorrowCompose";
 import { TouchGate } from "@/components/TouchGate";
 import { WieldBar } from "@/components/WieldBar";
-import type { CalendarPanel } from "@/components/BattleCalendar";
 import { INITIAL_ARENA, INITIAL_OPINIONS } from "@/lib/mock-data";
+import type { TomorrowCandidate } from "@/lib/tomorrow-topics";
 import type { ArenaView, Opinion, Side } from "@/lib/types";
 
 function MockPanel({
@@ -58,7 +61,12 @@ export function DomaHome() {
   const [opinions, setOpinions] = useState<Opinion[]>(INITIAL_OPINIONS);
   const [arenaView, setArenaView] = useState<ArenaView>("intro");
   const [navTab, setNavTab] = useState<NavTab>("home");
-  const [composeOpen, setComposeOpen] = useState(false);
+  const [choiceOpen, setChoiceOpen] = useState(false);
+  const [todayComposeOpen, setTodayComposeOpen] = useState(false);
+  const [tomorrowComposeOpen, setTomorrowComposeOpen] = useState(false);
+  const [tomorrowExtras, setTomorrowExtras] = useState<TomorrowCandidate[]>(
+    [],
+  );
   const [toast, setToast] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [entered, setEntered] = useState(false);
@@ -118,24 +126,44 @@ export function DomaHome() {
     );
   };
 
-  const handleSubmit = (text: string) => {
+  const handleSubmitToday = (text: string, imageName?: string) => {
     const side: Side =
       joined ?? (arenaView === "AEGIS" ? "AEGIS" : "NEXUS");
     const next: Opinion = {
       id: `op-${Date.now()}`,
       side,
       author: "you",
-      text,
+      text: imageName ? `${text} · [이미지]` : text,
       likes: 0,
     };
     setOpinions((prev) => [...prev, next]);
     setNavTab("home");
-    showToast("진술이 피드에 추가되었습니다");
+    setArenaView("intro");
+    showToast(
+      imageName
+        ? "진술·이미지가 피드에 추가되었습니다"
+        : "진술이 피드에 추가되었습니다",
+    );
+  };
+
+  const handleSubmitTomorrow = (title: string, imageName?: string) => {
+    const item: TomorrowCandidate = {
+      id: `tm-you-${Date.now()}`,
+      title,
+      votes: 1,
+    };
+    setTomorrowExtras((prev) => [item, ...prev]);
+    setNavTab("home");
+    showToast(
+      imageName
+        ? "내일 주제·이미지가 제안되었습니다"
+        : "내일 주제가 제안되었습니다",
+    );
   };
 
   const handleNavChange = (tab: NavTab) => {
     if (tab === "compose") {
-      setComposeOpen(true);
+      setChoiceOpen(true);
       return;
     }
     if (tab === "home") {
@@ -150,10 +178,11 @@ export function DomaHome() {
 
   return (
     <div
-      className={`arena-enter min-h-full ${lightShell ? "bg-white text-black" : "bg-black text-white"}`}
+      className={`min-h-full ${lightShell ? "bg-white text-black" : "bg-black text-white"}`}
     >
+      {/* 스크롤 본문만 페이드 — fixed 하단바/시트는 밖에 둬 containing block 유지 */}
       <div
-        className={`mx-auto min-h-full max-w-[560px] border-x ${
+        className={`arena-enter mx-auto min-h-full max-w-[560px] border-x ${
           lightShell
             ? "border-black/10 bg-white"
             : "border-white/10 bg-black"
@@ -248,6 +277,7 @@ export function DomaHome() {
       <BattleCalendar
         open={calendarOpen}
         initialPanel={calendarPanel}
+        tomorrowExtras={tomorrowExtras}
         onClose={() => setCalendarOpen(false)}
         onVotedTomorrow={(title) => {
           const short = title.length > 20 ? `${title.slice(0, 20)}…` : title;
@@ -256,11 +286,25 @@ export function DomaHome() {
       />
       <SearchSheet open={searchOpen} onClose={() => setSearchOpen(false)} />
 
+      <ComposeChoice
+        open={choiceOpen}
+        onClose={() => setChoiceOpen(false)}
+        onPick={(kind) => {
+          setChoiceOpen(false);
+          if (kind === "today") setTodayComposeOpen(true);
+          else setTomorrowComposeOpen(true);
+        }}
+      />
       <WieldBar
-        open={composeOpen}
+        open={todayComposeOpen}
         side={joined}
-        onClose={() => setComposeOpen(false)}
-        onSubmit={handleSubmit}
+        onClose={() => setTodayComposeOpen(false)}
+        onSubmit={handleSubmitToday}
+      />
+      <TomorrowCompose
+        open={tomorrowComposeOpen}
+        onClose={() => setTomorrowComposeOpen(false)}
+        onSubmit={handleSubmitTomorrow}
       />
       <BottomNav active={navTab} onChange={handleNavChange} />
     </div>
