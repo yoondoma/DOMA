@@ -54,7 +54,7 @@ export function ArenaBar({
 
   return (
     <section
-      className="flex min-h-[calc(100dvh-11.5rem)] flex-col bg-black"
+      className="flex min-h-[calc(100dvh-9.5rem)] flex-col bg-black"
       aria-label="아레나 기본창"
     >
       <div className="mx-auto flex w-full max-w-[560px] flex-1 flex-col">
