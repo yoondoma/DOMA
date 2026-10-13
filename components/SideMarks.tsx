@@ -95,17 +95,12 @@ export const SIDE_META: Record<
   AEGIS: { label: "방패", Mark: ShieldMark },
 };
 
-/** 피드 뱃지 — 창/방패 심볼 위주 */
+/** 피드 뱃지 — 창/방패 아이콘만 (박스·링·배경 없음) */
 export function SideBadge({ side }: { side: Side }) {
   const { label, Mark } = SIDE_META[side];
-  const isNexus = side === "NEXUS";
   return (
     <span
-      className={`inline-flex items-center justify-center p-0.5 ${
-        isNexus
-          ? "border border-white/80 text-white"
-          : "bg-white text-black"
-      }`}
+      className="inline-flex items-center justify-center text-current"
       title={side}
       aria-label={`${side} ${label}`}
     >

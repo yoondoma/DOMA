@@ -185,7 +185,7 @@ export function ArenaBar({
             aria-selected={selected === "NEXUS"}
             aria-label="도전자"
             onClick={() => selectSide("NEXUS")}
-            className={`flex min-h-[112px] flex-col items-center justify-center gap-2.5 transition-opacity ${
+            className={`flex min-h-[112px] flex-col items-center justify-center gap-2.5 border-0 bg-transparent p-0 shadow-none outline-none ring-0 transition-opacity focus:outline-none focus-visible:outline-none ${
               light ? "text-neutral-400" : "text-white"
             } ${selected && selected !== "NEXUS" ? "opacity-45" : "opacity-100"}`}
           >
@@ -200,7 +200,7 @@ export function ArenaBar({
             aria-selected={selected === "AEGIS"}
             aria-label="방어자"
             onClick={() => selectSide("AEGIS")}
-            className={`flex min-h-[112px] flex-col items-center justify-center gap-2.5 transition-opacity ${
+            className={`flex min-h-[112px] flex-col items-center justify-center gap-2.5 border-0 bg-transparent p-0 shadow-none outline-none ring-0 transition-opacity focus:outline-none focus-visible:outline-none ${
               light ? "text-black" : "text-white"
             } ${selected && selected !== "AEGIS" ? "opacity-45" : "opacity-100"}`}
           >
