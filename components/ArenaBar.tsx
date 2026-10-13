@@ -173,9 +173,9 @@ export function ArenaBar({
           </p>
         </div>
 
-        {/* 박스 없는 상징 + 라벨 */}
+        {/* 좌흑/우백 칸 톤 — 테두리 박스 없이 배경만 */}
         <div
-          className="grid grid-cols-2 px-2 pb-2"
+          className="grid grid-cols-2"
           role="tablist"
           aria-label="진영 선택"
         >
@@ -185,9 +185,9 @@ export function ArenaBar({
             aria-selected={selected === "NEXUS"}
             aria-label="도전자"
             onClick={() => selectSide("NEXUS")}
-            className={`flex min-h-[112px] flex-col items-center justify-center gap-2.5 border-0 bg-transparent p-0 shadow-none outline-none ring-0 transition-opacity focus:outline-none focus-visible:outline-none ${
-              light ? "text-neutral-400" : "text-white"
-            } ${selected && selected !== "NEXUS" ? "opacity-45" : "opacity-100"}`}
+            className={`flex min-h-[128px] flex-col items-center justify-center gap-2.5 border-0 bg-black p-0 text-white shadow-none outline-none ring-0 focus:outline-none focus-visible:outline-none ${
+              selected && selected !== "NEXUS" ? "opacity-50" : "opacity-100"
+            }`}
           >
             <SpearMark size={40} />
             <span className="text-[12px] font-bold tracking-[0.18em]">
@@ -200,9 +200,9 @@ export function ArenaBar({
             aria-selected={selected === "AEGIS"}
             aria-label="방어자"
             onClick={() => selectSide("AEGIS")}
-            className={`flex min-h-[112px] flex-col items-center justify-center gap-2.5 border-0 bg-transparent p-0 shadow-none outline-none ring-0 transition-opacity focus:outline-none focus-visible:outline-none ${
-              light ? "text-black" : "text-white"
-            } ${selected && selected !== "AEGIS" ? "opacity-45" : "opacity-100"}`}
+            className={`flex min-h-[128px] flex-col items-center justify-center gap-2.5 border-0 bg-white p-0 text-black shadow-none outline-none ring-0 focus:outline-none focus-visible:outline-none ${
+              selected && selected !== "AEGIS" ? "opacity-50" : "opacity-100"
+            }`}
           >
             <ShieldMark size={40} />
             <span className="text-[12px] font-bold tracking-[0.18em]">
@@ -212,11 +212,7 @@ export function ArenaBar({
         </div>
 
         {!selected ? (
-          <p
-            className={`px-5 pb-6 text-center text-[11px] tracking-[0.14em] ${
-              light ? "text-neutral-500" : "text-muted"
-            }`}
-          >
+          <p className="bg-black px-5 py-5 text-center text-[11px] tracking-[0.14em] text-muted">
             진영을 누르면 TOP 의견이 펼쳐집니다
           </p>
         ) : null}
