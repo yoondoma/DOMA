@@ -126,7 +126,7 @@ export function Header({
           }`}
         >
           <span className={refreshing ? "logo-refresh" : undefined}>
-            <DomaMark size={36} light={light} />
+            <DomaMark size={48} light={light} />
           </span>
 
           <h1

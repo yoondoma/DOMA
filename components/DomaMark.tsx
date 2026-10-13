@@ -1,4 +1,5 @@
 type DomaMarkProps = {
+  /** 가로 기준 너비 */
   size?: number;
   /** light 배경 위 → 검정 스트로크 */
   light?: boolean;
@@ -6,48 +7,49 @@ type DomaMarkProps = {
 };
 
 /**
- * 스케치 로고: 직사각형 + 역삼각형 + 막는 원(방패)
- * Strict B&W 라인 — 면 채움 없이 도형이 겹치지 않게 구분
+ * 스케치 로고(가로): 직사각형 → 오른쪽을 가리키는 삼각형 → 끝을 막는 원/방패
+ * Strict B&W 라인
  */
 export function DomaMark({
-  size = 56,
+  size = 72,
   light = false,
   className = "",
 }: DomaMarkProps) {
   const stroke = light ? "#000000" : "#ffffff";
+  // viewBox 72×36 → height = size/2
+  const height = Math.round(size / 2);
 
   return (
     <svg
       width={size}
-      height={Math.round(size * (64 / 48))}
-      viewBox="0 0 48 64"
+      height={height}
+      viewBox="0 0 72 36"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={`shrink-0 ${className}`}
       aria-hidden
     >
-      {/* 1. 직사각형 */}
+      {/* 왼쪽 직사각형 */}
       <rect
-        x="18.5"
-        y="3"
-        width="11"
+        x="2"
+        y="10"
+        width="16"
         height="16"
         stroke={stroke}
         strokeWidth="1.7"
       />
-      {/* 2. 역삼각형 — 윗변은 직사각형 아래, 끝은 원 안 */}
+      {/* 오른쪽을 가리키는 삼각형 — 끝이 원 안으로 */}
       <path
-        d="M11 21.5h26L24 46Z"
+        d="M20 6v24L52 18Z"
         stroke={stroke}
         strokeWidth="1.7"
         strokeLinejoin="miter"
       />
-      {/* 3. 막는 원(방패) — 가로 타원, 삼각 끝과 교차 */}
-      <ellipse
-        cx="24"
-        cy="50"
-        rx="15.5"
-        ry="9.5"
+      {/* 막는 원/방패 */}
+      <circle
+        cx="56"
+        cy="18"
+        r="12"
         stroke={stroke}
         strokeWidth="1.7"
       />

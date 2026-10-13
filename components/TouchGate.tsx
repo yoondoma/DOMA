@@ -32,7 +32,7 @@ export function TouchGate({ onEnter }: TouchGateProps) {
           pressing ? "touch-press" : "active:scale-[0.96]"
         }`}
       >
-        <DomaMark size={88} />
+        <DomaMark size={112} />
         <span className="font-[family-name:var(--font-brand)] text-[36px] font-semibold tracking-[0.22em]">
           DOMA
           <span className="ml-[0.1em] align-top font-[family-name:var(--font-space-grotesk)] text-[12px] tracking-[0.04em] text-muted">
