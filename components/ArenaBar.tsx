@@ -257,7 +257,7 @@ export function ArenaBar({
               className="flex flex-col"
               style={{
                 height:
-                  "calc(100dvh - 11.5rem - 72px - 2.25rem - 84px - 3.5rem - env(safe-area-inset-bottom, 0px))",
+                  "calc(100dvh - 3.75rem - 4.5rem - 72px - 2.25rem - 84px - 3.5rem - env(safe-area-inset-bottom, 0px))",
                 maxHeight: "62dvh",
               }}
             >

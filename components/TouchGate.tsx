@@ -32,8 +32,8 @@ export function TouchGate({ onEnter }: TouchGateProps) {
           pressing ? "touch-press" : "active:scale-[0.96]"
         }`}
       >
-        {/* 마크 위 · DOMA 아래 (세로·중앙) */}
-        <DomaMark size={72} />
+        {/* 진입만: 세로 스택 + .kr */}
+        <DomaMark size={76} />
         <span className="mt-5 flex items-baseline justify-center font-[family-name:var(--font-brand)] text-[34px] font-semibold leading-none tracking-[0.28em]">
           DOMA
           <span className="ml-[0.08em] translate-y-[-3px] font-[family-name:var(--font-brand)] text-[12px] font-semibold tracking-[0.04em] text-white/70">
