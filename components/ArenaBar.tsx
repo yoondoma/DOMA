@@ -17,33 +17,6 @@ type ArenaBarProps = {
   joined: Side | null;
 };
 
-function CrackDivider() {
-  return (
-    <svg
-      className="pointer-events-none absolute inset-y-0 left-1/2 z-10 h-full w-5 -translate-x-1/2"
-      viewBox="0 0 20 100"
-      preserveAspectRatio="none"
-      aria-hidden
-    >
-      <path
-        d="M10 0 7 12 12 22 6 38 13 52 8 68 14 82 10 100"
-        fill="none"
-        stroke="#ffffff"
-        strokeWidth="1.6"
-        vectorEffect="non-scaling-stroke"
-      />
-      <path
-        d="M10 0 8 12 13 22 7 38 14 52 9 68 15 82 10 100"
-        fill="none"
-        stroke="#a3a3a3"
-        strokeWidth="0.8"
-        vectorEffect="non-scaling-stroke"
-        opacity="0.7"
-      />
-    </svg>
-  );
-}
-
 function topOpinionForSide(opinions: Opinion[], side: Side): Opinion | null {
   const list = opinions.filter((o) => o.side === side);
   if (list.length === 0) return null;
@@ -124,7 +97,7 @@ function TopOpinionCard({
           </span>
         </div>
         <p
-          className={`text-[14px] leading-[1.45] ${
+          className={`line-clamp-3 text-[14px] leading-[1.45] ${
             light ? "text-black/90" : "text-white/95"
           }`}
         >
@@ -132,6 +105,60 @@ function TopOpinionCard({
         </p>
       </article>
     </div>
+  );
+}
+
+/** 진영별 퍼센티지 — 의견 바로 아래 */
+function SidePercent({
+  side,
+  percent,
+  votes,
+  joined,
+  onJoin,
+  light,
+}: {
+  side: Side;
+  percent: number;
+  votes: number;
+  joined: Side | null;
+  onJoin: (side: Side) => void;
+  light: boolean;
+}) {
+  const isJoined = joined === side;
+  const label = side === "NEXUS" ? "도전자 진영 지지" : "방어자 진영 지지";
+
+  return (
+    <button
+      type="button"
+      onClick={() => onJoin(side)}
+      aria-label={label}
+      className={`relative w-full overflow-hidden border-b px-4 py-3 text-left transition-opacity ${
+        light
+          ? "border-black/15 bg-white text-black"
+          : "border-white/20 bg-black text-white"
+      } ${isJoined ? "opacity-100" : "active:opacity-80"}`}
+    >
+      <div
+        className={`pointer-events-none absolute inset-y-0 left-0 ${
+          light ? "bg-black/8" : "bg-white/10"
+        }`}
+        style={{ width: `${percent}%` }}
+        aria-hidden
+      />
+      <div className="relative flex items-center justify-between gap-3">
+        <span className="inline-flex items-center gap-1.5">
+          {side === "NEXUS" ? <SpearMark size={16} /> : <ShieldMark size={16} />}
+          <span className="text-[18px] font-bold tabular-nums tracking-tight">
+            {percent}%
+          </span>
+        </span>
+        <span
+          className={`text-[11px] ${light ? "text-neutral-500" : "text-muted"}`}
+        >
+          {isJoined ? "참전 중" : "지지"} · {votes.toLocaleString("ko-KR")}
+        </span>
+      </div>
+    </button>
   );
 }
 
@@ -168,18 +195,14 @@ export function ArenaBar({
           </h2>
         </div>
 
-        <div
-          className="grid grid-cols-2 border-y border-white/20"
-          role="tablist"
-          aria-label="검투사"
-        >
+        {/* 도전자: 선택 → 의견 → % */}
+        <div className="border-t border-white/20">
           <button
             type="button"
-            role="tab"
-            aria-selected={openChallenger}
+            aria-expanded={openChallenger}
             aria-label="도전자"
             onClick={onToggleChallenger}
-            className={`flex min-h-[96px] flex-col items-center justify-center gap-2 transition-colors ${
+            className={`flex w-full min-h-[88px] flex-col items-center justify-center gap-2 transition-colors ${
               openChallenger
                 ? "bg-white/[0.06] text-white"
                 : "text-muted"
@@ -190,14 +213,41 @@ export function ArenaBar({
               도전자
             </span>
           </button>
+
+          {openChallenger ? (
+            <>
+              {challengerTop ? (
+                <TopOpinionCard
+                  opinion={challengerTop}
+                  label="도전자 · TOP 의견"
+                  light={false}
+                />
+              ) : (
+                <p className="bg-black px-4 py-4 text-center text-sm text-muted">
+                  도전자 의견이 아직 없습니다.
+                </p>
+              )}
+              <SidePercent
+                side="NEXUS"
+                percent={nexusPercent}
+                votes={arena.nexusVotes}
+                joined={joined}
+                onJoin={onJoin}
+                light={false}
+              />
+            </>
+          ) : null}
+        </div>
+
+        {/* 방어자: 선택 → 의견(흰) → % */}
+        <div className="border-t border-white/20">
           <button
             type="button"
-            role="tab"
-            aria-selected={openDefender}
+            aria-expanded={openDefender}
             aria-label="방어자"
             onClick={onToggleDefender}
-            className={`flex min-h-[96px] flex-col items-center justify-center gap-2 transition-colors ${
-              openDefender ? "bg-white text-black" : "text-muted"
+            className={`flex w-full min-h-[88px] flex-col items-center justify-center gap-2 transition-colors ${
+              openDefender ? "bg-white text-black" : "bg-black text-muted"
             }`}
           >
             <ShieldMark size={36} />
@@ -205,78 +255,31 @@ export function ArenaBar({
               방어자
             </span>
           </button>
+
+          {openDefender ? (
+            <>
+              {defenderTop ? (
+                <TopOpinionCard
+                  opinion={defenderTop}
+                  label="방어자 · TOP 의견"
+                  light
+                />
+              ) : (
+                <p className="bg-white px-4 py-4 text-center text-sm text-neutral-500">
+                  방어자 의견이 아직 없습니다.
+                </p>
+              )}
+              <SidePercent
+                side="AEGIS"
+                percent={aegisPercent}
+                votes={arena.aegisVotes}
+                joined={joined}
+                onJoin={onJoin}
+                light
+              />
+            </>
+          ) : null}
         </div>
-
-        <div className="relative flex min-h-[88px] w-full overflow-hidden border-b border-white/20">
-          <CrackDivider />
-          <button
-            type="button"
-            onClick={() => onJoin("NEXUS")}
-            aria-label="도전자 진영 지지"
-            className={`relative flex flex-1 flex-col items-start justify-center gap-1 bg-black px-3 py-3 text-left text-white ${
-              joined === "NEXUS" ? "opacity-100" : "active:opacity-80"
-            }`}
-            style={{ flexBasis: `${nexusPercent}%` }}
-          >
-            <span className="inline-flex items-center gap-1.5">
-              <SpearMark size={16} />
-              <span className="text-[14px] font-bold tabular-nums">
-                {nexusPercent}%
-              </span>
-            </span>
-            <span className="text-[10px] text-muted">
-              {joined === "NEXUS" ? "참전 중" : "지지"} ·{" "}
-              {arena.nexusVotes.toLocaleString("ko-KR")}
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => onJoin("AEGIS")}
-            aria-label="방어자 진영 지지"
-            className={`relative flex flex-1 flex-col items-end justify-center gap-1 bg-white px-3 py-3 text-right text-black ${
-              joined === "AEGIS" ? "opacity-100" : "active:opacity-80"
-            }`}
-            style={{ flexBasis: `${aegisPercent}%` }}
-          >
-            <span className="inline-flex items-center gap-1.5">
-              <span className="text-[14px] font-bold tabular-nums">
-                {aegisPercent}%
-              </span>
-              <ShieldMark size={16} />
-            </span>
-            <span className="text-[10px] text-neutral-500">
-              {joined === "AEGIS" ? "참전 중" : "지지"} ·{" "}
-              {arena.aegisVotes.toLocaleString("ko-KR")}
-            </span>
-          </button>
-        </div>
-
-        {/* 스택: 도전자 의견 → 방어자 의견(흰) — 한 화면 */}
-        {openChallenger && challengerTop ? (
-          <TopOpinionCard
-            opinion={challengerTop}
-            label="도전자 · TOP 의견"
-            light={false}
-          />
-        ) : null}
-        {openChallenger && !challengerTop ? (
-          <p className="bg-black px-4 py-4 text-center text-sm text-muted">
-            도전자 의견이 아직 없습니다.
-          </p>
-        ) : null}
-
-        {openDefender && defenderTop ? (
-          <TopOpinionCard
-            opinion={defenderTop}
-            label="방어자 · TOP 의견"
-            light
-          />
-        ) : null}
-        {openDefender && !defenderTop ? (
-          <p className="bg-white px-4 py-4 text-center text-sm text-neutral-500">
-            방어자 의견이 아직 없습니다.
-          </p>
-        ) : null}
       </div>
     </section>
   );
