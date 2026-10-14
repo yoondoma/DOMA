@@ -39,6 +39,11 @@ import {
   type SocialProfile,
 } from "@/lib/social-mock";
 import { playDomaSound } from "@/lib/sound/doma-sound";
+import {
+  formatComposeMediaSuffix,
+  formatCooldownToast,
+  type ComposeMedia,
+} from "@/lib/types/content";
 import { campFromSide, sideFromCamp } from "@/lib/types/ids";
 import {
   INITIAL_TOMORROW_TOPICS,
@@ -47,6 +52,7 @@ import {
 import type { ArenaView, Side } from "@/lib/types";
 import { useUiDemo } from "@/lib/use-ui-demo";
 import { domaStore, useDomaStore, useSession, useUiOpinions } from "@/lib/store";
+import { nextDayId } from "@/lib/kst";
 
 function bumpPercents(
   nexus: number,
@@ -245,14 +251,14 @@ export function DomaHome() {
     );
   };
 
-  const handleSubmitToday = (text: string, imageName?: string) => {
+  const handleSubmitToday = (text: string, media?: ComposeMedia) => {
     if (!domaStore.getSession()) {
       showToast("로그인이 필요합니다");
       return;
     }
     const side: Side =
       joined ?? (arenaView === "AEGIS" ? "AEGIS" : "NEXUS");
-    const body = imageName ? `${text} · [이미지]` : text;
+    const body = `${text}${formatComposeMediaSuffix(media)}`;
     try {
       domaStore.createOpinion({
         body,
@@ -261,6 +267,13 @@ export function DomaHome() {
     } catch (e) {
       if (e instanceof Error && e.message === "ARENA_SHUTDOWN") {
         showToast("전장 셧다운 (23:00–08:00)");
+        return;
+      }
+      if (e instanceof Error && e.message === "COMPOSE_COOLDOWN") {
+        const left =
+          (e as Error & { remainingMs?: number }).remainingMs ??
+          domaStore.composeCooldownRemainingMs();
+        showToast(formatCooldownToast(left));
         return;
       }
       if (e instanceof Error && e.message === "CAMP_DAY_LOCKED") {
@@ -273,30 +286,52 @@ export function DomaHome() {
     setNavTab("home");
     setArenaView("intro");
     showToast(
-      imageName
-        ? "진술·이미지가 피드에 추가되었습니다"
+      media?.imageNames?.length || media?.link
+        ? "진술·첨부가 피드에 추가되었습니다"
         : "진술이 피드에 추가되었습니다",
     );
   };
 
-  const handleSubmitTomorrow = (title: string, imageName?: string) => {
+  const handleSubmitTomorrow = (title: string, media?: ComposeMedia) => {
+    try {
+      const dayId =
+        domaStore.getSnapshot().clock.dayId ?? new Date().toISOString().slice(0, 10);
+      domaStore.createTopicCandidate({
+        title,
+        body: formatComposeMediaSuffix(media).replace(/^ · /, ""),
+        targetDayId: nextDayId(dayId),
+      });
+    } catch (e) {
+      if (e instanceof Error && e.message === "ARENA_SHUTDOWN") {
+        showToast("전장 셧다운 (23:00–08:00)");
+        return;
+      }
+      if (e instanceof Error && e.message === "COMPOSE_COOLDOWN") {
+        const left =
+          (e as Error & { remainingMs?: number }).remainingMs ??
+          domaStore.composeCooldownRemainingMs();
+        showToast(formatCooldownToast(left));
+        return;
+      }
+      if (e instanceof Error && e.message === "SESSION_REQUIRED") {
+        showToast("로그인이 필요합니다");
+        return;
+      }
+    }
     const item: TomorrowCandidate = {
       id: `tm-you-${Date.now()}`,
       title,
       votes: 1,
       stewards: 1,
-      note: imageName
-        ? "필드에 새로 제안된 후보입니다. (이미지 첨부)"
-        : "필드에 새로 제안된 후보입니다.",
+      note:
+        media?.imageNames?.length || media?.link
+          ? "필드에 새로 제안된 후보입니다. (첨부 있음 · 수정 불가)"
+          : "필드에 새로 제안된 후보입니다. (수정 불가)",
     };
     setTomorrowCandidates((prev) => [item, ...prev]);
     setNavTab("home");
     setHomeSurface("tomorrow");
-    showToast(
-      imageName
-        ? "내일 필드에 주제·이미지가 올라갔습니다"
-        : "내일 필드에 주제가 올라갔습니다",
-    );
+    showToast("내일 필드에 주제가 올라갔습니다 · 수정할 수 없습니다");
   };
 
   const handleSupportTomorrow = (id: string) => {

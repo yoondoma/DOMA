@@ -8,7 +8,14 @@ export type HomeSurface = "today" | "tomorrow";
 /** 하단 탭에 대응하는 헤더 슬롯 모드 (+ 제외) */
 export type HeaderTab = "home" | "messages" | "alerts" | "profile";
 
-export type AlertCategory = "all" | "follow" | "conversation" | "mention";
+/** 알림함 탭 — 판결 / 내 글 / 메시지 · 멘션(내글·내답글 답 포함) */
+export type AlertCategory =
+  | "all"
+  | "judgment"
+  | "mine"
+  | "message"
+  | "mention"
+  | "follow";
 
 type HeaderProps = {
   /** @deprecated 헤더 타이머 제거 — 호환용 유지 */
@@ -33,8 +40,9 @@ type HeaderProps = {
 
 const ALERT_TABS: { id: AlertCategory; label: string }[] = [
   { id: "all", label: "모든 알림" },
-  { id: "follow", label: "팔로우" },
-  { id: "conversation", label: "대화" },
+  { id: "judgment", label: "판결" },
+  { id: "mine", label: "내 글" },
+  { id: "message", label: "메시지" },
   { id: "mention", label: "멘션" },
 ];
 

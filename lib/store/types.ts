@@ -53,6 +53,8 @@ export type StoreSnapshot = {
   quota: SessionQuota;
   /** userId → 프라이버시 (스크랩 공개 · DM) */
   privacyByUser: Record<string, PrivacyPrefs>;
+  /** userId → 마지막 작성 시각 (의견·제안·댓글 공통 쿨다운) */
+  lastComposeAtByUser: Record<string, string>;
 };
 
 export type CreateOpinionInput = {

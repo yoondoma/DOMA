@@ -47,6 +47,10 @@ import {
   type DmPolicy,
   type PrivacyPrefs,
 } from "@/lib/types/privacy";
+import {
+  CONTENT_LIMITS,
+  cooldownRemainingMs,
+} from "@/lib/types/content";
 import { emptyQuota, QUOTA_LIMITS } from "@/lib/types/quota";
 
 const STORAGE_KEY = "doma.store.v5";
@@ -97,6 +101,7 @@ function normalizeSnap(parsed: StoreSnapshot): StoreSnapshot {
     follows: parsed.follows ?? [],
     quota: parsed.quota ?? emptyQuota(),
     privacyByUser: parsed.privacyByUser ?? {},
+    lastComposeAtByUser: parsed.lastComposeAtByUser ?? {},
     opinions: (parsed.opinions ?? []).map((o) => ({
       ...o,
       supportCount: o.supportCount ?? 0,
@@ -137,6 +142,29 @@ class MemoryStore {
     if (isShutdownState(this.snap.clock.state)) {
       throw new Error("ARENA_SHUTDOWN");
     }
+  }
+
+  /** 의견·제안·댓글 공통 3분 쿨다운 */
+  private assertComposeCooldown(userId: string) {
+    const left = cooldownRemainingMs(this.snap.lastComposeAtByUser[userId]);
+    if (left > 0) {
+      const err = new Error("COMPOSE_COOLDOWN");
+      (err as Error & { remainingMs: number }).remainingMs = left;
+      throw err;
+    }
+  }
+
+  private markCompose(next: StoreSnapshot, userId: string) {
+    next.lastComposeAtByUser = {
+      ...next.lastComposeAtByUser,
+      [userId]: new Date().toISOString(),
+    };
+  }
+
+  composeCooldownRemainingMs(userId?: string): number {
+    const uid = userId ?? this.snap.session?.userId;
+    if (!uid) return 0;
+    return cooldownRemainingMs(this.snap.lastComposeAtByUser[uid]);
   }
 
   constructor() {
@@ -461,6 +489,7 @@ class MemoryStore {
     if (!next.session) throw new Error("SESSION_REQUIRED");
     const dayId = next.clock.dayId;
     const authorId = next.session.userId;
+    this.assertComposeCooldown(authorId);
 
     /** 하루 한 진영에서만 작성 */
     const dayMine = next.opinions.filter(
@@ -475,13 +504,14 @@ class MemoryStore {
       dayId,
       authorId,
       camp: input.camp,
-      body: input.body.slice(0, 280),
+      body: input.body.slice(0, CONTENT_LIMITS.opinion),
       likeCount: 0,
       supportCount: 0,
       replyCount: 0,
       createdAtUtc: new Date().toISOString(),
     };
     next.opinions = [...next.opinions, op];
+    this.markCompose(next, authorId);
     this.commit(next);
     return op;
   }
@@ -494,17 +524,20 @@ class MemoryStore {
     this.assertArenaOpen();
     const next = clone(this.snap);
     if (!next.session) throw new Error("SESSION_REQUIRED");
+    const authorId = next.session.userId;
+    this.assertComposeCooldown(authorId);
     const tc: TopicCandidate = {
       id: makeTopicCandidateId(input.targetDayId),
       targetDayId: input.targetDayId,
-      title: input.title,
-      body: input.body ?? "",
+      title: input.title.slice(0, CONTENT_LIMITS.proposal),
+      body: (input.body ?? "").slice(0, CONTENT_LIMITS.proposal),
       supportCount: 1,
       stewardCount: 1,
-      proposerId: next.session.userId,
+      proposerId: authorId,
       createdAtUtc: new Date().toISOString(),
     };
     next.topicCandidates = [tc, ...next.topicCandidates];
+    this.markCompose(next, authorId);
     this.commit(next);
     return tc;
   }
@@ -694,7 +727,12 @@ class MemoryStore {
     this.assertArenaOpen();
     const next = clone(this.snap);
     if (!next.session) throw new Error("SESSION_REQUIRED");
-    if (next.quota.likesUsed >= QUOTA_LIMITS.likes) {
+    /** 일 5 한도 = 오늘 의견만 · 댓글 좋아요는 무제한 */
+    const countsTowardQuota = targetKind === "opinion";
+    if (
+      countsTowardQuota &&
+      next.quota.likesUsed >= QUOTA_LIMITS.likes
+    ) {
       throw new Error("QUOTA_LIKES");
     }
     const userId = next.session.userId;
@@ -709,7 +747,9 @@ class MemoryStore {
       createdAtUtc: new Date().toISOString(),
     };
     next.likes = [...next.likes, row];
-    next.quota = { ...next.quota, likesUsed: next.quota.likesUsed + 1 };
+    if (countsTowardQuota) {
+      next.quota = { ...next.quota, likesUsed: next.quota.likesUsed + 1 };
+    }
     if (targetKind === "opinion") {
       next.opinions = next.opinions.map((o) =>
         o.id === targetId ? { ...o, likeCount: o.likeCount + 1 } : o,
@@ -730,11 +770,11 @@ class MemoryStore {
     const before = next.likes.length;
     next.likes = next.likes.filter((l) => l.id !== id);
     if (next.likes.length === before) return false;
-    next.quota = {
-      ...next.quota,
-      likesUsed: Math.max(0, next.quota.likesUsed - 1),
-    };
     if (targetKind === "opinion") {
+      next.quota = {
+        ...next.quota,
+        likesUsed: Math.max(0, next.quota.likesUsed - 1),
+      };
       next.opinions = next.opinions.map((o) =>
         o.id === targetId
           ? { ...o, likeCount: Math.max(0, o.likeCount - 1) }
@@ -772,14 +812,16 @@ class MemoryStore {
     this.assertArenaOpen();
     const next = clone(this.snap);
     if (!next.session) throw new Error("SESSION_REQUIRED");
+    const authorId = next.session.userId;
+    this.assertComposeCooldown(authorId);
     const trimmed = body.trim();
     if (!trimmed) throw new Error("EMPTY_REPLY");
     const row: Reply = {
       id: makeReplyId(parentKind, parentId),
       parentKind,
       parentId,
-      authorId: next.session.userId,
-      body: trimmed.slice(0, 280),
+      authorId,
+      body: trimmed.slice(0, CONTENT_LIMITS.reply),
       likeCount: 0,
       createdAtUtc: new Date().toISOString(),
     };
@@ -789,8 +831,28 @@ class MemoryStore {
         o.id === parentId ? { ...o, replyCount: o.replyCount + 1 } : o,
       );
     }
+    this.markCompose(next, authorId);
     this.commit(next);
     return row;
+  }
+
+  /** 댓글 수정 — 본인만 · 지지/목마 무관 */
+  updateReply(replyId: string, body: string): Reply {
+    const next = clone(this.snap);
+    if (!next.session) throw new Error("SESSION_REQUIRED");
+    const trimmed = body.trim();
+    if (!trimmed) throw new Error("EMPTY_REPLY");
+    const idx = next.replies.findIndex((r) => r.id === replyId);
+    if (idx < 0) throw new Error("REPLY_NOT_FOUND");
+    const row = next.replies[idx];
+    if (row.authorId !== next.session.userId) throw new Error("NOT_AUTHOR");
+    const updated: Reply = {
+      ...row,
+      body: trimmed.slice(0, CONTENT_LIMITS.reply),
+    };
+    next.replies = next.replies.map((r, i) => (i === idx ? updated : r));
+    this.commit(next);
+    return updated;
   }
 
   toggleScrap(

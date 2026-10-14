@@ -9,8 +9,7 @@ type RulesHudProps = {
 };
 
 /**
- * 남은 투표·이동 HUD — 좋아요 n/5 · 진영이동 n/3
- * (글 횟수 HUD 없음 — 발언 제한 해제)
+ * 남은 투표·이동 HUD — 글 좋아요 n/5(의견만) · 진영이동 n/3
  */
 export function RulesHud({ light, className = "" }: RulesHudProps) {
   const quota = useDomaStore().quota;
@@ -49,7 +48,7 @@ export function RulesHud({ light, className = "" }: RulesHudProps) {
       aria-label="남은 참여 횟수"
       data-rules-hud
     >
-      <Cell label="좋아요" remaining={likes.remaining} max={likes.max} />
+      <Cell label="글 좋아요" remaining={likes.remaining} max={likes.max} />
       <Cell label="진영이동" remaining={moves.remaining} max={moves.max} />
     </div>
   );

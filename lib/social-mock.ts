@@ -27,16 +27,25 @@ export type NotificationTarget =
   | { type: "share" }
   | { type: "profile"; handle: string };
 
-/** 알림 필터 탭용 */
+/**
+ * 알림 필터 — 스펙: social-rules
+ * 푸시 필수 3종: 판결 · 내 글 · 메시지
+ * 멘션 = @언급 + 내 글·내 답글에 달린 답
+ */
 export type NotificationCategory =
   | "follow"
-  | "conversation"
+  | "judgment"
+  | "mine"
+  | "message"
   | "mention"
-  | "system";
+  /** @deprecated → judgment */
+  | "system"
+  /** @deprecated → mine */
+  | "conversation";
 
 export type AppNotification = {
   id: string;
-  kind: "like" | "reply" | "mention" | "battle" | "follow";
+  kind: "like" | "reply" | "mention" | "battle" | "follow" | "message";
   /** 헤더 카테고리 필터 */
   category: NotificationCategory;
   actor: string;
@@ -134,7 +143,7 @@ export const APP_NOTIFICATIONS: AppNotification[] = [
   {
     id: "n1",
     kind: "like",
-    category: "conversation",
+    category: "mine",
     actor: "mira.k",
     text: "님이 회원님의 진술을 좋아합니다.",
     timeLabel: "5분",
@@ -144,11 +153,20 @@ export const APP_NOTIFICATIONS: AppNotification[] = [
   {
     id: "n2",
     kind: "reply",
-    category: "conversation",
+    category: "mention",
     actor: "pulse",
     text: "님이 회원님의 글에 답했습니다.",
     timeLabel: "42분",
     unread: true,
+    target: { type: "opinion", opinionId: "op-you-1", side: "NEXUS" },
+  },
+  {
+    id: "n8",
+    kind: "reply",
+    category: "mention",
+    actor: "mira.k",
+    text: "님이 회원님의 답글에 답했습니다.",
+    timeLabel: "55분",
     target: { type: "opinion", opinionId: "op-you-1", side: "NEXUS" },
   },
   {
@@ -159,6 +177,16 @@ export const APP_NOTIFICATIONS: AppNotification[] = [
     text: "님이 회원님을 멘션했습니다.",
     timeLabel: "2시간",
     target: { type: "opinion", opinionId: "op-2", side: "NEXUS" },
+  },
+  {
+    id: "n9",
+    kind: "message",
+    category: "message",
+    actor: "mira.k",
+    text: "님이 메시지를 보냈습니다.",
+    timeLabel: "20분",
+    unread: true,
+    target: { type: "profile", handle: "mira.k" },
   },
   {
     id: "n6",
@@ -182,16 +210,16 @@ export const APP_NOTIFICATIONS: AppNotification[] = [
   {
     id: "n4",
     kind: "battle",
-    category: "system",
+    category: "judgment",
     actor: "DOMA",
-    text: "제 412회 전투 · 도전자 진영 지지가 58%로 갱신되었습니다.",
+    text: "투표한 의견이 이겼어요 · 제 412회 전투",
     timeLabel: "3시간",
     target: { type: "arena" },
   },
   {
     id: "n5",
     kind: "battle",
-    category: "system",
+    category: "judgment",
     actor: "DOMA",
     text: "결과 확정 · 제 411회 전투 증명 카드를 확인하세요",
     timeLabel: "어제",

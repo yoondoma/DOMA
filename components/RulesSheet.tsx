@@ -9,7 +9,8 @@ const ROWS: { act: string; limit: string }[] = [
   { act: "글·제안·댓글", limit: "여러 번 가능" },
   { act: "의견 지지", limit: "1개 · 그 진영으로 이동" },
   { act: "진영 이동", limit: "타 진영 지지 시 · 최대 3회" },
-  { act: "좋아요", limit: "하루 5개 · 승패 무관" },
+  { act: "글 좋아요", limit: "하루 5개 · 오늘 의견만" },
+  { act: "댓글♥·공유·스크랩", limit: "무제한" },
   { act: "글 진영", limit: "하루 한 진영만" },
 ];
 
@@ -49,10 +50,10 @@ export function RulesSheet({ open, onClose }: RulesSheetProps) {
         </div>
 
         <p className="text-[13px] leading-[1.55] text-white/70">
-          지지 동점은 좋아요로 가리고, 둘 다 동점이면 공동 승리. 판결
+          지지 동점은 글 좋아요로 가리고, 둘 다 동점이면 공동 승리. 판결
           후엔 스크랩·공유만. 타이머는 3h→1m 압박. 판결·TOP·내일 확정은{" "}
-          <span className="text-white">지지</span>만. 좋아요는 호응일 뿐
-          승패와 무관합니다.
+          <span className="text-white">지지</span>만. 글 좋아요(하루 5·의견만)는
+          호응일 뿐 승패와 무관 · 댓글♥·공유·스크랩은 무제한.
         </p>
 
         <ul className="mt-4 border-t border-white/15" aria-label="일일 한도">

@@ -10,19 +10,16 @@ import {
 } from "@/lib/social-mock";
 import type { UiDemo } from "@/lib/ui-demo";
 
-function kindLabel(kind: AppNotification["kind"]): string {
-  switch (kind) {
-    case "like":
-      return "좋아요";
-    case "reply":
-      return "답글";
-    case "mention":
-      return "멘션";
-    case "follow":
-      return "팔로우";
-    case "battle":
-      return "전투";
+/** 알림 타입 라벨 — 판결 / 내 글 / 메시지 · 멘션(내글·내답글 답 포함) */
+function kindLabel(n: AppNotification): string {
+  if (n.kind === "battle") return "판결";
+  if (n.kind === "message") return "메시지";
+  if (n.kind === "mention" || n.category === "mention") return "멘션";
+  if (n.kind === "like" || n.kind === "reply" || n.category === "mine") {
+    return "내 글";
   }
+  if (n.kind === "follow") return "팔로우";
+  return "알림";
 }
 
 function KindMark({ kind }: { kind: AppNotification["kind"] }) {
@@ -83,6 +80,18 @@ function KindMark({ kind }: { kind: AppNotification["kind"] }) {
       </svg>
     );
   }
+  if (kind === "message") {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path
+          d="M4.5 6.5h15v9.5H9.2L5.5 19.2V6.5Z"
+          stroke={stroke}
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
       <circle cx="12" cy="12" r="7.25" stroke={stroke} strokeWidth="1.6" />
@@ -117,7 +126,13 @@ export function NotificationsScreen({
   const list = useMemo(() => {
     if (uiDemo === "empty") return [];
     if (category === "all") return APP_NOTIFICATIONS;
-    return APP_NOTIFICATIONS.filter((n) => n.category === category);
+    return APP_NOTIFICATIONS.filter((n) => {
+      if (n.category === category) return true;
+      /** 구 카테고리 호환 */
+      if (category === "judgment" && n.category === "system") return true;
+      if (category === "mine" && n.category === "conversation") return true;
+      return false;
+    });
   }, [uiDemo, category]);
 
   return (
@@ -174,7 +189,7 @@ export function NotificationsScreen({
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] font-bold tracking-[0.14em] text-muted">
-                        {kindLabel(n.kind)}
+                        {kindLabel(n)}
                       </span>
                       <span className="ml-auto text-[11px] text-muted">
                         {n.timeLabel}

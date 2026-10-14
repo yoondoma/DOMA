@@ -5,6 +5,10 @@ import { isShutdownState } from "@/lib/arena-gate";
 import { sharePost } from "@/lib/share-post";
 import { playDomaSound } from "@/lib/sound/doma-sound";
 import { domaStore, useDomaStore } from "@/lib/store";
+import {
+  CONTENT_LIMITS,
+  formatCooldownToast,
+} from "@/lib/types/content";
 import type { LikeTargetKind, ReplyParentKind, ScrapTargetKind } from "@/lib/types/domain";
 
 /** 판결 후(LOCKED)·쿨다운 — 좋아요·지지·댓글 불가 */
@@ -158,6 +162,9 @@ export function OpinionSocial({
   const snap = useDomaStore();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState("");
+  const replyMax = CONTENT_LIMITS.reply;
 
   const scraped = useMemo(
     () => (targetId ? domaStore.hasScraped(scrapKind, targetId) : false),
@@ -208,7 +215,7 @@ export function OpinionSocial({
         return;
       }
       if (e instanceof Error && e.message === "QUOTA_LIKES") {
-        onToast?.("오늘의 좋아요를 모두 썼습니다 (5/5)");
+        onToast?.("오늘의 글 좋아요를 모두 썼습니다 (5/5 · 의견만)");
         return;
       }
       onNeedLogin?.();
@@ -275,9 +282,31 @@ export function OpinionSocial({
         onToast?.(ringClosedToast());
         return;
       }
+      if (e instanceof Error && e.message === "COMPOSE_COOLDOWN") {
+        const left =
+          (e as Error & { remainingMs?: number }).remainingMs ??
+          domaStore.composeCooldownRemainingMs();
+        onToast?.(formatCooldownToast(left));
+        return;
+      }
       if (e instanceof Error && e.message === "SESSION_REQUIRED") {
         onNeedLogin?.();
       }
+    }
+  };
+
+  const onSaveEdit = (replyId: string) => {
+    try {
+      domaStore.updateReply(replyId, editDraft);
+      setEditingId(null);
+      setEditDraft("");
+      onToast?.("댓글을 수정했습니다");
+    } catch (e) {
+      if (e instanceof Error && e.message === "NOT_AUTHOR") {
+        onToast?.("본인 댓글만 수정할 수 있습니다");
+        return;
+      }
+      onNeedLogin?.();
     }
   };
 
@@ -394,80 +423,150 @@ export function OpinionSocial({
             <ul className="space-y-3">
               {thread.map((r) => {
                 const replyScraped = domaStore.hasScraped("reply", r.id);
+                const mine = r.authorId === snap.session?.userId;
+                const editing = editingId === r.id;
                 return (
                   <li key={r.id} className="text-[12px] leading-snug">
-                    <p>
-                      <span className={`font-semibold ${active}`}>
-                        @{r.handle}
-                      </span>
-                      <span
-                        className={`ml-1.5 ${
-                          light ? "text-black/80" : "text-white/80"
-                        }`}
-                      >
-                        {r.body}
-                      </span>
-                    </p>
-                    <div className="mt-1.5 flex flex-wrap items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => onLikeReply(r.id)}
-                        className={`inline-flex items-center gap-1 tabular-nums ${
-                          r.likedByMe ? active : muted
-                        }`}
-                        aria-label="댓글 좋아요"
-                      >
-                        <HeartMark filled={r.likedByMe} />
-                        {r.likeCount}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onShareReply(r.body, r.handle)}
-                        className={muted}
-                        aria-label="댓글 공유"
-                      >
-                        공유
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onScrapReply(r.id, r.body, r.handle)}
-                        className={replyScraped ? active : muted}
-                        aria-label="댓글 스크랩"
-                      >
-                        스크랩
-                      </button>
-                    </div>
+                    {editing ? (
+                      <div className="space-y-1.5">
+                        <input
+                          type="text"
+                          value={editDraft}
+                          onChange={(e) =>
+                            setEditDraft(e.target.value.slice(0, replyMax))
+                          }
+                          maxLength={replyMax}
+                          className={`w-full border bg-transparent px-2 py-1.5 text-[12px] outline-none ${
+                            light
+                              ? "border-black/25 text-black"
+                              : "border-white/25 text-white"
+                          }`}
+                          aria-label="댓글 수정"
+                        />
+                        <div className="flex items-center gap-2">
+                          <span className={`tabular-nums text-[10px] ${muted}`}>
+                            {editDraft.length}/{replyMax}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => onSaveEdit(r.id)}
+                            disabled={!editDraft.trim()}
+                            className={active}
+                          >
+                            저장
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingId(null);
+                              setEditDraft("");
+                            }}
+                            className={muted}
+                          >
+                            취소
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p>
+                        <span className={`font-semibold ${active}`}>
+                          @{r.handle}
+                        </span>
+                        <span
+                          className={`ml-1.5 ${
+                            light ? "text-black/80" : "text-white/80"
+                          }`}
+                        >
+                          {r.body}
+                        </span>
+                      </p>
+                    )}
+                    {!editing ? (
+                      <div className="mt-1.5 flex flex-wrap items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => onLikeReply(r.id)}
+                          className={`inline-flex items-center gap-1 tabular-nums ${
+                            r.likedByMe ? active : muted
+                          }`}
+                          aria-label="댓글 좋아요"
+                          title="댓글 좋아요 · 무제한"
+                        >
+                          <HeartMark filled={r.likedByMe} />
+                          {r.likeCount}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onShareReply(r.body, r.handle)}
+                          className={muted}
+                          aria-label="댓글 공유"
+                        >
+                          공유
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onScrapReply(r.id, r.body, r.handle)}
+                          className={replyScraped ? active : muted}
+                          aria-label="댓글 스크랩"
+                        >
+                          스크랩
+                        </button>
+                        {mine ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingId(r.id);
+                              setEditDraft(r.body);
+                            }}
+                            className={muted}
+                            aria-label="댓글 수정"
+                          >
+                            수정
+                          </button>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </li>
                 );
               })}
             </ul>
           )}
-          <div className="mt-2 flex gap-2">
-            <input
-              type="text"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              placeholder="댓글 쓰기"
-              maxLength={280}
-              className={`min-w-0 flex-1 border bg-transparent px-2 py-1.5 text-[12px] outline-none ${
-                light
-                  ? "border-black/25 text-black placeholder:text-neutral-400"
-                  : "border-white/25 text-white placeholder:text-neutral-500"
-              }`}
-              aria-label="댓글 입력"
-            />
-            <button
-              type="button"
-              onClick={onSubmitReply}
-              disabled={!draft.trim()}
-              className={`shrink-0 border px-2.5 py-1.5 text-[11px] tracking-[0.08em] disabled:opacity-40 ${
-                light
-                  ? "border-black bg-black text-white"
-                  : "border-white bg-white text-black"
-              }`}
+          <div className="mt-2 flex flex-col gap-1">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={draft}
+                onChange={(e) =>
+                  setDraft(e.target.value.slice(0, replyMax))
+                }
+                placeholder="댓글 쓰기"
+                maxLength={replyMax}
+                className={`min-w-0 flex-1 border bg-transparent px-2 py-1.5 text-[12px] outline-none ${
+                  light
+                    ? "border-black/25 text-black placeholder:text-neutral-400"
+                    : "border-white/25 text-white placeholder:text-neutral-500"
+                }`}
+                aria-label="댓글 입력"
+              />
+              <button
+                type="button"
+                onClick={onSubmitReply}
+                disabled={!draft.trim()}
+                className={`shrink-0 border px-2.5 py-1.5 text-[11px] tracking-[0.08em] disabled:opacity-40 ${
+                  light
+                    ? "border-black bg-black text-white"
+                    : "border-white bg-white text-black"
+                }`}
+              >
+                게시
+              </button>
+            </div>
+            <span
+              className={`self-end text-[10px] tabular-nums ${muted}`}
+              data-char-counter
             >
-              게시
-            </button>
+              {draft.length}/{replyMax}
+            </span>
           </div>
         </div>
       ) : null}

@@ -1,23 +1,28 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ImageAttach } from "@/components/ImageAttach";
+import { ImageAttach, type ImagePreview } from "@/components/ImageAttach";
+import { LinkAttach } from "@/components/LinkAttach";
+import {
+  CONTENT_LIMITS,
+  type ComposeMedia,
+} from "@/lib/types/content";
 import type { Side } from "@/lib/types";
 
-const MAX_CHARS = 280;
+const MAX_CHARS = CONTENT_LIMITS.opinion;
 
 type WieldBarProps = {
   open: boolean;
   side: Side | null;
   onClose: () => void;
-  onSubmit: (text: string, imageName?: string) => void;
+  onSubmit: (text: string, media?: ComposeMedia) => void;
 };
 
-/** 오늘의 글(진술) 작성 — 이미지 첨부만 */
+/** 오늘의 글(진술) 작성 — 잠정 500자 · 이미지≤3 · 링크 스텁 */
 export function WieldBar({ open, side, onClose, onSubmit }: WieldBarProps) {
   const [text, setText] = useState("");
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [imageName, setImageName] = useState<string | undefined>();
+  const [previews, setPreviews] = useState<ImagePreview[]>([]);
+  const [link, setLink] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const remaining = MAX_CHARS - text.length;
   const canSubmit = text.trim().length > 0 && text.length <= MAX_CHARS;
@@ -40,22 +45,33 @@ export function WieldBar({ open, side, onClose, onSubmit }: WieldBarProps) {
   useEffect(() => {
     if (open) return;
     setText("");
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(null);
-    setImageName(undefined);
+    for (const p of previews) URL.revokeObjectURL(p.url);
+    setPreviews([]);
+    setLink("");
     // eslint-disable-next-line react-hooks/exhaustive-deps -- clear only when closing
   }, [open]);
 
   if (!open) return null;
 
+  const clearMedia = () => {
+    for (const p of previews) URL.revokeObjectURL(p.url);
+    setPreviews([]);
+    setLink("");
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
-    onSubmit(text.trim(), imageName);
+    const media: ComposeMedia = {
+      imageNames: previews.map((p) => p.name),
+      link: link.trim() || undefined,
+    };
+    onSubmit(
+      text.trim(),
+      media.imageNames?.length || media.link ? media : undefined,
+    );
     setText("");
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(null);
-    setImageName(undefined);
+    clearMedia();
     onClose();
   };
 
@@ -71,7 +87,8 @@ export function WieldBar({ open, side, onClose, onSubmit }: WieldBarProps) {
         role="dialog"
         aria-modal="true"
         aria-label="오늘의 글 작성"
-        className="sheet-up relative z-10 w-full max-w-[560px] border border-white/20 border-b-0 bg-black px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:border-b sm:pb-4"
+        className="sheet-up relative z-10 max-h-[92dvh] w-full max-w-[560px] overflow-y-auto border border-white/20 border-b-0 bg-black px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:border-b sm:pb-4"
+        data-compose="opinion"
       >
         <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-white/30 sm:hidden" />
         <div className="mb-3 flex items-center justify-between">
@@ -94,7 +111,7 @@ export function WieldBar({ open, side, onClose, onSubmit }: WieldBarProps) {
             role="note"
             aria-label="작성 규칙 팁"
           >
-            글은 여러 번 가능 · 하루 한 진영에서만
+            글은 여러 번 가능 · 하루 한 진영에서만 · 연속 작성 3분 쿨다운
           </p>
           <div className="mb-2 flex items-center justify-between text-[11px] text-muted">
             <span>
@@ -102,8 +119,10 @@ export function WieldBar({ open, side, onClose, onSubmit }: WieldBarProps) {
             </span>
             <span
               className={`tabular-nums ${
-                remaining < 20 ? "text-white" : "text-dim"
+                remaining < 40 ? "text-white" : "text-dim"
               }`}
+              data-char-counter
+              aria-label={`글자 수 ${text.length} / ${MAX_CHARS}`}
             >
               {text.length}/{MAX_CHARS}
             </span>
@@ -119,18 +138,24 @@ export function WieldBar({ open, side, onClose, onSubmit }: WieldBarProps) {
             aria-label="오늘의 글 입력"
           />
           <ImageAttach
-            previewUrl={previewUrl}
-            onPick={(file, url) => {
-              if (previewUrl) URL.revokeObjectURL(previewUrl);
-              setPreviewUrl(url);
-              setImageName(file.name);
-            }}
-            onClear={() => {
-              if (previewUrl) URL.revokeObjectURL(previewUrl);
-              setPreviewUrl(null);
-              setImageName(undefined);
-            }}
+            previews={previews}
+            onAdd={(file, url) =>
+              setPreviews((prev) =>
+                prev.length >= CONTENT_LIMITS.images
+                  ? prev
+                  : [...prev, { url, name: file.name }],
+              )
+            }
+            onRemove={(index) =>
+              setPreviews((prev) => {
+                const next = [...prev];
+                const [gone] = next.splice(index, 1);
+                if (gone) URL.revokeObjectURL(gone.url);
+                return next;
+              })
+            }
           />
+          <LinkAttach value={link} onChange={setLink} />
           <button
             type="submit"
             disabled={!canSubmit}

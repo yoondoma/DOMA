@@ -326,6 +326,7 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
         dmPolicy: "everyone",
       },
     },
+    lastComposeAtByUser: {},
     /** 홈 아레나 표시용 메타 (UI ArenaState와 병행) */
     arenaMeta: {
       round: 412,
