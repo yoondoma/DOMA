@@ -53,7 +53,7 @@ function DayDetail({
 
       <div className="px-4 py-4">
         <p className="text-[11px] tracking-[0.16em] text-muted">
-          제 {battle.round} 도마
+          제 {battle.round}회 전투
         </p>
         <h3 className="mt-2 font-[family-name:var(--font-syne)] text-[18px] font-bold leading-snug">
           {battle.topic}

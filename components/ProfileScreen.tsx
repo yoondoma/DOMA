@@ -326,11 +326,11 @@ export function ProfileScreen({
                     type="button"
                     onClick={() => setBattleDetail(b)}
                     className="w-full px-4 py-3.5 text-left"
-                    aria-label={`제 ${b.round} 도마 상세`}
+                    aria-label={`제 ${b.round}회 전투 상세`}
                   >
                     <div className="flex items-baseline justify-between gap-3 text-[12px] text-neutral-200">
                       <span>
-                        {b.date.slice(5).replace("-", "/")} · 제 {b.round} 도마
+                        {b.date.slice(5).replace("-", "/")} · 제 {b.round}회 전투
                       </span>
                       <span className={won ? "text-white" : "text-neutral-200"}>
                         {won ? "승" : "패"} ·{" "}

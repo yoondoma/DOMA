@@ -88,7 +88,7 @@ export function TomorrowField({
       {/* 주제 확정 카운트다운 — 헤더 타이머 없음, 전장과 같은 빨간 톤 */}
       <div className="border-b border-white/10 px-5 pb-5 pt-6 text-center">
         <p className="text-[11px] font-medium tracking-[0.22em] text-white/45">
-          다음 도마 · 필드
+          다음 전투 · 필드
         </p>
         <p className="mt-4 text-[11px] tracking-[0.18em] text-white/55">
           내일의 주제 확정까지

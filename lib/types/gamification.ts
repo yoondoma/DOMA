@@ -213,7 +213,7 @@ export type ScoreEvent = {
   delta: number;
   /** 반영 후 누적 score */
   scoreAfter: number;
-  /** 예: 제 412 도마 */
+  /** 예: 제 412회 전투 */
   topic: string;
   round: number;
 };

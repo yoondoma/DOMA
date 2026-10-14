@@ -73,7 +73,7 @@ type ArenaBarProps = {
   opinions: Opinion[];
   view: ArenaView;
   onChangeView: (view: ArenaView) => void;
-  /** 셸 톤 = 그날 TOP 진영 (탭/스와이프와 무관) */
+  /** 셸 톤 = 지금 보고 있는 진영 (도전=블랙 · 방어=화이트) */
   shellLight: boolean;
   focusOpinionId?: string | null;
   uiDemo?: UiDemo;
@@ -239,14 +239,16 @@ function CampFeedPage({
       data-camp-page={side}
       aria-label={`${label} 의견 영역`}
     >
-      <div className={`flex items-center gap-2 border-b px-4 py-2.5 ${border}`}>
+      <div
+        className={`flex items-center justify-center gap-2 border-b px-4 py-2.5 ${border}`}
+      >
         <Mark size={16} className={ink} />
         <p className={`text-[10px] font-bold tracking-[0.16em] ${muted}`}>
           TOP 의견 · {label}
         </p>
       </div>
 
-      <div className="px-4 py-3">
+      <div className="px-4 py-3 text-center">
         {uiDemo === "loading" ? (
           <StatusBlock kind="loading" message="불러오는 중" light={light} />
         ) : uiDemo === "error" ? (
@@ -268,36 +270,38 @@ function CampFeedPage({
                 : undefined
             }
           >
-            <div className="mb-1.5 flex items-center gap-2">
-              <SmallAvatar name={top.author} light={light} />
-              <span
-                className={`min-w-0 flex-1 truncate text-[13px] font-semibold ${ink}`}
-              >
-                @{top.author}
-              </span>
-              <SideBadge side={top.side} />
-              {top.authorId ? (
-                <SafetyMenu
-                  userId={top.authorId}
-                  reportKind="opinion"
-                  reportTargetId={top.id}
-                  light={light}
-                />
-              ) : null}
+            <div className="mb-1.5 flex flex-col items-center gap-2">
+              <div className="flex items-center gap-2">
+                <SmallAvatar name={top.author} light={light} />
+                <span className={`text-[13px] font-semibold ${ink}`}>
+                  @{top.author}
+                </span>
+                <SideBadge side={top.side} />
+                {top.authorId ? (
+                  <SafetyMenu
+                    userId={top.authorId}
+                    reportKind="opinion"
+                    reportTargetId={top.id}
+                    light={light}
+                  />
+                ) : null}
+              </div>
             </div>
             <p
-              className={`line-clamp-3 font-[family-name:var(--font-syne)] text-[14px] leading-[1.45] ${ink}`}
+              className={`mx-auto line-clamp-3 max-w-[36em] font-[family-name:var(--font-syne)] text-[14px] leading-[1.45] ${ink}`}
             >
               “{top.text}”
             </p>
-            <OpinionSocial
-              opinionId={top.id}
-              likes={top.likes}
-              replies={top.replies ?? 0}
-              likedByMe={top.likedByMe}
-              light={light}
-              indent={false}
-            />
+            <div className="mt-2 flex justify-center">
+              <OpinionSocial
+                opinionId={top.id}
+                likes={top.likes}
+                replies={top.replies ?? 0}
+                likedByMe={top.likedByMe}
+                light={light}
+                indent={false}
+              />
+            </div>
           </article>
         ) : (
           <StatusBlock
@@ -387,7 +391,7 @@ function BattlefieldIntro({
         className={`battlefield-rise border-b px-5 pb-5 pt-6 text-center ${border}`}
       >
         <p className={`text-[11px] font-medium tracking-[0.22em] ${faint}`}>
-          제 {arena.round} 도마
+          제 {arena.round}회 전투
         </p>
         <p className={`mt-4 text-[11px] tracking-[0.18em] ${soft}`}>
           {closingSoon ? "판결 임박" : "최후의 판결까지"}
@@ -417,7 +421,7 @@ function BattlefieldIntro({
       </div>
 
       <div
-        className="battlefield-rise battlefield-rise-delay px-5 pb-6 pt-7"
+        className="battlefield-rise battlefield-rise-delay px-5 pb-6 pt-7 text-center"
         aria-label="오늘 주제 영역"
       >
         <p
@@ -433,7 +437,7 @@ function BattlefieldIntro({
           {arena.topic}
         </h2>
         <p
-          className={`mt-4 text-[14px] leading-[1.7] ${
+          className={`mx-auto mt-4 max-w-[36em] text-[14px] leading-[1.7] ${
             light ? "text-black/70" : "text-white/70"
           }`}
         >
@@ -493,7 +497,7 @@ function BattlefieldIntro({
             light={light}
           />
         ) : (
-          <div className="px-5 py-6">
+          <div className="px-5 py-6 text-center">
             <p
               className={`text-[10px] font-bold tracking-[0.2em] ${faint}`}
             >
@@ -501,30 +505,28 @@ function BattlefieldIntro({
               {champion.side === "NEXUS" ? "도전자" : "방어자"}
             </p>
             <div className={`mt-3 border-t pt-4 ${border}`}>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col items-center gap-2">
                 <SmallAvatar name={champion.author} light={light} />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className={`truncate text-[14px] font-semibold ${ink}`}>
-                      @{champion.author}
-                    </span>
-                    <SideBadge side={champion.side} />
-                    {champion.side === "NEXUS" ? (
-                      <SpearMark
-                        size={12}
-                        className={`ml-auto ${light ? "text-black/50" : "text-white/50"}`}
-                      />
-                    ) : (
-                      <ShieldMark
-                        size={12}
-                        className={`ml-auto ${light ? "text-black/50" : "text-white/50"}`}
-                      />
-                    )}
-                  </div>
+                <div className="flex items-center justify-center gap-1.5">
+                  <span className={`text-[14px] font-semibold ${ink}`}>
+                    @{champion.author}
+                  </span>
+                  <SideBadge side={champion.side} />
+                  {champion.side === "NEXUS" ? (
+                    <SpearMark
+                      size={12}
+                      className={light ? "text-black/50" : "text-white/50"}
+                    />
+                  ) : (
+                    <ShieldMark
+                      size={12}
+                      className={light ? "text-black/50" : "text-white/50"}
+                    />
+                  )}
                 </div>
               </div>
               <p
-                className={`mt-2.5 line-clamp-3 text-[13px] leading-[1.5] ${
+                className={`mx-auto mt-2.5 max-w-[36em] line-clamp-3 text-[13px] leading-[1.5] ${
                   light ? "text-black/85" : "text-white/85"
                 }`}
               >
@@ -547,8 +549,8 @@ function BattlefieldIntro({
 
 /**
  * 오늘 전장
- * - 셸 톤 = 그날 TOP 진영 (탭/스와이프와 무관)
- * - intro: 주제·진영·TOP
+ * - 셸 톤 = 보고 있는 진영 (도전=블랙 · 방어=화이트)
+ * - intro: 주제·진영·TOP (중앙)
  * - 스와이프: 좌 도전자 / 우 방어자 피드
  */
 export function ArenaBar({
@@ -672,13 +674,13 @@ export function ArenaBar({
     >
       <div className="mx-auto max-w-[560px]">
         <div
-          className={`sticky top-[5.75rem] z-30 border-b px-5 pb-3 pt-3 backdrop-blur-md ${border} ${
+          className={`sticky top-[5.75rem] z-30 border-b px-5 pb-3 pt-3 text-center backdrop-blur-md ${border} ${
             light ? "bg-white/96" : "bg-black/96"
           }`}
           aria-label="오늘 주제 영역"
         >
           <p className={`text-[11px] font-medium tracking-[0.2em] ${faint}`}>
-            제 {arena.round} 도마
+            제 {arena.round}회 전투
           </p>
           <p
             className={`mt-1 font-mono text-[22px] font-semibold tabular-nums text-timer ${
@@ -694,7 +696,9 @@ export function ArenaBar({
           >
             {arena.topic}
           </h2>
-          <p className={`mt-2 line-clamp-2 text-[12px] leading-[1.55] ${soft}`}>
+          <p
+            className={`mx-auto mt-2 max-w-[36em] line-clamp-2 text-[12px] leading-[1.55] ${soft}`}
+          >
             {arena.description}
           </p>
         </div>

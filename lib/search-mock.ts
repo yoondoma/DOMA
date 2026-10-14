@@ -60,25 +60,25 @@ export const SEARCH_INDEX: SearchItem[] = [
     id: "t1",
     kind: "topic",
     title: "인공지능은 인간의 지성을 완전히 대체할 것인가?",
-    subtitle: "제 412 도마 · 진행 중",
+    subtitle: "제 412회 전투 · 진행 중",
   },
   {
     id: "t2",
     kind: "topic",
     title: "표현의 자유는 혐오 발언까지 포함하는가?",
-    subtitle: "제 401 도마 · 도전자 승 54%",
+    subtitle: "제 401회 전투 · 도전자 승 54%",
   },
   {
     id: "t3",
     kind: "topic",
     title: "현금 없는 사회는 자유를 줄이는가?",
-    subtitle: "제 409 도마 · 도전자 승 58%",
+    subtitle: "제 409회 전투 · 도전자 승 58%",
   },
   {
     id: "t4",
     kind: "topic",
     title: "동물원 제도는 폐지되어야 하는가?",
-    subtitle: "제 412 도마 · 방어자 승 54%",
+    subtitle: "제 412회 전투 · 방어자 승 54%",
   },
 ];
 

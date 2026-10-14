@@ -112,7 +112,7 @@ export function TierDetailScreen({
                 >
                   <div className="flex items-baseline justify-between gap-2 text-[12px] text-neutral-200">
                     <span>
-                      {ev.date.slice(5).replace("-", "/")} · 제 {ev.round} 도마
+                      {ev.date.slice(5).replace("-", "/")} · 제 {ev.round}회 전투
                     </span>
                     <span className="tabular-nums text-white">
                       {ev.result === "win" ? "승" : "패"} {ev.delta > 0 ? "+" : ""}

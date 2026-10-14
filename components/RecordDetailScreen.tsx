@@ -67,7 +67,7 @@ export function RecordDetailScreen({
                 {title.date} · {title.type}
               </p>
               <p className="mt-6 text-[13px] text-neutral-200">
-                제 {title.round} 도마
+                제 {title.round}회 전투
               </p>
               <p className="mt-2 text-[15px] leading-[1.5] text-white">
                 {title.topic}
@@ -81,7 +81,7 @@ export function RecordDetailScreen({
           {kind === "score" && event ? (
             <>
               <p className="text-[12px] text-neutral-200">
-                {event.date.slice(5).replace("-", "/")} · 제 {event.round} 도마
+                {event.date.slice(5).replace("-", "/")} · 제 {event.round}회 전투
               </p>
               <p className="mt-3 font-[family-name:var(--font-syne)] text-[28px] font-bold tabular-nums">
                 {event.result === "win" ? "승" : "패"}{" "}
@@ -105,7 +105,7 @@ export function RecordDetailScreen({
           {kind === "battle" && battle ? (
             <>
               <p className="text-[12px] text-neutral-200">
-                {battle.date.slice(5).replace("-", "/")} · 제 {battle.round} 도마
+                {battle.date.slice(5).replace("-", "/")} · 제 {battle.round}회 전투
               </p>
               <p className="mt-3 font-[family-name:var(--font-syne)] text-[28px] font-bold">
                 {battle.result === "win" ? "승" : "패"}

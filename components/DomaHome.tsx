@@ -98,15 +98,19 @@ export function DomaHome() {
 
   const feedOpinions = uiDemo === "empty" ? [] : storeOpinions;
   const forcedTop = useForcedTopSide();
-  /** 셸 톤 = 그날 TOP 의견 진영 (탭/스와이프와 무관) */
-  const topCamp = useMemo(
-    () => dayTopSide(feedOpinions, forcedTop),
-    [feedOpinions, forcedTop],
-  );
+  /**
+   * 셸 톤 = 지금 보고 있는 진영
+   * - 스와이프/선택 NEXUS→블랙 · AEGIS→화이트
+   * - intro는 화면에 보이는 TOP 진영을 따름
+   */
+  const viewingCamp = useMemo(() => {
+    if (arenaView === "NEXUS" || arenaView === "AEGIS") return arenaView;
+    return dayTopSide(feedOpinions, forcedTop);
+  }, [arenaView, feedOpinions, forcedTop]);
   const lightShell =
     navTab === "home" &&
     homeSurface === "today" &&
-    topCamp === "AEGIS";
+    viewingCamp === "AEGIS";
 
   /** 세션 → 참전 진영·프로필 표시 동기화 */
   useEffect(() => {
