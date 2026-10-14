@@ -1,7 +1,10 @@
 import { BATTLE_HISTORY } from "./battle-history";
 import {
   createDailyTitle,
+  pointDelta,
   withResolvedTier,
+  type DailyTitle,
+  type ScoreEvent,
   type UserProfileType,
 } from "./types/gamification";
 import type { Side } from "./types";
@@ -23,6 +26,13 @@ export type AffinityStats = {
   defenderSupportPct: number;
 };
 
+export type FollowUser = {
+  id: string;
+  name: string;
+  handle: string;
+  bio: string;
+};
+
 export const PROFILE_USER = {
   name: "수한",
   handle: "soohan",
@@ -32,11 +42,16 @@ export const PROFILE_USER = {
   followers: 940,
 };
 
-/** 게이미피케이션 목 — DIAMOND II 근처 + 일일 칭호 */
+/**
+ * 게이미피케이션 목
+ * score 규칙: 승 +1 / 패 -0.5 → 예) 160승 30패 = 160 - 15 = 145
+ */
 export const PROFILE_GAMER: UserProfileType = withResolvedTier({
   id: "user-soohan",
   username: PROFILE_USER.name,
-  totalWins: 145,
+  score: 145,
+  wins: 160,
+  losses: 30,
   dailyTitles: [
     createDailyTitle("10.24", "FINGER"),
     createDailyTitle("10.12", "SPEAR"),
@@ -82,13 +97,112 @@ export const PROFILE_POSTS: ProfilePost[] = [
 export const PROFILE_RECENT_BATTLES = BATTLE_HISTORY.slice(-5)
   .reverse()
   .map((b, i) => ({
+    id: `battle-${b.round}`,
     date: b.date,
     round: b.round,
     topic: b.topic,
-    /** 짝수 인덱스는 도전자로 참전했다고 가정 */
     joinedAs: (i % 2 === 0 ? "NEXUS" : "AEGIS") as Side,
     result: (b.winner === (i % 2 === 0 ? "NEXUS" : "AEGIS")
       ? "win"
       : "loss") as "win" | "loss",
     winnerPercent: b.winnerPercent,
+    delta: pointDelta(
+      b.winner === (i % 2 === 0 ? "NEXUS" : "AEGIS") ? "win" : "loss",
+    ),
   }));
+
+/** 티어 상승 기록 — 최신 순 (승 +1 / 패 -0.5) */
+export const PROFILE_SCORE_HISTORY: ScoreEvent[] = (() => {
+  let score = 145;
+  const rows: ScoreEvent[] = [];
+  const seed = [
+    { date: "2026-10-13", result: "win" as const, round: 412, topic: "인공지능은 인간의 지성을 완전히 대체할 것인가?" },
+    { date: "2026-10-12", result: "win" as const, round: 411, topic: "표현의 자유는 혐오를 포함해야 하는가?" },
+    { date: "2026-10-11", result: "loss" as const, round: 410, topic: "원격 근무는 생산성을 올리는가?" },
+    { date: "2026-10-10", result: "win" as const, round: 409, topic: "기본소득은 노동 의력을 약화시키는가?" },
+    { date: "2026-10-09", result: "loss" as const, round: 408, topic: "대학 서열은 능력주의의 증명인가?" },
+    { date: "2026-10-08", result: "win" as const, round: 407, topic: "핵발전은 기후 위기의 해법인가?" },
+    { date: "2026-10-07", result: "win" as const, round: 406, topic: "플랫폼 노동은 고용인가?" },
+    { date: "2026-10-06", result: "loss" as const, round: 405, topic: "검열 없는 인터넷은 가능한가?" },
+  ];
+  for (const s of seed) {
+    const delta = pointDelta(s.result);
+    rows.push({
+      id: `ev-${s.round}`,
+      date: s.date,
+      result: s.result,
+      delta,
+      scoreAfter: score,
+      topic: s.topic,
+      round: s.round,
+    });
+    score -= delta; // reverse walk
+  }
+  return rows;
+})();
+
+const FOLLOW_NAMES = [
+  ["김도마", "doma_kim", "판결문만 남긴다."],
+  ["이창", "spear_lee", "흑으로 증명."],
+  ["박방패", "aegis_park", "백의 자리."],
+  ["최증거", "evidence_c", "각주가 곧 주장."],
+  ["정논객", "jung_debate", "한 줄로 끝내기."],
+  ["한결", "hangyeol", "매일 한 판."],
+  ["윤침묵", "silent_y", "말하지 않을 자유."],
+  ["서판결", "seo_verdict", "24시간 안에."],
+];
+
+export const PROFILE_FOLLOWING: FollowUser[] = FOLLOW_NAMES.map((n, i) => ({
+  id: `fg-${i}`,
+  name: n[0],
+  handle: n[1],
+  bio: n[2],
+}));
+
+export const PROFILE_FOLLOWERS: FollowUser[] = [
+  ...FOLLOW_NAMES.slice().reverse().map((n, i) => ({
+    id: `fr-${i}`,
+    name: n[0],
+    handle: `${n[1]}_f`,
+    bio: n[2],
+  })),
+  {
+    id: "fr-x",
+    name: "오독자",
+    handle: "reader_oh",
+    bio: "지켜보는 사람.",
+  },
+  {
+    id: "fr-y",
+    name: "유증인",
+    handle: "witness_yoo",
+    bio: "기록만 한다.",
+  },
+];
+
+export type TitleDetail = DailyTitle & {
+  round: number;
+  topic: string;
+  note: string;
+};
+
+export const PROFILE_TITLE_DETAILS: TitleDetail[] = [
+  {
+    ...createDailyTitle("10.24", "FINGER"),
+    round: 412,
+    topic: "인공지능은 인간의 지성을 완전히 대체할 것인가?",
+    note: "당일 최다 채택·인용으로 도마의 손가락.",
+  },
+  {
+    ...createDailyTitle("10.12", "SPEAR"),
+    round: 400,
+    topic: "표현의 자유는 혐오를 포함해야 하는가?",
+    note: "도전자 진영 대표 진술.",
+  },
+  {
+    ...createDailyTitle("09.30", "VICTOR"),
+    round: 388,
+    topic: "기본소득은 노동 동력을 약화시키는가?",
+    note: "당일 승자 진영 확정.",
+  },
+];

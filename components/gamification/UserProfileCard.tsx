@@ -7,20 +7,26 @@ import { TierBadge } from "@/components/gamification/TierBadge";
 type UserProfileCardProps = {
   user: UserProfileType;
   className?: string;
-  /** 일일 칭호 전파 카드 열기 */
+  /** 티어 뱃지/표기 탭 */
+  onOpenTier?: () => void;
+  /** 일일 칭호 탭 → 상세 */
+  onOpenTitle?: (title: DailyTitle) => void;
+  /** 전파 카드 (선택) */
   onPropagateTitle?: (title: DailyTitle) => void;
 };
 
 /**
- * 프로필용 칭호 블록 — 보더/프로그레스 없이 텍스트만
+ * 프로필용 칭호 블록 — 텍스트만 · score 표기
  * Pure B&W
  */
 export function UserProfileCard({
   user,
   className = "",
+  onOpenTier,
+  onOpenTitle,
   onPropagateTitle,
 }: UserProfileCardProps) {
-  const { currentTier: t, totalWins, dailyTitles, username } = user;
+  const { currentTier: t, score, dailyTitles, username } = user;
   const primary = dailyTitles[0];
 
   return (
@@ -28,34 +34,36 @@ export function UserProfileCard({
       className={["text-white", className].join(" ")}
       aria-label={`${username} 칭호`}
     >
-      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+      <button
+        type="button"
+        onClick={onOpenTier}
+        className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-left"
+        aria-label={`티어 ${t.display}`}
+      >
         <TierBadge tier={t.code} subTier={t.subtier} />
         <span className="text-[13px] tracking-[0.04em] text-neutral-200">
           {t.displayKo}
         </span>
         <span className="text-[12px] tabular-nums text-neutral-200">
-          · {totalWins}승
+          · {score}pt
         </span>
-      </div>
+      </button>
 
       {dailyTitles.length > 0 ? (
         <ul className="mt-3 space-y-1.5" aria-label="일일 칭호">
           {dailyTitles.map((badge) => (
             <li key={`${badge.date}-${badge.type}`}>
-              {onPropagateTitle ? (
-                <button
-                  type="button"
-                  onClick={() => onPropagateTitle(badge)}
-                  className="text-left text-[13px] tracking-[0.02em] text-white transition-opacity active:opacity-60"
-                  aria-label={`${badge.label} 전파 카드`}
-                >
-                  {badge.label}
-                </button>
-              ) : (
-                <span className="text-[13px] tracking-[0.02em] text-white">
-                  {badge.label}
-                </span>
-              )}
+              <button
+                type="button"
+                onClick={() => {
+                  if (onOpenTitle) onOpenTitle(badge);
+                  else onPropagateTitle?.(badge);
+                }}
+                className="text-left text-[13px] tracking-[0.02em] text-white transition-opacity active:opacity-60"
+                aria-label={`${badge.label} 상세`}
+              >
+                {badge.label}
+              </button>
             </li>
           ))}
         </ul>

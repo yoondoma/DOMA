@@ -15,7 +15,8 @@ type CardRatio = "square" | "story";
 
 export type ViralSharePayload = {
   username: string;
-  totalWins: number;
+  /** 누적 티어 포인트 (승+1 / 패-0.5) */
+  score: number;
   tier: TierPlacement;
   title: DailyTitle;
 };
@@ -259,7 +260,7 @@ export function ViralShareCard({
                   subTier={payload.tier.subtier}
                 />
                 <span className="text-[11px] tabular-nums tracking-[0.12em] text-neutral-200">
-                  {payload.totalWins} WINS
+                  {payload.score} PT
                 </span>
               </div>
             </div>
