@@ -1,7 +1,5 @@
 "use client";
 
-import { useId } from "react";
-
 type DomaMarkProps = {
   /** 세로 기준 높이 */
   size?: number;
@@ -11,9 +9,9 @@ type DomaMarkProps = {
 };
 
 /**
- * doma-logo-preferred.png 실측 비율
- * 직사각 → 하향 삼각 → 타원. 삼각이 위 레이어.
- * 겹침 구간의 원 스트로크는 마스크로 제거(삼각 아래로 비치지 않음).
+ * doma-logo-preferred 비율.
+ * 삼각이 위 레이어 — 원과 겹치는 구간의 원 스트로크는
+ * 확장 삼각으로 지운 뒤 삼각 스트로크를 올린다.
  */
 export function DomaMark({
   size = 56,
@@ -22,14 +20,14 @@ export function DomaMark({
 }: DomaMarkProps) {
   const stroke = light ? "#000000" : "#ffffff";
   const bg = light ? "#ffffff" : "#000000";
-  const uid = useId().replace(/:/g, "");
-  const maskId = `doma-mark-mask-${uid}`;
   const width = Math.round(size * (48 / 72));
 
-  // tip y≈52 · ellipse top≈44.5 — 팁이 원 안으로
+  // tip y≈52 · ellipse top≈44.5
   const tri = "M6 23.2h36L24 52Z";
-  // 스트로크 두께까지 덮도록 마스크를 넉넉히 (원이 삼각 위로 비치지 않게)
-  const triMask = "M1.5 19.5h45L24 59.5Z";
+  // 원 스트로크(1.45)까지 덮는 지우개 — 삼각보다 크게
+  const triErase = "M2 20.2h44L24 57.2Z";
+  // 사각 하단이 삼각에 가려지도록
+  const rectErase = "M14.2 20.4h19.6v5.2H14.2Z";
 
   return (
     <svg
@@ -41,21 +39,7 @@ export function DomaMark({
       className={`shrink-0 ${className}`}
       aria-hidden
     >
-      <defs>
-        <mask
-          id={maskId}
-          maskUnits="userSpaceOnUse"
-          x="0"
-          y="0"
-          width="48"
-          height="72"
-        >
-          <rect width="48" height="72" fill="#ffffff" />
-          <path d={triMask} fill="#000000" />
-        </mask>
-      </defs>
-
-      {/* 1) 원 — 삼각 영역은 마스크로 스트로크 제거 */}
+      {/* 원 전체 */}
       <ellipse
         cx="24"
         cy="56.5"
@@ -63,11 +47,13 @@ export function DomaMark({
         ry="12"
         stroke={stroke}
         strokeWidth="1.45"
-        mask={`url(#${maskId})`}
       />
 
-      {/* 2) 삼각 위 레이어 — 내부를 bg로 채워 잔여 원 선 차단 후 스트로크 */}
-      <path d={tri} fill={bg} stroke="none" />
+      {/* 겹침 구간의 원·사각 선을 배경색으로 지움 */}
+      <path d={triErase} fill={bg} stroke="none" />
+      <path d={rectErase} fill={bg} stroke="none" />
+
+      {/* 삼각 위 레이어 */}
       <path
         d={tri}
         fill="none"
