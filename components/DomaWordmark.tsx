@@ -125,9 +125,10 @@ export function DomaWordmark({
         }
       }
 
-      const gap = 3;
+      const gap = 2;
       setPos({
-        top: Math.max(0, inkTop - parent.top),
+        // 캡 꼭지에 더 붙게 1px 상향 (광학)
+        top: Math.max(0, inkTop - parent.top - 1),
         left: inkRight - parent.left + gap,
       });
     };
