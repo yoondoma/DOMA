@@ -2,9 +2,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
   <rect width="1024" height="1024" fill="#000000"/>
   <g transform="translate(512 512) scale(9.2) translate(-24 -36)">
-    <path d="M21.85 44.57 A20.5 12 0 1 0 26.15 44.57" fill="none" stroke="#ffffff" stroke-width="1.45" stroke-linecap="butt"/>
-    <path d="M15.75 1H32.25V23H42L24 49L6 23H15.75Z" fill="#000000" stroke="none"/>
-    <path d="M15.75 1H32.25V23H42L24 49L6 23H15.75Z" fill="none" stroke="#ffffff" stroke-width="1.45" stroke-linejoin="miter" stroke-linecap="square"/>
-    <path d="M15.75 23H32.25" stroke="#ffffff" stroke-width="1.45" stroke-linecap="square"/>
+    <path d="M23.37 44.51A20.5 12 0 0 1 24 68.5A20.5 12 0 0 1 24.63 44.51" fill="none" stroke="#ffffff" stroke-width="1.45" stroke-linecap="butt"/>
+    <path d="M15.75 1H32.25V23H42L24 46.5L6 23H15.75Z" fill="#000000" stroke="none"/>
+    <path d="M15.75 1H32.25V23H42L24 46.5L6 23H15.75Z" fill="none" stroke="#ffffff" stroke-width="1.45" stroke-linejoin="miter" stroke-linecap="square"/>
   </g>
 </svg>
