@@ -6,6 +6,11 @@ type DomaMarkProps = {
   /** light 배경 위 → 검정 스트로크 */
   light?: boolean;
   className?: string;
+  /**
+   * 입장 게이트 — 사각+삼각(창)이 원(방패)을 살짝 찌르는 한 동작.
+   * 호 가림 규칙 유지: 삼각 fill이 원 위, tip 밑 호 없음.
+   */
+  pierce?: boolean;
 };
 
 /**
@@ -18,6 +23,7 @@ export function DomaMark({
   size = 56,
   light = false,
   className = "",
+  pierce = false,
 }: DomaMarkProps) {
   const stroke = light ? "#000000" : "#ffffff";
   const bg = light ? "#ffffff" : "#000000";
@@ -44,36 +50,43 @@ export function DomaMark({
       viewBox="0 0 48 72"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={`shrink-0 ${className}`}
+      className={`shrink-0 ${pierce ? "mark-pierce" : ""} ${className}`}
       aria-hidden
       data-mark-seam={seamY}
       data-mark-tip={tipY}
       data-mark-ellipse-top={ellipseTop}
       data-mark-overlap={+(tipY - ellipseTop).toFixed(2)}
+      data-mark-pierce={pierce ? "1" : undefined}
     >
-      <path
-        d={ellipseOpen}
-        stroke={stroke}
-        strokeWidth="1.45"
-        strokeLinecap="butt"
-        fill="none"
-      />
-      <path d={tri} fill={bg} stroke="none" />
-      <path
-        d={tri}
-        fill="none"
-        stroke={stroke}
-        strokeWidth="1.45"
-        strokeLinejoin="miter"
-      />
-      <path
-        d={rect}
-        fill="none"
-        stroke={stroke}
-        strokeWidth="1.45"
-        strokeLinejoin="miter"
-        strokeLinecap="butt"
-      />
+      {/* 원(방패/방어) — 삼각 아래에서 press */}
+      <g className="mark-pierce-shield">
+        <path
+          d={ellipseOpen}
+          stroke={stroke}
+          strokeWidth="1.45"
+          strokeLinecap="butt"
+          fill="none"
+        />
+      </g>
+      {/* 사각+삼각(창) — tip이 원 안으로 더 들어감 · fill로 교차 호 가림 */}
+      <g className="mark-pierce-spear">
+        <path d={tri} fill={bg} stroke="none" />
+        <path
+          d={tri}
+          fill="none"
+          stroke={stroke}
+          strokeWidth="1.45"
+          strokeLinejoin="miter"
+        />
+        <path
+          d={rect}
+          fill="none"
+          stroke={stroke}
+          strokeWidth="1.45"
+          strokeLinejoin="miter"
+          strokeLinecap="butt"
+        />
+      </g>
     </svg>
   );
 }

@@ -8,7 +8,10 @@ type TouchGateProps = {
   onEnter: () => void;
 };
 
-/** 진입 — 만져서 증명(도마/토마스). 화면 어디든 터치. 로고 형태 유지 */
+/** pierce 정착 후 fade 진입 — 과한 튕김 없이 한 동작 */
+const ENTER_MS = 520;
+
+/** 진입 — 만져서 증명. 마크 pierce(창→원) + 기존 touch-press fade */
 export function TouchGate({ onEnter }: TouchGateProps) {
   const [pressing, setPressing] = useState(false);
 
@@ -17,7 +20,7 @@ export function TouchGate({ onEnter }: TouchGateProps) {
     setPressing(true);
     window.setTimeout(() => {
       onEnter();
-    }, 380);
+    }, ENTER_MS);
   };
 
   return (
@@ -29,19 +32,21 @@ export function TouchGate({ onEnter }: TouchGateProps) {
         pressing ? "touch-press opacity-90" : "active:opacity-90"
       }`}
     >
-      {/* 시각 중심: 마크 + DOMAᴷᴿ — hit target은 전체 화면 */}
+      {/* 시각 중심: 마크 + DOMA KR — hit target은 전체 화면 */}
       <span
-        className={`pointer-events-none flex flex-col items-center transition-transform duration-300 ${
-          pressing ? "scale-[1.03]" : "scale-100"
-        }`}
+        className="pointer-events-none flex flex-col items-center"
         aria-hidden
       >
-        <DomaMark size={88} />
-        <span className="mt-6">
+        <DomaMark size={88} pierce={pressing} />
+        <span
+          className={`mt-6 transition-opacity duration-300 ${
+            pressing ? "opacity-70" : "opacity-100"
+          }`}
+        >
           <DomaWordmark size="lg" />
         </span>
         <span
-          className={`mt-6 text-[11px] tracking-[0.18em] text-muted ${
+          className={`mt-6 text-[11px] tracking-[0.18em] text-muted transition-opacity duration-300 ${
             pressing ? "opacity-40" : "opacity-100"
           }`}
         >
