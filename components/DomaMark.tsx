@@ -9,9 +9,9 @@ type DomaMarkProps = {
 };
 
 /**
- * 사각 + 삼각 + 원 = 하나의 마크.
- * - 사각·삼각: seamY에서 맞닿아 합체 (사각 밑변 없음 → 삼각 윗변이 공유 선)
- * - 삼각 tip·원: tip이 원 상단을 살짝 침범. 원은 전체 스트로크, 삼각 fill이 가림.
+ * 사각+삼각+원 = 하나의 마크 (doma-logo-preferred 비율).
+ * - 사각·삼각: 단일 외곽 패스 + seam 가로선 (이중 선/떠 있는 밑변 없음)
+ * - 삼각 tip이 원 안에 살짝 진입, 가려지는 원 호는 패스에서 제외
  */
 export function DomaMark({
   size = 56,
@@ -23,12 +23,23 @@ export function DomaMark({
   const width = Math.round(size * (48 / 72));
 
   const seamY = 23;
-  /** 원 상단 44.5 · tip이 더 아래(침범) → 시각적 gap=0 */
   const ellipseTop = 44.5;
-  const tipY = 47.2;
+  /** tip이 원 상단(44.5) 안으로 진입 */
+  const tipY = 49;
 
-  const tri = `M6 ${seamY}h36L24 ${tipY}Z`;
-  const rectOpen = `M15.75 ${seamY}V1h16.5V${seamY}`;
+  /**
+   * 사각+삼각 단일 외곽:
+   * 사각 좌·우 변이 seam에서 삼각 윗변·빗변으로 이어짐 (갭 0)
+   */
+  const body = `M15.75 1H32.25V${seamY}H42L24 ${tipY}L6 ${seamY}H15.75Z`;
+  /** seam 중앙 — 사각 발 사이 가로선 (preferred의 삼각 윗변) */
+  const seamBar = `M15.75 ${seamY}H32.25`;
+
+  /**
+   * 원: tipY=49 기준 변–타원 교차 구간만 절단
+   * (원 선이 tip 밑으로 통과하지 않음)
+   */
+  const ellipseOpen = "M21.85 44.57 A20.5 12 0 1 0 26.15 44.57";
 
   return (
     <svg
@@ -44,32 +55,27 @@ export function DomaMark({
       data-mark-ellipse-top={ellipseTop}
       data-mark-overlap={+(tipY - ellipseTop).toFixed(2)}
     >
-      <ellipse
-        cx="24"
-        cy="56.5"
-        rx="20.5"
-        ry="12"
+      <path
+        d={ellipseOpen}
         stroke={stroke}
         strokeWidth="1.45"
+        strokeLinecap="butt"
         fill="none"
       />
 
-      {/* tip이 원 상단을 덮음 → 겹친 원 선 제거 */}
-      <path d={tri} fill={bg} stroke="none" />
+      <path d={body} fill={bg} stroke="none" />
       <path
-        d={tri}
+        d={body}
         fill="none"
         stroke={stroke}
         strokeWidth="1.45"
         strokeLinejoin="miter"
+        strokeLinecap="square"
       />
-
       <path
-        d={rectOpen}
-        fill="none"
+        d={seamBar}
         stroke={stroke}
         strokeWidth="1.45"
-        strokeLinejoin="miter"
         strokeLinecap="square"
       />
     </svg>
