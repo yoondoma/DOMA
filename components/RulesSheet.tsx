@@ -5,20 +5,20 @@ type RulesSheetProps = {
   onClose: () => void;
 };
 
-const ROWS: { act: string; limit: string }[] = [
-  { act: "글·제안·댓글", limit: "여러 번 가능" },
-  { act: "의견 지지", limit: "1개 · 그 진영으로 이동" },
-  { act: "진영 이동", limit: "타 진영 지지 시 · 최대 3회" },
-  { act: "글 좋아요", limit: "하루 5개 · 오늘 의견만" },
-  { act: "댓글♥·공유·스크랩", limit: "무제한" },
-  { act: "글 진영", limit: "하루 한 진영만" },
-];
-
 /**
- * 전투 규칙 — 짧은 B&W 시트. 의지 있는 사람만 열람.
+ * 규칙 — 하고 싶게. 스펙 나열 금지.
+ * 코어 한 장: docs/rules-copy.md
  */
 export function RulesSheet({ open, onClose }: RulesSheetProps) {
   if (!open) return null;
+
+  const lines = [
+    "오늘 하나에 도전·방어로 겨룬다.",
+    "지지가 판결이다. 좋아요와 다르다.",
+    "시간이 끝나면 의견이 갈린다.",
+    "글·팔로우·공유는 평소처럼.",
+    "이기면 티어·칭호가 남는다.",
+  ];
 
   return (
     <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center">
@@ -31,11 +31,12 @@ export function RulesSheet({ open, onClose }: RulesSheetProps) {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="전투 규칙"
-        className="sheet-up relative z-10 w-full max-w-[560px] border border-white/20 border-b-0 bg-black px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 text-white sm:border-b sm:pb-5"
+        aria-label="규칙"
+        data-rules-sheet
+        className="sheet-up relative z-10 w-full max-w-[560px] border border-white/20 border-b-0 bg-black px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 text-white sm:border-b sm:pb-6"
       >
         <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-white/30 sm:hidden" />
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-5 flex items-center justify-between">
           <button
             type="button"
             onClick={onClose}
@@ -43,49 +44,29 @@ export function RulesSheet({ open, onClose }: RulesSheetProps) {
           >
             닫기
           </button>
-          <p className="font-[family-name:var(--font-display)] text-sm font-bold tracking-[0.12em]">
-            전투 규칙
+          <p className="font-[family-name:var(--font-display)] text-sm font-bold tracking-[0.14em]">
+            DOMA
           </p>
           <span className="min-w-10" aria-hidden />
         </div>
 
-        <p className="text-[13px] leading-[1.55] text-white/70">
-          지지 동점은 글 좋아요로 가리고, 둘 다 동점이면 공동 승리. 판결
-          후엔 스크랩·공유만. 타이머는 3h→1m 압박. 판결·TOP·내일 확정은{" "}
-          <span className="text-white">지지</span>만. 글 좋아요(하루 5·의견만)는
-          호응일 뿐 승패와 무관 · 댓글♥·공유·스크랩은 무제한.
+        <p className="text-center font-[family-name:var(--font-display)] text-[15px] font-bold tracking-[-0.01em] text-white">
+          현재 대한민국의 의견은?
+        </p>
+        <p className="mt-2 text-center text-[12px] tracking-[0.04em] text-white/45">
+          펜은 칼보다 강하다
         </p>
 
-        <ul className="mt-4 border-t border-white/15" aria-label="일일 한도">
-          {ROWS.map((r) => (
+        <ul className="mt-6 space-y-3" aria-label="규칙">
+          {lines.map((line) => (
             <li
-              key={r.act}
-              className="flex items-baseline justify-between gap-3 border-b border-white/10 py-2.5 text-[13px]"
+              key={line}
+              className="text-center font-[family-name:var(--font-syne)] text-[15px] font-bold leading-snug tracking-[-0.01em] text-white"
             >
-              <span className="text-white/85">{r.act}</span>
-              <span className="max-w-[14em] text-right tabular-nums tracking-[0.04em] text-white">
-                {r.limit}
-              </span>
+              {line}
             </li>
           ))}
         </ul>
-
-        <p className="mt-4 text-[12px] leading-[1.55] text-white/70">
-          <span className="text-white">제안자</span>(허리띠·영구)는 확정 주제
-          원글만. <span className="text-white">도마의 손가락</span>은 당일
-          승리 TOP 의견. 둘 다 XP 0 · 일일 칭호와 동시 가능.
-        </p>
-
-        <p className="mt-3 text-[12px] leading-[1.55] text-white/70">
-          내일 주제는{" "}
-          <span className="text-white">지지 1위 자동 확정</span> ·{" "}
-          <span className="text-white">창/방패로 나뉠 수 있는 주제</span>
-          만 제안하세요.
-        </p>
-
-        <p className="mt-3 text-[11px] leading-[1.5] tracking-[0.04em] text-white/45">
-          23:00–08:00 셧다운 · DM·공유·스크랩만 가능
-        </p>
       </div>
     </div>
   );

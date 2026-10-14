@@ -51,7 +51,7 @@ export function ComposeChoice({ open, onClose, onPick }: ComposeChoiceProps) {
               오늘의 글
             </span>
             <span className="mt-1 text-[12px] leading-snug text-muted">
-              지금 아레나에 의견·진술을 남깁니다
+              오늘 전장에 한 줄
             </span>
           </button>
           <button
@@ -63,7 +63,7 @@ export function ComposeChoice({ open, onClose, onPick }: ComposeChoiceProps) {
               내일의 주제
             </span>
             <span className="mt-1 text-[12px] leading-snug text-muted">
-              내일 토론 후보 주제를 제안합니다
+              찬반 질문 제안
             </span>
           </button>
         </div>

@@ -107,16 +107,19 @@ export function WieldBar({ open, side, onClose, onSubmit }: WieldBarProps) {
 
         <form onSubmit={handleSubmit}>
           <p
-            className="mb-2 border border-white/15 bg-white/[0.04] px-2.5 py-1.5 text-[11px] leading-snug tracking-[0.02em] text-white/70"
+            className="mb-3 text-[12px] leading-snug text-white/60"
             role="note"
             aria-label="작성 규칙 팁"
           >
-            등록 후 수정·삭제할 수 없습니다 · 하루 한 진영 · 연속 작성 3분
-            쿨다운
+            지지가 판결이다. 등록 후 수정 불가.
           </p>
           <div className="mb-2 flex items-center justify-between text-[11px] text-muted">
             <span>
-              {side ? `${side}로 진술` : "미참전 시 NEXUS로 제출"}
+              {side === "NEXUS"
+                ? "도전자"
+                : side === "AEGIS"
+                  ? "방어자"
+                  : "도전자로 제출"}
             </span>
             <span
               className={`tabular-nums ${
@@ -134,7 +137,7 @@ export function WieldBar({ open, side, onClose, onSubmit }: WieldBarProps) {
             onChange={(e) => setText(e.target.value.slice(0, MAX_CHARS))}
             rows={5}
             maxLength={MAX_CHARS}
-            placeholder="오늘 아레나에 남길 의견을 입력하세요"
+            placeholder="한 줄로 겨뤄 보세요"
             className="w-full resize-none border border-white/25 bg-black px-3 py-3 text-[15px] leading-relaxed text-white placeholder:text-dim focus:border-white focus:outline-none"
             aria-label="오늘의 글 입력"
           />

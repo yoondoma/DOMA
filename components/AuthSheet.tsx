@@ -179,8 +179,8 @@ export function AuthSheet({
               <h2 className="font-[family-name:var(--font-syne)] text-[22px] font-bold tracking-tight">
                 입장
               </h2>
-              <p className="mt-2 text-[13px] leading-relaxed text-neutral-200">
-                오픈 가입 · 만 14세 이상 · 초대 없음
+              <p className="mt-2 text-[13px] text-neutral-200">
+                오늘 질문에 겨루려면 · 만 14+
               </p>
               <button
                 type="button"

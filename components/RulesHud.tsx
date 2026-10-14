@@ -9,47 +9,28 @@ type RulesHudProps = {
 };
 
 /**
- * 남은 투표·이동 HUD — 글 좋아요 n/5(의견만) · 진영이동 n/3
+ * 초소형 잔여 HUD — 주제 옆·오른쪽. 주제를 가리거나 맞먹지 않음.
  */
 export function RulesHud({ light, className = "" }: RulesHudProps) {
   const quota = useDomaStore().quota;
   const likes = remainingOf(quota.likesUsed, QUOTA_LIMITS.likes);
   const moves = remainingOf(quota.campMovesUsed, QUOTA_LIMITS.campMoves);
-
-  const chip = light
-    ? "border-black/20 bg-black/[0.04] text-black/75"
-    : "border-white/20 bg-white/[0.06] text-white/80";
-  const low = light ? "text-black" : "text-white";
-
-  const Cell = ({
-    label,
-    remaining,
-    max,
-  }: {
-    label: string;
-    remaining: number;
-    max: number;
-  }) => (
-    <span
-      className={`inline-flex items-baseline gap-1 border px-2 py-1 text-[11px] tracking-[0.04em] tabular-nums ${chip} ${
-        remaining === 0 ? low : ""
-      }`}
-    >
-      <span className={light ? "text-black/45" : "text-white/45"}>{label}</span>
-      <span className="font-semibold">
-        {remaining}/{max}
-      </span>
-    </span>
-  );
+  const faint = light ? "text-black/40" : "text-white/40";
+  const ink = light ? "text-black/70" : "text-white/70";
 
   return (
     <div
-      className={`flex flex-wrap items-center justify-center gap-1.5 ${className}`}
+      className={`flex flex-col items-end gap-0.5 tabular-nums ${className}`}
       aria-label="남은 참여 횟수"
       data-rules-hud
+      data-hud-align="right"
     >
-      <Cell label="♥" remaining={likes.remaining} max={likes.max} />
-      <Cell label="이동" remaining={moves.remaining} max={moves.max} />
+      <span className={`text-[9px] leading-none tracking-[0.02em] ${ink}`}>
+        <span className={faint}>♥</span> {likes.remaining}/{likes.max}
+      </span>
+      <span className={`text-[9px] leading-none tracking-[0.02em] ${ink}`}>
+        <span className={faint}>이동</span> {moves.remaining}/{moves.max}
+      </span>
     </div>
   );
 }

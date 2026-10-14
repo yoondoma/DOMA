@@ -121,7 +121,7 @@ export function TomorrowField({
           </span>
         </p>
         <p className="mt-3 text-[10px] tracking-[0.08em] text-white/35">
-          매일 08:00 OPEN · 후보가 오늘 주제로 확정
+          지지 1위 → 내일의 전장
         </p>
       </div>
 
@@ -130,11 +130,10 @@ export function TomorrowField({
         aria-label="내일 필드 안내"
       >
         <h2 className="font-[family-name:var(--font-syne)] text-[26px] font-bold leading-[1.28] tracking-tight sm:text-[28px]">
-          내일의 주제 정하기
+          내일의 주제
         </h2>
-        <p className="mx-auto mt-4 max-w-[36em] text-[15px] leading-[1.7] text-white/78">
-          지지 1위가 자동으로 확정됩니다. 창/방패로 나뉠 수 있는 주제를
-          올리고, 아래 실시간 의견을 관찰합니다.
+        <p className="mx-auto mt-3 max-w-[20em] text-[13px] leading-snug text-white/55">
+          짧고 굵게 · 찬반으로 나뉠 질문. 지지 1위가 오늘이 된다.
         </p>
       </div>
 

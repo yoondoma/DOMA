@@ -109,19 +109,12 @@ export function TomorrowCompose({
 
         <form onSubmit={handleSubmit}>
           <p
-            className="mb-2 border border-white/15 bg-white/[0.04] px-2.5 py-1.5 text-[11px] leading-snug tracking-[0.02em] text-white/70"
+            className="mb-3 text-[12px] leading-snug text-white/60"
             role="note"
             aria-label="작성 규칙 팁"
             data-proposal-tip
           >
-            <span className="text-white">
-              제안은 등록 후 수정·삭제할 수 없습니다.
-            </span>{" "}
-            창/방패로 나뉠 찬반형 주제로 · 지지 1위 자동 확정 · 연속 작성 3분
-            쿨다운
-          </p>
-          <p className="mb-2 text-[11px] text-muted">
-            내일 아레나 후보로 올릴 질문형 주제
+            짧고 굵게 · 이슈 · 찬반으로 나뉠 질문. 등록 후 수정 불가.
           </p>
           <div className="mb-2 flex justify-end text-[11px] tabular-nums text-dim">
             <span
@@ -138,7 +131,7 @@ export function TomorrowCompose({
             onChange={(e) => setText(e.target.value.slice(0, MAX_CHARS))}
             rows={5}
             maxLength={MAX_CHARS}
-            placeholder="예: ○○는 △△를 끝낼 것인가?"
+            placeholder="예: AI는 인간 지성을 대체하는가?"
             className="w-full resize-none border border-white/25 bg-black px-3 py-3 text-[15px] leading-relaxed text-white placeholder:text-dim focus:border-white focus:outline-none"
             aria-label="내일 주제 입력"
           />

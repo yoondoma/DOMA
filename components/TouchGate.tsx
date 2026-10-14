@@ -63,7 +63,6 @@ export function TouchGate({ onEnter }: TouchGateProps) {
           }`}
           data-beta-feedback
         >
-          베타 의견 →{" "}
           <span className="text-white/70 underline underline-offset-2">
             feedback@doma.kr
           </span>

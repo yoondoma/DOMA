@@ -355,7 +355,7 @@ export function SettingsSheet({
                       {
                         id: "help",
                         label: "도움말·규칙",
-                        hint: "전장 규칙",
+                        hint: "한 장으로",
                         onClick: () => setPanel("help"),
                       },
                       {
@@ -900,13 +900,26 @@ export function SettingsSheet({
           ) : null}
 
           {panel === "help" ? (
-            <div className="space-y-3 px-3 py-3 text-[13px] leading-relaxed text-neutral-200">
-              <p>
-                <span className="text-white">DOMA</span> · 24h · KST · 지지=판결
+            <div className="space-y-4 px-3 py-3 text-[13px] text-neutral-200">
+              <p className="text-center text-white">
+                현재 대한민국의 의견은?
               </p>
-              <p>♥ 5/일 · 이동 3 · 쿨다운 3분</p>
+              <p className="text-center text-[12px] text-neutral-200">
+                펜은 칼보다 강하다
+              </p>
+              <button
+                type="button"
+                className="w-full border border-white/25 py-3 text-center text-white"
+                onClick={() => {
+                  onClose();
+                  onOpenRules?.();
+                }}
+                data-open-rules-from-settings
+              >
+                규칙 보기
+              </button>
               <p
-                className="border border-neutral-800 px-3 py-2 text-[12px]"
+                className="text-center text-[12px]"
                 data-beta-feedback
               >
                 <a
@@ -916,17 +929,6 @@ export function SettingsSheet({
                   feedback@doma.kr
                 </a>
               </p>
-              <button
-                type="button"
-                className="text-white underline underline-offset-4"
-                onClick={() => {
-                  onClose();
-                  onOpenRules?.();
-                }}
-                data-open-rules-from-settings
-              >
-                전투 규칙 안내
-              </button>
             </div>
           ) : null}
         </div>

@@ -618,7 +618,7 @@ function BattlefieldIntro({
                   ? "border-black/25 text-black/55"
                   : "border-white/25 text-white/55"
               }`}
-              aria-label="전투 규칙"
+              aria-label="규칙"
               title="규칙"
             >
               ?
@@ -940,29 +940,35 @@ export function ArenaBar({
               {timer.remaining}
             </p>
           )}
-          <div className="mt-2 flex items-start justify-center gap-1.5">
-            <h2
-              className={`font-[family-name:var(--font-syne)] text-[18px] font-bold leading-[1.4] tracking-[-0.01em] sm:text-[19px] ${ink}`}
-            >
-              {arena.topic}
-            </h2>
-            {onOpenRules ? (
-              <button
-                type="button"
-                onClick={onOpenRules}
-                className={`mt-0.5 inline-flex size-5 shrink-0 items-center justify-center border text-[10px] font-bold ${
-                  light
-                    ? "border-black/25 text-black/55"
-                    : "border-white/25 text-white/55"
-                }`}
-                aria-label="전투 규칙"
-                title="규칙"
+          {/* 주제 최대 · HUD는 우측 초소형 */}
+          <div className="relative mt-2 px-8">
+            <div className="flex items-start justify-center gap-1">
+              <h2
+                className={`min-w-0 max-w-[16.5em] font-[family-name:var(--font-display)] text-[20px] font-bold leading-[1.35] tracking-[-0.02em] sm:text-[22px] ${ink}`}
               >
-                ?
-              </button>
-            ) : null}
+                {arena.topic}
+              </h2>
+              {onOpenRules ? (
+                <button
+                  type="button"
+                  onClick={onOpenRules}
+                  className={`mt-1 inline-flex size-4 shrink-0 items-center justify-center border text-[9px] font-bold ${
+                    light
+                      ? "border-black/20 text-black/45"
+                      : "border-white/20 text-white/45"
+                  }`}
+                  aria-label="규칙"
+                  title="규칙"
+                >
+                  ?
+                </button>
+              ) : null}
+            </div>
+            <RulesHud
+              light={light}
+              className="absolute right-0 top-0.5"
+            />
           </div>
-          <RulesHud light={light} className="mt-2" />
           {locked ? (
             <div
               className={`mt-2.5 flex flex-wrap items-center justify-center gap-2 border px-2.5 py-2 ${
