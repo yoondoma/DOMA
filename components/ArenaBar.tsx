@@ -474,16 +474,24 @@ function BattlefieldIntro({
       <div
         className={`battlefield-rise border-b px-5 pb-4 pt-5 text-center ${border}`}
       >
-        <p
-          className={`text-[11px] tracking-[0.14em] ${soft}`}
-          data-kst-today
-          aria-label="오늘 날짜"
+        <div
+          className="flex items-baseline justify-between gap-3"
+          data-date-battle-row
         >
-          {formatKstTodayImmersion()}
-        </p>
-        <p className={`mt-1.5 text-[11px] font-medium tracking-[0.22em] ${faint}`}>
-          제 {arena.round}회 전투
-        </p>
+          <p
+            className={`min-w-0 truncate text-left text-[11px] tracking-[0.12em] ${soft}`}
+            data-kst-today
+            aria-label="오늘 날짜"
+          >
+            {formatKstTodayImmersion()}
+          </p>
+          <p
+            className={`shrink-0 text-right text-[11px] font-medium tracking-[0.18em] ${faint}`}
+            aria-label={`제 ${arena.round}회 전투`}
+          >
+            제 {arena.round}회 전투
+          </p>
+        </div>
         <p
           className={`mt-3 text-[11px] tracking-[0.18em] ${
             timer.stage ? "text-timer" : soft
@@ -848,16 +856,24 @@ export function ArenaBar({
           }`}
           aria-label="오늘 주제 영역"
         >
-          <p
-            className={`text-[10px] tracking-[0.12em] ${soft}`}
-            data-kst-today
-            aria-label="오늘 날짜"
+          <div
+            className="flex items-baseline justify-between gap-3"
+            data-date-battle-row
           >
-            {formatKstTodayImmersion()}
-          </p>
-          <p className={`mt-0.5 text-[11px] font-medium tracking-[0.2em] ${faint}`}>
-            제 {arena.round}회 전투
-          </p>
+            <p
+              className={`min-w-0 truncate text-left text-[10px] tracking-[0.1em] ${soft}`}
+              data-kst-today
+              aria-label="오늘 날짜"
+            >
+              {formatKstTodayImmersion()}
+            </p>
+            <p
+              className={`shrink-0 text-right text-[11px] font-medium tracking-[0.16em] ${faint}`}
+              aria-label={`제 ${arena.round}회 전투`}
+            >
+              제 {arena.round}회 전투
+            </p>
+          </div>
           <p
             className={`mt-1 font-mono tabular-nums text-timer ${timerUrgencyClass(
               timer.stage,
