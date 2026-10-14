@@ -39,13 +39,14 @@ export function DomaWordmark({
         className={`${s.brand} tracking-[0.28em] ${
           light ? "text-black/80" : "text-white"
         }`}
-        style={{ marginRight: "-0.28em" }}
+        /* tracking 꼬리 여백 상쇄 — KR은 어깨에 2~4px만 띄움 */
+        style={{ marginRight: "-0.2em" }}
       >
         DOMA
       </span>
       <span
         aria-hidden
-        className={`${s.kr} ml-[0.14em] mt-[0.06em] ${
+        className={`${s.kr} ml-[0.28em] mt-[0.05em] ${
           light ? "text-black/45" : "text-white/55"
         }`}
       >
