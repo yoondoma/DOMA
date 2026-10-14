@@ -373,10 +373,7 @@ export function ProfileScreen({
                       onClick={() => setTierOpen(true)}
                       aria-label="티어 상세"
                     >
-                      <TierBadge
-                        tier={PROFILE_GAMER.currentTier.code}
-                        subTier={PROFILE_GAMER.currentTier.subtier}
-                      />
+                      <TierBadge tier={PROFILE_GAMER.currentTier.code} />
                     </button>
                     <span>· {p.timeLabel}</span>
                   </div>

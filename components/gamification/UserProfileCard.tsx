@@ -44,14 +44,20 @@ export function UserProfileCard({
         onClick={onOpenTier}
         className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-left"
         aria-label={`티어 ${t.display}`}
+        data-profile-tier
       >
-        <TierBadge tier={t.code} subTier={t.subtier} />
+        <TierBadge tier={t.code} />
         <span className="text-[13px] tracking-[0.04em] text-neutral-200">
           {t.displayKo}
         </span>
         <span className="text-[12px] tabular-nums text-neutral-200">
-          · {score}pt
+          · 시즌 승 {user.winsSeason ?? score}
         </span>
+        {user.tierPeakSeason ? (
+          <span className="text-[11px] text-neutral-500">
+            · 최고 {user.tierPeakSeason}
+          </span>
+        ) : null}
       </button>
 
       {dailyTitles.length > 0 ? (

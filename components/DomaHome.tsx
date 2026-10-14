@@ -37,6 +37,7 @@ import { TomorrowField } from "@/components/TomorrowField";
 import { TouchGate } from "@/components/TouchGate";
 import { WieldBar } from "@/components/WieldBar";
 import type { ContextualSharePayload } from "@/lib/contextual-share";
+import type { DiscoverItem } from "@/lib/discover-mock";
 import { INITIAL_ARENA } from "@/lib/mock-data";
 import { MOCK_SHARE_RESULT } from "@/lib/share-result-mock";
 import {
@@ -565,6 +566,21 @@ export function DomaHome() {
               onOpenRules={() => setRulesOpen(true)}
               onToast={showToast}
               onOpenShareCard={setContextualShare}
+              onDiscoverSelect={(item: DiscoverItem) => {
+                if (item.kind === "proposal") {
+                  setHomeSurface("tomorrow");
+                  showToast("지지 많은 제안 · 내일의 주제");
+                  return;
+                }
+                if (item.kind === "verdict") {
+                  setCalendarOpen(true);
+                  showToast("어제 판결 · 전투 기록");
+                  return;
+                }
+                setHomeSurface("today");
+                setArenaView("intro");
+                showToast("지금 뜨거운 전장");
+              }}
             />
           </PullRefresh>
         ) : null}

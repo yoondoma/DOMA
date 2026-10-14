@@ -10,9 +10,11 @@ import {
   type UIEvent,
 } from "react";
 import { AdSlot } from "@/components/AdSlot";
+import { DiscoverStrip } from "@/components/DiscoverStrip";
 import { OpinionSocial } from "@/components/OpinionSocial";
-import type { ContextualSharePayload } from "@/lib/contextual-share";
 import { LEFT_USER_LABEL } from "@/lib/account-display";
+import type { ContextualSharePayload } from "@/lib/contextual-share";
+import type { DiscoverItem } from "@/lib/discover-mock";
 import { SafetyMenu } from "@/components/SafetyMenu";
 import { StatusBlock } from "@/components/StatusBlock";
 import {
@@ -153,6 +155,8 @@ type ArenaBarProps = {
   onToast?: (message: string) => void;
   /** 주제·창·방패 맥락 공유 카드 */
   onOpenShareCard?: (payload: ContextualSharePayload) => void;
+  /** 발견 스트립 탭 → 홈 표면 전환 등 */
+  onDiscoverSelect?: (item: DiscoverItem) => void;
 };
 
 function topOpinionForSide(opinions: Opinion[], side: Side): Opinion | null {
@@ -478,6 +482,7 @@ function BattlefieldIntro({
   onCompose,
   onOpenRules,
   onOpenShareCard,
+  onDiscoverSelect,
   light,
 }: {
   arena: ArenaState;
@@ -488,6 +493,7 @@ function BattlefieldIntro({
   onCompose?: () => void;
   onOpenRules?: () => void;
   onOpenShareCard?: (payload: ContextualSharePayload) => void;
+  onDiscoverSelect?: (item: DiscoverItem) => void;
   light: boolean;
 }) {
   const timer = useTimerUrgency(arena.endsAt);
@@ -779,6 +785,9 @@ function BattlefieldIntro({
           <span className="text-[13px] font-bold tracking-[0.16em]">방어자</span>
         </button>
       </div>
+
+      {/* 발견 v0 — 홈 한 줄 · 진영 아래 · 하단 탭 아님 */}
+      <DiscoverStrip light={light} onSelect={onDiscoverSelect} />
     </div>
   );
 }
@@ -802,6 +811,7 @@ export function ArenaBar({
   onOpenRules,
   onToast,
   onOpenShareCard,
+  onDiscoverSelect,
 }: ArenaBarProps) {
   const forcedTop = useForcedTopSide();
   const champion = useMemo(
@@ -931,6 +941,7 @@ export function ArenaBar({
             onCompose={onCompose}
             onOpenRules={onOpenRules}
             onOpenShareCard={onOpenShareCard}
+            onDiscoverSelect={onDiscoverSelect}
             light={light}
           />
         </div>

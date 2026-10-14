@@ -44,14 +44,33 @@ export const PROFILE_USER = {
 
 /**
  * 게이미피케이션 목
- * score 규칙: 승 +1 / 패 -0.5 → 예) 160승 30패 = 160 - 15 = 145
+ * 시즌 승수 → 사다리 (ARCHITECT→I–IV→BRONZE) · 패 0
  */
 export const PROFILE_GAMER: UserProfileType = withResolvedTier({
   id: "user-soohan",
   username: PROFILE_USER.name,
-  score: 145,
+  /** 이번 시즌 승수 → II */
+  score: 48,
+  winsSeason: 48,
   wins: 160,
   losses: 30,
+  tierPeakSeason: "I",
+  seasonHistory: [
+    {
+      seasonId: "2026-Q3",
+      label: "2026 Q3",
+      tierFinal: "III",
+      tierPeak: "II",
+      wins: 36,
+    },
+    {
+      seasonId: "2026-Q2",
+      label: "2026 Q2",
+      tierFinal: "IV",
+      tierPeak: "III",
+      wins: 22,
+    },
+  ],
   dailyTitles: [
     createDailyTitle("10.14", "PROPOSER"),
     createDailyTitle("10.13", "AGENDA"),
@@ -120,9 +139,9 @@ export const PROFILE_RECENT_BATTLES = BATTLE_HISTORY.slice(-5)
     };
   });
 
-/** 티어 상승 기록 — 최신 순 (승 +1 / 패 -0.5) */
+/** 시즌 승수 기록 — 최신 순 (승 +1 / 패 0) */
 export const PROFILE_SCORE_HISTORY: ScoreEvent[] = (() => {
-  let score = 145;
+  let score = 48;
   const rows: ScoreEvent[] = [];
   const seed = [
     { date: "2026-10-13", result: "win" as const, round: 412, topic: "인공지능은 인간의 지성을 완전히 대체할 것인가?" },

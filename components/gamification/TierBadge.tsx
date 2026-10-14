@@ -3,25 +3,25 @@ import { TIER_CODES } from "@/lib/types/gamification";
 
 type TierBadgeProps = {
   tier: TierCode;
-  subTier: Subtier;
-  /** 기본 compact — 글 작성자 옆 */
+  /** @deprecated 로마가 티어 코드 — 무시해도 됨 */
+  subTier?: Subtier;
   className?: string;
 };
 
-/** MASTER 이상 = 백색 반전 + 묵직한 보더 아우라 */
-const INVERTED_FROM = TIER_CODES.indexOf("MASTER");
+/** ARCHITECT · I = 반전 뱃지 */
+const INVERTED_FROM = TIER_CODES.indexOf("I");
 
 export function isInvertedTier(tier: TierCode): boolean {
   return TIER_CODES.indexOf(tier) >= INVERTED_FROM;
 }
 
 /**
- * Pure B&W 티어 뱃지 — 예: [DIAMOND II]
- * 상위(MASTER~): 흰 바탕·검정 글·2px 보더
+ * Pure B&W 티어 뱃지 — [ARCHITECT] · [II] · [BRONZE]
+ * 사다리: ARCHITECT → I → II → III → IV → BRONZE
  */
-export function TierBadge({ tier, subTier, className = "" }: TierBadgeProps) {
+export function TierBadge({ tier, className = "" }: TierBadgeProps) {
   const inverted = isInvertedTier(tier);
-  const label = `${tier} ${subTier}`;
+  const label = tier;
 
   return (
     <span
@@ -35,6 +35,7 @@ export function TierBadge({ tier, subTier, className = "" }: TierBadgeProps) {
       ].join(" ")}
       title={label}
       aria-label={`티어 ${label}`}
+      data-tier={tier}
     >
       [{label}]
     </span>
