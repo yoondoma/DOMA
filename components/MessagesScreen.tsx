@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { StatusBlock } from "@/components/StatusBlock";
 import {
   CHAT_BY_THREAD,
   MESSAGE_THREADS,
   type MessageThread,
   type SocialProfile,
 } from "@/lib/social-mock";
+import type { UiDemo } from "@/lib/ui-demo";
 
 function Avatar({ name }: { name: string }) {
   return (
@@ -21,14 +23,29 @@ function Avatar({ name }: { name: string }) {
 
 function ThreadList({
   onOpen,
+  uiDemo,
+  onRetry,
 }: {
   onOpen: (t: MessageThread) => void;
+  uiDemo: UiDemo;
+  onRetry?: () => void;
 }) {
-  if (MESSAGE_THREADS.length === 0) {
+  if (uiDemo === "loading") {
+    return <StatusBlock kind="loading" message="불러오는 중" />;
+  }
+  if (uiDemo === "error") {
     return (
-      <p className="px-6 py-16 text-center text-sm text-muted">
-        아직 대화가 없습니다.
-      </p>
+      <StatusBlock
+        kind="error"
+        message="메시지를 불러오지 못했습니다."
+        actionLabel="다시 시도"
+        onAction={onRetry}
+      />
+    );
+  }
+  if (MESSAGE_THREADS.length === 0 || uiDemo === "empty") {
+    return (
+      <StatusBlock kind="empty" message="아직 대화가 없습니다." />
     );
   }
 
@@ -123,9 +140,7 @@ function ChatView({
       </div>
 
       {lines.length === 0 ? (
-        <p className="px-6 py-16 text-center text-sm text-muted">
-          대화를 시작해 보세요.
-        </p>
+        <StatusBlock kind="empty" message="대화를 시작해 보세요." />
       ) : (
         <ul className="space-y-2 px-4 py-4" aria-label="대화 내용">
           {lines.map((line) => (
@@ -152,10 +167,15 @@ function ChatView({
 
 type MessagesScreenProps = {
   onOpenProfile: (profile: SocialProfile) => void;
+  uiDemo?: UiDemo;
+  onRetry?: () => void;
 };
 
-/** Threads/X형 DM — 헤더 탭 시 상대 프로필 */
-export function MessagesScreen({ onOpenProfile }: MessagesScreenProps) {
+export function MessagesScreen({
+  onOpenProfile,
+  uiDemo = "normal",
+  onRetry,
+}: MessagesScreenProps) {
   const [open, setOpen] = useState<MessageThread | null>(null);
 
   return (
@@ -170,16 +190,13 @@ export function MessagesScreen({ onOpenProfile }: MessagesScreenProps) {
               메시지
             </h2>
           </div>
-          <ThreadList onOpen={setOpen} />
+          <ThreadList onOpen={setOpen} uiDemo={uiDemo} onRetry={onRetry} />
         </>
       ) : (
         <ChatView
           thread={open}
           onBack={() => setOpen(null)}
-          onOpenProfile={(p) => {
-            // 핸들로 풍부한 목 프로필 쓰도록 부모에서 resolve
-            onOpenProfile(p);
-          }}
+          onOpenProfile={onOpenProfile}
         />
       )}
     </section>

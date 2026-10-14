@@ -1,10 +1,12 @@
 "use client";
 
+import { StatusBlock } from "@/components/StatusBlock";
 import {
   APP_NOTIFICATIONS,
   type AppNotification,
   type NotificationTarget,
 } from "@/lib/social-mock";
+import type { UiDemo } from "@/lib/ui-demo";
 
 function kindLabel(kind: AppNotification["kind"]): string {
   switch (kind) {
@@ -77,13 +79,19 @@ function targetHint(target: NotificationTarget): string | null {
 type NotificationsScreenProps = {
   onNavigate: (target: NotificationTarget) => void;
   onOpenProfile?: (handle: string) => void;
+  uiDemo?: UiDemo;
+  onRetry?: () => void;
 };
 
-/** Threads/X형 알림 — 본문 탭=대상 화면, 아바타·핸들=프로필 */
 export function NotificationsScreen({
   onNavigate,
   onOpenProfile,
+  uiDemo = "normal",
+  onRetry,
 }: NotificationsScreenProps) {
+  const list =
+    uiDemo === "empty" ? [] : APP_NOTIFICATIONS;
+
   return (
     <section
       className="mx-auto max-w-[560px] bg-black text-white"
@@ -95,13 +103,20 @@ export function NotificationsScreen({
         </h2>
       </div>
 
-      {APP_NOTIFICATIONS.length === 0 ? (
-        <p className="px-6 py-16 text-center text-sm text-muted">
-          새 알림이 없습니다.
-        </p>
+      {uiDemo === "loading" ? (
+        <StatusBlock kind="loading" message="불러오는 중" />
+      ) : uiDemo === "error" ? (
+        <StatusBlock
+          kind="error"
+          message="알림을 불러오지 못했습니다."
+          actionLabel="다시 시도"
+          onAction={onRetry}
+        />
+      ) : list.length === 0 ? (
+        <StatusBlock kind="empty" message="새 알림이 없습니다." />
       ) : (
         <ul aria-label="알림 목록">
-          {APP_NOTIFICATIONS.map((n) => {
+          {list.map((n) => {
             const hint = targetHint(n.target);
             const label =
               n.target.type === "share"

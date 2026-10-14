@@ -34,6 +34,7 @@ import {
   type TomorrowCandidate,
 } from "@/lib/tomorrow-topics";
 import type { ArenaView, Opinion, Side } from "@/lib/types";
+import { useUiDemo } from "@/lib/use-ui-demo";
 
 function bumpPercents(
   nexus: number,
@@ -45,6 +46,7 @@ function bumpPercents(
 }
 
 export function DomaHome() {
+  const { demo: uiDemo, retry: onRetry } = useUiDemo();
   const [nexusPercent, setNexusPercent] = useState(INITIAL_ARENA.nexusPercent);
   const [aegisPercent, setAegisPercent] = useState(INITIAL_ARENA.aegisPercent);
   const [joined, setJoined] = useState<Side | null>(null);
@@ -83,6 +85,12 @@ export function DomaHome() {
 
   const lightShell =
     navTab === "home" && homeSurface === "today" && arenaView === "AEGIS";
+
+  const feedOpinions = uiDemo === "empty" ? [] : opinions;
+
+  const openCompose = useCallback(() => {
+    setChoiceOpen(true);
+  }, []);
 
   const showToast = useCallback((message: string) => {
     setToast(message);
@@ -300,6 +308,8 @@ export function DomaHome() {
               if (returnTab) setNavTab(returnTab);
               setReturnTab(null);
             }}
+            uiDemo={uiDemo}
+            onRetry={onRetry}
           />
         ) : null}
 
@@ -311,13 +321,16 @@ export function DomaHome() {
           >
             <ArenaBar
               arena={INITIAL_ARENA}
-              opinions={opinions}
+              opinions={feedOpinions}
               view={arenaView}
               onChangeView={(v) => {
                 setArenaView(v);
                 if (v === "intro") setFocusOpinionId(null);
               }}
               focusOpinionId={focusOpinionId}
+              uiDemo={uiDemo}
+              onRetry={onRetry}
+              onCompose={openCompose}
             />
           </PullRefresh>
         ) : null}
@@ -328,12 +341,16 @@ export function DomaHome() {
             supportedId={supportedTomorrowId}
             onSupport={handleSupportTomorrow}
             onPropose={() => setTomorrowComposeOpen(true)}
+            uiDemo={uiDemo}
+            onRetry={onRetry}
           />
         ) : null}
 
         {!guestProfile && navTab === "messages" ? (
           <MessagesScreen
             onOpenProfile={(p) => openGuestProfile(p, "messages")}
+            uiDemo={uiDemo}
+            onRetry={onRetry}
           />
         ) : null}
 
@@ -343,6 +360,8 @@ export function DomaHome() {
             onOpenProfile={(handle) => {
               openGuestProfile(profileForHandle(handle), "alerts");
             }}
+            uiDemo={uiDemo}
+            onRetry={onRetry}
           />
         ) : null}
 
@@ -352,6 +371,9 @@ export function DomaHome() {
             profile={editableProfile}
             onOpenSettings={() => setSettingsOpen(true)}
             onOpenShareCard={() => setShareOpen(true)}
+            uiDemo={uiDemo}
+            onRetry={onRetry}
+            onCompose={openCompose}
           />
         ) : null}
 
@@ -403,7 +425,12 @@ export function DomaHome() {
         open={calendarOpen}
         onClose={() => setCalendarOpen(false)}
       />
-      <SearchSheet open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <SearchSheet
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        uiDemo={uiDemo}
+        onRetry={onRetry}
+      />
       <SettingsSheet
         open={settingsOpen}
         profile={editableProfile}

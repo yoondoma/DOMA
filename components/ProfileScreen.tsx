@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { FollowListScreen } from "@/components/FollowListScreen";
+import { StatusBlock } from "@/components/StatusBlock";
 import {
   TierBadge,
   UserProfileCard,
@@ -21,6 +22,7 @@ import {
   PROFILE_USER,
   type TitleDetail,
 } from "@/lib/profile-mock";
+import type { UiDemo } from "@/lib/ui-demo";
 import type { DailyTitle, ScoreEvent } from "@/lib/types/gamification";
 
 type ProfileTab = "posts" | "battles";
@@ -33,6 +35,9 @@ type ProfileScreenProps = {
   onOpenSettings?: () => void;
   /** 타인 프로필에서 뒤로 (DM·알림 등) */
   onBack?: () => void;
+  uiDemo?: UiDemo;
+  onRetry?: () => void;
+  onCompose?: () => void;
 };
 
 /** Threads형 · 팔로워/티어/전과 상세 · score 기반 */
@@ -42,6 +47,9 @@ export function ProfileScreen({
   profile,
   onOpenSettings,
   onBack,
+  uiDemo = "normal",
+  onRetry,
+  onCompose,
 }: ProfileScreenProps) {
   const [tab, setTab] = useState<ProfileTab>("posts");
   const [viralTitle, setViralTitle] = useState<DailyTitle | null>(null);
@@ -207,37 +215,55 @@ export function ProfileScreen({
         </div>
 
         {tab === "posts" ? (
-          <ul aria-label="내 글" className="pb-4">
-            {PROFILE_POSTS.map((p) => (
-              <li
-                key={p.id}
-                className="border-b border-neutral-800 px-4 py-3.5"
-              >
-                <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-neutral-200">
-                  <span className="text-[13px] font-semibold text-white">
-                    {display.name}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setTierOpen(true)}
-                    aria-label="티어 상세"
-                  >
-                    <TierBadge
-                      tier={PROFILE_GAMER.currentTier.code}
-                      subTier={PROFILE_GAMER.currentTier.subtier}
-                    />
-                  </button>
-                  <span>· {p.timeLabel}</span>
-                </div>
-                <p className="mt-1.5 text-[14px] leading-[1.5] text-white">
-                  {p.text}
-                </p>
-                <p className="mt-2 text-[12px] tabular-nums text-neutral-200">
-                  ♥ {p.likes}
-                </p>
-              </li>
-            ))}
-          </ul>
+          uiDemo === "loading" ? (
+            <StatusBlock kind="loading" message="불러오는 중" />
+          ) : uiDemo === "error" ? (
+            <StatusBlock
+              kind="error"
+              message="글을 불러오지 못했습니다."
+              actionLabel="다시 시도"
+              onAction={onRetry}
+            />
+          ) : uiDemo === "empty" || PROFILE_POSTS.length === 0 ? (
+            <StatusBlock
+              kind="empty"
+              message="아직 글이 없습니다."
+              actionLabel={onCompose ? "글쓰기" : undefined}
+              onAction={onCompose}
+            />
+          ) : (
+            <ul aria-label="내 글" className="pb-4">
+              {PROFILE_POSTS.map((p) => (
+                <li
+                  key={p.id}
+                  className="border-b border-neutral-800 px-4 py-3.5"
+                >
+                  <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-neutral-200">
+                    <span className="text-[13px] font-semibold text-white">
+                      {display.name}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setTierOpen(true)}
+                      aria-label="티어 상세"
+                    >
+                      <TierBadge
+                        tier={PROFILE_GAMER.currentTier.code}
+                        subTier={PROFILE_GAMER.currentTier.subtier}
+                      />
+                    </button>
+                    <span>· {p.timeLabel}</span>
+                  </div>
+                  <p className="mt-1.5 text-[14px] leading-[1.5] text-white">
+                    {p.text}
+                  </p>
+                  <p className="mt-2 text-[12px] tabular-nums text-neutral-200">
+                    ♥ {p.likes}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )
         ) : (
           <ul aria-label="최근 전투 기록" className="pb-4">
             {PROFILE_RECENT_BATTLES.map((b) => {
@@ -289,6 +315,8 @@ export function ProfileScreen({
           followMode === "following" ? PROFILE_FOLLOWING : PROFILE_FOLLOWERS
         }
         onClose={() => setFollowMode(null)}
+        uiDemo={uiDemo}
+        onRetry={onRetry}
       />
 
       <TierDetailScreen

@@ -1,17 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { StatusBlock } from "@/components/StatusBlock";
 import { formatCountdown, nextOpenAtKstIso } from "@/lib/kst";
 import {
   FIELD_OPINIONS,
   type TomorrowCandidate,
 } from "@/lib/tomorrow-topics";
+import type { UiDemo } from "@/lib/ui-demo";
 
 type TomorrowFieldProps = {
   candidates: TomorrowCandidate[];
   onSupport: (id: string) => void;
   onPropose?: () => void;
   supportedId: string | null;
+  uiDemo?: UiDemo;
+  onRetry?: () => void;
 };
 
 function stanceLabel(stance: "support" | "lead" | "question") {
@@ -44,31 +48,37 @@ export function TomorrowField({
   onSupport,
   onPropose,
   supportedId,
+  uiDemo = "normal",
+  onRetry,
 }: TomorrowFieldProps) {
   const [pickedId, setPickedId] = useState<string | null>(null);
   const confirmRemaining = useTopicConfirmCountdown();
 
+  const shown =
+    uiDemo === "empty" ? ([] as TomorrowCandidate[]) : candidates;
+
   const ranked = useMemo(
-    () => [...candidates].sort((a, b) => b.votes - a.votes),
-    [candidates],
+    () => [...shown].sort((a, b) => b.votes - a.votes),
+    [shown],
   );
 
   const topTopics = ranked.slice(0, 5);
   const total = useMemo(
-    () => candidates.reduce((s, c) => s + c.votes, 0),
-    [candidates],
+    () => shown.reduce((s, c) => s + c.votes, 0),
+    [shown],
   );
 
   const titleById = useMemo(() => {
     const m = new Map<string, string>();
-    for (const c of candidates) m.set(c.id, c.title);
+    for (const c of shown) m.set(c.id, c.title);
     return m;
-  }, [candidates]);
+  }, [shown]);
 
   /** 실시간: 최신·좋아요 섞인 피드 (목) */
   const liveFeed = useMemo(() => {
+    if (uiDemo === "empty") return [];
     return [...FIELD_OPINIONS].sort((a, b) => b.likes - a.likes);
-  }, []);
+  }, [uiDemo]);
 
   return (
     <section
@@ -120,6 +130,23 @@ export function TomorrowField({
             총 {total.toLocaleString("ko-KR")}표
           </p>
         </div>
+        {uiDemo === "loading" ? (
+          <StatusBlock kind="loading" message="불러오는 중" />
+        ) : uiDemo === "error" ? (
+          <StatusBlock
+            kind="error"
+            message="후보를 불러오지 못했습니다."
+            actionLabel="다시 시도"
+            onAction={onRetry}
+          />
+        ) : topTopics.length === 0 ? (
+          <StatusBlock
+            kind="empty"
+            message="아직 올라온 주제가 없습니다."
+            actionLabel={onPropose ? "주제 제안" : undefined}
+            onAction={onPropose}
+          />
+        ) : null}
         <ul>
           {topTopics.map((c, i) => {
             const pct = total > 0 ? Math.round((c.votes / total) * 100) : 0;
@@ -202,38 +229,58 @@ export function TomorrowField({
             현재 올라오는 의견
           </p>
         </div>
-        <ul>
-          {liveFeed.map((op) => {
-            const topic = titleById.get(op.topicId) ?? "후보";
-            return (
-              <li
-                key={op.id}
-                className="border-b border-white/10 px-4 py-3.5"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-[13px] font-semibold">
-                    @{op.author}
-                  </span>
-                  <span className="border border-white/25 px-1.5 py-0.5 text-[10px] tracking-[0.08em] text-muted">
-                    {stanceLabel(op.stance)}
-                  </span>
-                  <span className="ml-auto text-[11px] tabular-nums text-muted">
-                    ♥ {op.likes}
-                  </span>
-                </div>
-                <p className="mt-1.5 truncate text-[11px] text-muted">
-                  {topic}
-                </p>
-                <p className="mt-1.5 text-[14px] leading-[1.55] text-white/90">
-                  {op.text}
-                </p>
-              </li>
-            );
-          })}
-        </ul>
-        <p className="px-4 py-6 text-center text-[11px] tracking-[0.12em] text-muted">
-          실시간 피드 · 끝
-        </p>
+        {uiDemo === "loading" ? (
+          <StatusBlock kind="loading" message="불러오는 중" />
+        ) : uiDemo === "error" ? (
+          <StatusBlock
+            kind="error"
+            message="피드를 불러오지 못했습니다."
+            actionLabel="다시 시도"
+            onAction={onRetry}
+          />
+        ) : liveFeed.length === 0 ? (
+          <StatusBlock
+            kind="empty"
+            message="아직 실시간 의견이 없습니다."
+            actionLabel={onPropose ? "주제 제안" : undefined}
+            onAction={onPropose}
+          />
+        ) : (
+          <>
+            <ul>
+              {liveFeed.map((op) => {
+                const topic = titleById.get(op.topicId) ?? "후보";
+                return (
+                  <li
+                    key={op.id}
+                    className="border-b border-white/10 px-4 py-3.5"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-[13px] font-semibold">
+                        @{op.author}
+                      </span>
+                      <span className="border border-white/25 px-1.5 py-0.5 text-[10px] tracking-[0.08em] text-muted">
+                        {stanceLabel(op.stance)}
+                      </span>
+                      <span className="ml-auto text-[11px] tabular-nums text-muted">
+                        ♥ {op.likes}
+                      </span>
+                    </div>
+                    <p className="mt-1.5 truncate text-[11px] text-muted">
+                      {topic}
+                    </p>
+                    <p className="mt-1.5 text-[14px] leading-[1.55] text-white/90">
+                      {op.text}
+                    </p>
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="px-4 py-6 text-center text-[11px] tracking-[0.12em] text-muted">
+              실시간 피드 · 끝
+            </p>
+          </>
+        )}
       </div>
     </section>
   );

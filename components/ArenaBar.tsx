@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { StatusBlock } from "@/components/StatusBlock";
 import { ShieldMark, SideBadge, SpearMark } from "@/components/SideMarks";
 import { BATTLE_HISTORY } from "@/lib/battle-history";
+import type { UiDemo } from "@/lib/ui-demo";
 import type { ArenaState, ArenaView, Opinion, Side } from "@/lib/types";
 
 type ArenaBarProps = {
@@ -12,6 +14,10 @@ type ArenaBarProps = {
   onChangeView: (view: ArenaView) => void;
   /** 알림 등에서 연 글 — 하이라이트·스크롤 */
   focusOpinionId?: string | null;
+  /** 목업 강제 상태 */
+  uiDemo?: UiDemo;
+  onRetry?: () => void;
+  onCompose?: () => void;
 };
 
 function topOpinionForSide(opinions: Opinion[], side: Side): Opinion | null {
@@ -145,10 +151,16 @@ function BattlefieldIntro({
   arena,
   opinions,
   onPickSide,
+  uiDemo = "normal",
+  onRetry,
+  onCompose,
 }: {
   arena: ArenaState;
   opinions: Opinion[];
   onPickSide: (side: Side) => void;
+  uiDemo?: UiDemo;
+  onRetry?: () => void;
+  onCompose?: () => void;
 }) {
   const remaining = useCountdown(arena.endsAt);
   const champion = useMemo(() => {
@@ -235,44 +247,62 @@ function BattlefieldIntro({
         </button>
       </div>
 
-      {/* 챔피언 — 카드 없이 한 줄 뉘앙스 */}
-      {champion ? (
-        <div className="px-5 py-6" aria-label="현재의 챔피언">
-          <p className="text-[10px] font-bold tracking-[0.2em] text-white/45">
-            현재의 챔피언
-          </p>
-          <div className="mt-3 border-t border-white/15 pt-4">
-            <div className="flex items-center gap-2">
-              <div
-                className="flex size-9 shrink-0 items-center justify-center border border-white/30 text-[12px] font-bold text-muted"
-                aria-hidden
-              >
-                {champion.author.slice(0, 1).toUpperCase()}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <span className="truncate text-[14px] font-semibold">
-                    @{champion.author}
-                  </span>
-                  <SideBadge side={champion.side} />
-                  {champion.side === "NEXUS" ? (
-                    <SpearMark size={12} className="ml-auto text-white/50" />
-                  ) : (
-                    <ShieldMark size={12} className="ml-auto text-white/50" />
-                  )}
+      {/* 챔피언 / 빈·로딩·실패 */}
+      <div className="border-t border-white/10" aria-label="현재의 챔피언">
+        {uiDemo === "loading" ? (
+          <StatusBlock kind="loading" message="불러오는 중" />
+        ) : uiDemo === "error" ? (
+          <StatusBlock
+            kind="error"
+            message="의견을 불러오지 못했습니다."
+            actionLabel="다시 시도"
+            onAction={onRetry}
+          />
+        ) : !champion ? (
+          <StatusBlock
+            kind="empty"
+            message="아직 올라온 의견이 없습니다."
+            actionLabel={onCompose ? "글쓰기" : undefined}
+            onAction={onCompose}
+          />
+        ) : (
+          <div className="px-5 py-6">
+            <p className="text-[10px] font-bold tracking-[0.2em] text-white/45">
+              현재의 챔피언
+            </p>
+            <div className="mt-3 border-t border-white/15 pt-4">
+              <div className="flex items-center gap-2">
+                <div
+                  className="flex size-9 shrink-0 items-center justify-center border border-white/30 text-[12px] font-bold text-muted"
+                  aria-hidden
+                >
+                  {champion.author.slice(0, 1).toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="truncate text-[14px] font-semibold">
+                      @{champion.author}
+                    </span>
+                    <SideBadge side={champion.side} />
+                    {champion.side === "NEXUS" ? (
+                      <SpearMark size={12} className="ml-auto text-white/50" />
+                    ) : (
+                      <ShieldMark size={12} className="ml-auto text-white/50" />
+                    )}
+                  </div>
                 </div>
               </div>
+              <p className="mt-2.5 line-clamp-2 text-[13px] leading-[1.5] text-white/85">
+                {champion.text}
+              </p>
+              <p className="mt-2 inline-flex items-center gap-1 text-[11px] tabular-nums text-muted">
+                <HeartMark />
+                {champion.likes}
+              </p>
             </div>
-            <p className="mt-2.5 line-clamp-2 text-[13px] leading-[1.5] text-white/85">
-              {champion.text}
-            </p>
-            <p className="mt-2 inline-flex items-center gap-1 text-[11px] tabular-nums text-muted">
-              <HeartMark />
-              {champion.likes}
-            </p>
           </div>
-        </div>
-      ) : null}
+        )}
+      </div>
     </div>
   );
 }
@@ -284,6 +314,9 @@ export function ArenaBar({
   view,
   onChangeView,
   focusOpinionId = null,
+  uiDemo = "normal",
+  onRetry,
+  onCompose,
 }: ArenaBarProps) {
   const selected: Side | null =
     view === "NEXUS" || view === "AEGIS" ? view : null;
@@ -333,6 +366,9 @@ export function ArenaBar({
             arena={arena}
             opinions={opinions}
             onPickSide={(side) => onChangeView(side)}
+            uiDemo={uiDemo}
+            onRetry={onRetry}
+            onCompose={onCompose}
           />
         </div>
       </section>
@@ -460,7 +496,16 @@ export function ArenaBar({
                 >
                   TOP 의견 · {sideLabel}
                 </p>
-                {top ? (
+                {uiDemo === "loading" ? (
+                  <StatusBlock kind="loading" message="불러오는 중" />
+                ) : uiDemo === "error" ? (
+                  <StatusBlock
+                    kind="error"
+                    message="의견을 불러오지 못했습니다."
+                    actionLabel="다시 시도"
+                    onAction={onRetry}
+                  />
+                ) : top ? (
                   <article
                     data-opinion-id={
                       focusOpinionId === top.id ? top.id : undefined
@@ -503,13 +548,12 @@ export function ArenaBar({
                     </p>
                   </article>
                 ) : (
-                  <p
-                    className={`text-sm ${
-                      light ? "text-neutral-500" : "text-muted"
-                    }`}
-                  >
-                    TOP 의견이 아직 없습니다.
-                  </p>
+                  <StatusBlock
+                    kind="empty"
+                    message="TOP 의견이 아직 없습니다."
+                    actionLabel={onCompose ? "글쓰기" : undefined}
+                    onAction={onCompose}
+                  />
                 )}
               </div>
 
@@ -527,15 +571,13 @@ export function ArenaBar({
                 </p>
               </div>
               <ul aria-label={`${sideLabel} 올라오는 글`}>
-                {rising.length === 0 ? (
-                  <li
-                    className={`px-4 py-6 text-center text-sm ${
-                      light ? "text-neutral-500" : "text-muted"
-                    }`}
-                  >
-                    아직 글이 없습니다.
+                {rising.length === 0 &&
+                uiDemo !== "loading" &&
+                uiDemo !== "error" ? (
+                  <li>
+                    <StatusBlock kind="empty" message="아직 글이 없습니다." />
                   </li>
-                ) : (
+                ) : rising.length === 0 ? null : (
                   rising.map((op, i) => (
                     <OpinionRow
                       key={op.id}

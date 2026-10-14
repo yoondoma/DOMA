@@ -187,3 +187,17 @@ body {
 .arena-enter {
   animation: arena-enter 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+@keyframes status-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.status-pulse {
+  animation: status-pulse 1.2s ease-in-out infinite;
+}

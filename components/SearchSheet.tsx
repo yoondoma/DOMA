@@ -1,15 +1,19 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { StatusBlock } from "@/components/StatusBlock";
 import {
   SEARCH_KIND_LABEL,
   searchAll,
   type SearchKind,
 } from "@/lib/search-mock";
+import type { UiDemo } from "@/lib/ui-demo";
 
 type SearchSheetProps = {
   open: boolean;
   onClose: () => void;
+  uiDemo?: UiDemo;
+  onRetry?: () => void;
 };
 
 const FILTERS: Array<SearchKind | "all"> = [
@@ -19,15 +23,21 @@ const FILTERS: Array<SearchKind | "all"> = [
   "topic",
 ];
 
-export function SearchSheet({ open, onClose }: SearchSheetProps) {
+export function SearchSheet({
+  open,
+  onClose,
+  uiDemo = "normal",
+  onRetry,
+}: SearchSheetProps) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<SearchKind | "all">("all");
 
   const results = useMemo(() => {
+    if (uiDemo === "empty") return [];
     const list = searchAll(query);
     if (filter === "all") return list;
     return list.filter((item) => item.kind === filter);
-  }, [query, filter]);
+  }, [query, filter, uiDemo]);
 
   if (!open) return null;
 
@@ -94,31 +104,48 @@ export function SearchSheet({ open, onClose }: SearchSheetProps) {
           </div>
         </div>
 
-        <ul
-          className="overflow-y-auto"
-          aria-label="검색 결과"
-        >
-          {results.length === 0 ? (
-            <li className="px-4 py-10 text-center text-sm text-muted">
-              검색 결과가 없습니다.
-            </li>
-          ) : (
-            results.map((item) => (
-              <li
-                key={item.id}
-                className="border-b border-white/10 px-4 py-3"
-              >
-                <p className="text-[10px] font-bold tracking-[0.14em] text-muted">
-                  {SEARCH_KIND_LABEL[item.kind]}
-                </p>
-                <p className="mt-1 text-[14px] font-semibold leading-snug">
-                  {item.title}
-                </p>
-                <p className="mt-0.5 text-[12px] text-muted">{item.subtitle}</p>
+        {uiDemo === "loading" ? (
+          <StatusBlock kind="loading" message="불러오는 중" />
+        ) : uiDemo === "error" ? (
+          <StatusBlock
+            kind="error"
+            message="검색 결과를 불러오지 못했습니다."
+            actionLabel="다시 시도"
+            onAction={onRetry}
+          />
+        ) : (
+          <ul className="overflow-y-auto" aria-label="검색 결과">
+            {results.length === 0 ? (
+              <li>
+                <StatusBlock
+                  kind="empty"
+                  message={
+                    query.trim()
+                      ? "검색 결과가 없습니다."
+                      : "검색어를 입력해 보세요."
+                  }
+                />
               </li>
-            ))
-          )}
-        </ul>
+            ) : (
+              results.map((item) => (
+                <li
+                  key={item.id}
+                  className="border-b border-white/10 px-4 py-3"
+                >
+                  <p className="text-[10px] font-bold tracking-[0.14em] text-muted">
+                    {SEARCH_KIND_LABEL[item.kind]}
+                  </p>
+                  <p className="mt-1 text-[14px] font-semibold leading-snug">
+                    {item.title}
+                  </p>
+                  <p className="mt-0.5 text-[12px] text-muted">
+                    {item.subtitle}
+                  </p>
+                </li>
+              ))
+            )}
+          </ul>
+        )}
       </div>
     </div>
   );
