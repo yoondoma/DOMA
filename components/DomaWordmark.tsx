@@ -49,61 +49,74 @@ export function DomaWordmark({
     const aEl = aRef.current;
     if (!wrap || !aEl) return;
 
+    let dead = false;
+
     const place = () => {
+      if (dead) return;
       const range = document.createRange();
       range.selectNodeContents(aEl);
       const a = range.getBoundingClientRect();
       const parent = wrap.getBoundingClientRect();
       const fs = parseFloat(getComputedStyle(aEl).fontSize) || 16;
       /**
-       * A는 아래 세리프가 glyph.right. 위첨자 밴드(상단 ~30%)의
-       * 오른쪽 대각 잉크에 붙이려면 박스 right가 아니라 그 높이의
-       * 실측 가장자리로 당겨야 함.
+       * A는 아래 세리프가 glyph.right. 위첨자 밴드(상단)의
+       * 오른쪽 대각 잉크를 캔버스로 샘플링해 붙인다.
        */
-      const band = Math.min(a.height * 0.28, fs * 0.32);
+      const band = Math.min(a.height * 0.32, fs * 0.36);
       const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      let inkRight = a.right - fs * 0.3; // fallback tuck
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      // fallback: 세리프·대각을 감안해 강하게 당김
+      let inkRight = a.right - fs * 0.34;
       if (ctx) {
-        const w = Math.ceil(a.width) + 4;
-        const h = Math.ceil(a.height) + 4;
+        const pad = 4;
+        const w = Math.ceil(a.width) + pad * 2;
+        const h = Math.ceil(a.height) + pad * 2;
         canvas.width = w;
         canvas.height = h;
         ctx.clearRect(0, 0, w, h);
-        ctx.fillStyle = "#fff";
+        ctx.fillStyle = "#ffffff";
         const computed = getComputedStyle(aEl);
         ctx.font = `${computed.fontWeight} ${fs}px ${computed.fontFamily}`;
-        ctx.textBaseline = "top";
-        ctx.fillText("A", 2, 2);
-        const sampleTop = 2;
-        const sampleBot = Math.max(sampleTop + 1, Math.floor(2 + band));
+        ctx.textBaseline = "alphabetic";
+        // DOM 글리프와 같은 베이스라인 비율로 그림
+        const baseline = pad + (a.height * 0.8);
+        ctx.fillText("A", pad, baseline);
+        const sampleTop = pad;
+        const sampleBot = Math.max(sampleTop + 1, Math.floor(pad + band));
         const data = ctx.getImageData(0, sampleTop, w, sampleBot - sampleTop).data;
         let maxX = 0;
         for (let y = 0; y < sampleBot - sampleTop; y++) {
           for (let x = w - 1; x >= 0; x--) {
-            if (data[(y * w + x) * 4 + 3] > 20) {
+            if (data[(y * w + x) * 4 + 3] > 16) {
               if (x > maxX) maxX = x;
               break;
             }
           }
         }
         if (maxX > 0) {
-          // canvas 로컬 → 화면: a.left - 2 + maxX
-          inkRight = a.left - 2 + maxX;
+          inkRight = a.left - pad + maxX;
         }
       }
-      const gap = 3; // 시각 2~4px
+      const gap = 3;
       setPos({
-        // 글리프 박스 상단 = 캡하이트 위첨자
         top: a.top - parent.top,
         left: inkRight - parent.left + gap,
       });
     };
 
-    place();
-    const ro = new ResizeObserver(place);
+    const run = () => {
+      void document.fonts.ready.then(() => {
+        place();
+        requestAnimationFrame(place);
+      });
+    };
+    run();
+    const ro = new ResizeObserver(run);
     ro.observe(wrap);
-    return () => ro.disconnect();
+    return () => {
+      dead = true;
+      ro.disconnect();
+    };
   }, [size, light]);
 
   return (
