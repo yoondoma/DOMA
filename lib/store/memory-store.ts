@@ -190,6 +190,16 @@ class MemoryStore {
     } else {
       this.snap = buildSeedSnapshot();
     }
+    /** 가입 루트 목업 — 시드 세션이 있어도 강제 로그아웃 */
+    if (typeof window !== "undefined") {
+      const q = new URLSearchParams(window.location.search);
+      if (q.get("signup") === "1" || q.get("auth") === "1") {
+        this.snap.session = null;
+        persist(this.snap);
+        this.emit();
+        return;
+      }
+    }
     if (!this.snap.session) {
       this.autoLoginDefault();
     } else {
