@@ -25,46 +25,21 @@ function NavIcon({ id, active }: { id: NavTab; active: boolean }) {
   switch (id) {
     case "home": {
       /**
-       * 아레나 육각 (arena-hex-ref.jpg):
-       * 위·아래 꼭짓점 세로 육각 · 가운데 세로선 이등분
-       * 왼: 대각 해칭 / 오른: 비움(외곽만) · Strict B&W
+       * 아레나 = 바른 정육각형 세로 이등분
+       * 왼: 채움(흑) / 오른: 비움(백·외곽) — 빗금·왜곡 없음
        */
+      // 중심(12,12) 반지름 8.2 — 메시지·알림·프로필(22)과 시각 크기 맞춤
       const hex =
-        "M12 1.6 19.6 6.4v11.2L12 22.4 4.4 17.6V6.4Z";
-      const leftHalf = "M12 1.6 4.4 6.4v11.2L12 22.4Z";
-      const hatchId = active ? "arena-hatch-on" : "arena-hatch-off";
+        "M12 3.8 19.1 7.9v8.2L12 20.2 4.9 16.1V7.9Z";
+      const leftHalf = "M12 3.8 4.9 7.9v8.2L12 20.2Z";
       return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <defs>
-            <pattern
-              id={hatchId}
-              patternUnits="userSpaceOnUse"
-              width="3"
-              height="3"
-              patternTransform="rotate(-40)"
-            >
-              <path d="M0 0v3" stroke={stroke} strokeWidth="1.15" />
-            </pattern>
-            <clipPath id={`${hatchId}-clip`}>
-              <path d={leftHalf} />
-            </clipPath>
-          </defs>
-          <path
-            d={hex}
-            fill={`url(#${hatchId})`}
-            clipPath={`url(#${hatchId}-clip)`}
-          />
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path d={leftHalf} fill={stroke} />
           <path
             d={hex}
             stroke={stroke}
-            strokeWidth="1.55"
+            strokeWidth="1.75"
             strokeLinejoin="miter"
-          />
-          <path
-            d="M12 1.6v20.8"
-            stroke={stroke}
-            strokeWidth="1.4"
-            strokeLinecap="square"
           />
         </svg>
       );
