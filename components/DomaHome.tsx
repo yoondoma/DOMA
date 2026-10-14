@@ -30,7 +30,6 @@ import { SettingsSheet } from "@/components/SettingsSheet";
 import { PROFILE_USER } from "@/lib/profile-mock";
 import { ContextualShareCard } from "@/components/ContextualShareCard";
 import { ShareResultCard } from "@/components/ShareResultCard";
-import { SupportBar } from "@/components/SupportBar";
 import { TomorrowCompose } from "@/components/TomorrowCompose";
 import { TomorrowField } from "@/components/TomorrowField";
 import { TouchGate } from "@/components/TouchGate";
@@ -216,43 +215,6 @@ export function DomaHome() {
       showToast("최신 상태로 업데이트했습니다");
     }, 900);
   }, [nexusPercent, showToast]);
-
-  const handleJoin = (side: Side) => {
-    if (!domaStore.getSession()) {
-      showToast("로그인이 필요합니다");
-      return;
-    }
-    if (joined === side) return;
-
-    try {
-      domaStore.setJoinedCamp(campFromSide(side));
-    } catch (e) {
-      if (e instanceof Error && e.message === "ARENA_SHUTDOWN") {
-        showToast("전장 셧다운 (23:00–08:00)");
-        return;
-      }
-      if (e instanceof Error && e.message === "QUOTA_CAMP_MOVES") {
-        showToast("진영 이동 한도를 모두 썼습니다 (3회)");
-        return;
-      }
-      showToast("로그인이 필요합니다");
-      return;
-    }
-    setJoined(side);
-    setNexusPercent((prev) => {
-      const next =
-        side === "NEXUS"
-          ? Math.min(95, prev + (joined === "AEGIS" ? 2 : 1))
-          : Math.max(5, prev - (joined === "NEXUS" ? 2 : 1));
-      setAegisPercent(100 - next);
-      return next;
-    });
-    showToast(
-      side === "NEXUS"
-        ? "지지 · 돌격 — 도전자 진영"
-        : "지지 · 방어 — 방어자 진영",
-    );
-  };
 
   const handleSubmitToday = (text: string, media?: ComposeMedia) => {
     if (!domaStore.getSession()) {
@@ -450,7 +412,7 @@ export function DomaHome() {
       }`}
       data-shell={lightShell ? "light" : "dark"}
     >
-      {/* 본문만 스크롤 — 하단 독(지지/%·네비)은 셸에 고정해 Try Live에서도 항상 노출 */}
+      {/* 본문만 스크롤 — 하단 네비 독. 현황판/SupportBar는 intro·오늘 메인에 두지 않음 */}
       <div
         className={`shell-tone arena-enter mx-auto min-h-0 w-full max-w-[560px] flex-1 overflow-y-auto overscroll-y-contain border-x ${
           lightShell
@@ -611,10 +573,7 @@ export function DomaHome() {
         <div
           className="pointer-events-none absolute inset-x-0 z-[55] flex justify-center px-4"
           style={{
-            bottom:
-              navTab === "home" && homeSurface === "today"
-                ? "calc(84px + 3.5rem + env(safe-area-inset-bottom) + 8px)"
-                : "calc(3.5rem + env(safe-area-inset-bottom) + 8px)",
+            bottom: "calc(3.5rem + env(safe-area-inset-bottom) + 8px)",
           }}
           role="status"
         >
@@ -628,17 +587,6 @@ export function DomaHome() {
             {toast}
           </div>
         </div>
-      ) : null}
-
-      {navTab === "home" && homeSurface === "today" ? (
-        <SupportBar
-          nexusPercent={nexusPercent}
-          aegisPercent={aegisPercent}
-          nexusVotes={INITIAL_ARENA.nexusVotes}
-          aegisVotes={INITIAL_ARENA.aegisVotes}
-          joined={joined}
-          onJoin={handleJoin}
-        />
       ) : null}
 
       <BattleCalendar

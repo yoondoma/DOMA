@@ -946,9 +946,9 @@ export function ArenaBar({
             scrollBehavior: "auto",
             WebkitOverflowScrolling: "touch",
             touchAction: "pan-x pan-y",
-            /* 헤더·sticky 주제·지지독·하단네비 밖 남은 높이 */
+            /* 헤더·sticky 주제·하단네비 밖 남은 높이 (현황판 독 없음) */
             height:
-              "calc(100dvh - 3.5rem - 7.5rem - 84px - 3.5rem - env(safe-area-inset-bottom, 0px))",
+              "calc(100dvh - 3.5rem - 7.5rem - 3.5rem - env(safe-area-inset-bottom, 0px))",
             maxHeight: "50dvh",
           }}
           onScroll={onScroll}
