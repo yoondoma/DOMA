@@ -6,8 +6,20 @@ import { SafetyMenu } from "@/components/SafetyMenu";
 import { StatusBlock } from "@/components/StatusBlock";
 import { ShieldMark, SideBadge, SpearMark } from "@/components/SideMarks";
 import { BATTLE_HISTORY } from "@/lib/battle-history";
+import { useDomaStore } from "@/lib/store";
 import type { UiDemo } from "@/lib/ui-demo";
 import type { ArenaState, ArenaView, Opinion, Side } from "@/lib/types";
+
+/** CLOSING_SOON · 목업 `?closing=1` */
+function useClosingSoon(): boolean {
+  const clock = useDomaStore().clock;
+  const [force, setForce] = useState(false);
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("closing");
+    setForce(q === "1" || q === "soon");
+  }, []);
+  return force || clock.state === "CLOSING_SOON" || clock.goldenHour;
+}
 
 type ArenaBarProps = {
   arena: ArenaState;
@@ -172,6 +184,7 @@ function BattlefieldIntro({
   onCompose?: () => void;
 }) {
   const remaining = useCountdown(arena.endsAt);
+  const closingSoon = useClosingSoon();
   const champion = useMemo(() => {
     if (opinions.length === 0) return null;
     return [...opinions].sort((a, b) => b.likes - a.likes)[0] ?? null;
@@ -189,16 +202,19 @@ function BattlefieldIntro({
   return (
     <div className="bg-black text-white" aria-label="오늘 전장">
       {/* 판결 카운트다운 — 빨간 타이머만 강조 */}
-      <div className="border-b border-white/10 px-5 pb-5 pt-6 text-center">
+      <div className="battlefield-rise border-b border-white/10 px-5 pb-5 pt-6 text-center">
         <p className="text-[11px] font-medium tracking-[0.22em] text-white/45">
           제 {arena.round} 도마
         </p>
         <p className="mt-4 text-[11px] tracking-[0.18em] text-white/55">
-          최후의 판결까지
+          {closingSoon ? "판결 임박" : "최후의 판결까지"}
         </p>
         <p
-          className="mt-2 font-mono text-[34px] font-semibold leading-none tracking-[0.06em] text-timer tabular-nums sm:text-[38px]"
+          className={`mt-2 font-mono text-[34px] font-semibold leading-none tracking-[0.06em] text-timer tabular-nums sm:text-[38px] ${
+            closingSoon ? "timer-closing-pulse" : ""
+          }`}
           aria-label={`남은 시간 ${remaining}`}
+          data-closing={closingSoon ? "soon" : undefined}
         >
           {remaining}
           <span className="ml-2 align-middle text-[13px] font-medium tracking-[0.14em] text-timer/90">
@@ -216,7 +232,10 @@ function BattlefieldIntro({
       </div>
 
       {/* 오늘의 전장 주제 */}
-      <div className="px-5 pb-6 pt-7" aria-label="오늘 주제 영역">
+      <div
+        className="battlefield-rise battlefield-rise-delay px-5 pb-6 pt-7"
+        aria-label="오늘 주제 영역"
+      >
         <p className="text-[11px] font-bold tracking-[0.2em] text-white/50">
           오늘의 전장
         </p>
@@ -240,7 +259,7 @@ function BattlefieldIntro({
           aria-selected={false}
           aria-label="도전자"
           onClick={() => onPickSide("NEXUS")}
-          className="flex min-h-[104px] items-center justify-center border-r border-white/15 bg-black px-3 py-5 text-white active:bg-white/[0.04]"
+          className="camp-press flex min-h-[104px] items-center justify-center border-r border-white/15 bg-black px-3 py-5 text-white active:bg-white/[0.04]"
         >
           <span className="text-[16px] font-bold tracking-[0.16em]">도전자</span>
         </button>
@@ -250,7 +269,7 @@ function BattlefieldIntro({
           aria-selected={false}
           aria-label="방어자"
           onClick={() => onPickSide("AEGIS")}
-          className="flex min-h-[104px] items-center justify-center bg-white px-3 py-5 text-black active:bg-neutral-100"
+          className="camp-press flex min-h-[104px] items-center justify-center bg-white px-3 py-5 text-black active:bg-neutral-100"
         >
           <span className="text-[16px] font-bold tracking-[0.16em]">방어자</span>
         </button>
@@ -433,7 +452,7 @@ export function ArenaBar({
               aria-selected={selected === "NEXUS"}
               aria-label="도전자"
               onClick={() => selectSide("NEXUS")}
-              className={`flex min-h-[64px] flex-col items-center justify-center gap-1.5 border-0 bg-black p-0 text-white ${
+              className={`camp-press flex min-h-[64px] flex-col items-center justify-center gap-1.5 border-0 bg-black p-0 text-white ${
                 selected !== "NEXUS" ? "opacity-50" : "opacity-100"
               }`}
             >
@@ -448,7 +467,7 @@ export function ArenaBar({
               aria-selected={selected === "AEGIS"}
               aria-label="방어자"
               onClick={() => selectSide("AEGIS")}
-              className={`flex min-h-[64px] flex-col items-center justify-center gap-1.5 border-0 bg-white p-0 text-black ${
+              className={`camp-press flex min-h-[64px] flex-col items-center justify-center gap-1.5 border-0 bg-white p-0 text-black ${
                 selected !== "AEGIS" ? "opacity-50" : "opacity-100"
               }`}
             >

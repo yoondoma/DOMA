@@ -17,7 +17,7 @@ export function TouchGate({ onEnter }: TouchGateProps) {
     setPressing(true);
     window.setTimeout(() => {
       onEnter();
-    }, 320);
+    }, 380);
   };
 
   return (
@@ -25,12 +25,17 @@ export function TouchGate({ onEnter }: TouchGateProps) {
       type="button"
       onClick={handleEnter}
       aria-label="터치하여 증명"
-      className={`flex min-h-dvh w-full flex-col items-center justify-center border-0 bg-black px-6 text-white outline-none transition-opacity duration-200 focus-visible:outline-none ${
-        pressing ? "touch-press" : "active:opacity-90"
+      className={`flex min-h-dvh w-full flex-col items-center justify-center border-0 bg-black px-6 text-white outline-none focus-visible:outline-none ${
+        pressing ? "touch-press opacity-90" : "active:opacity-90"
       }`}
     >
       {/* 시각 중심: 마크 + DOMAᴷᴿ — hit target은 전체 화면 */}
-      <span className="pointer-events-none flex flex-col items-center" aria-hidden>
+      <span
+        className={`pointer-events-none flex flex-col items-center transition-transform duration-300 ${
+          pressing ? "scale-[1.03]" : "scale-100"
+        }`}
+        aria-hidden
+      >
         <DomaMark size={88} />
         <span className="mt-6">
           <DomaWordmark size="lg" />

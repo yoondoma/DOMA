@@ -186,8 +186,7 @@ body {
   animation: touch-press 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* transform 금지: fixed 하단바(홈/지지) containing block이 깨져
-   Next Dev Tools 배지가 홈 자리처럼 보이던 원인 */
+/* 스크롤 본문만 — fixed 하단바/시트는 이 노드 밖에 둘 것 */
 @keyframes arena-enter {
   from {
     opacity: 0;
@@ -198,7 +197,51 @@ body {
 }
 
 .arena-enter {
-  animation: arena-enter 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: arena-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* 전장 본문만 scale (fixed 조상 아님) */
+@keyframes battlefield-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.battlefield-rise {
+  animation: battlefield-rise 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.battlefield-rise-delay {
+  animation-delay: 80ms;
+}
+
+/* 진영 탭 — 미세 press (버튼 자신만 transform) */
+.camp-press {
+  transition: transform 120ms ease-out, opacity 120ms ease-out;
+}
+
+.camp-press:active {
+  transform: scale(0.985);
+}
+
+/* CLOSING_SOON — 빨간 타이머만 pulse (글로우 없음) */
+@keyframes timer-closing-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.timer-closing-pulse {
+  animation: timer-closing-pulse 1.1s ease-in-out infinite;
 }
 
 @keyframes status-pulse {
