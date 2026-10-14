@@ -56,6 +56,18 @@ export function TouchGate({ onEnter }: TouchGateProps) {
         >
           {pressing ? "증명됨" : "터치하여 증명"}
         </span>
+        {/* 베타 — 피드백 안내 (polish 아님 · 한 줄만) */}
+        <span
+          className={`mt-10 max-w-[18em] text-center text-[11px] leading-relaxed tracking-[0.04em] text-white/45 transition-opacity duration-300 ${
+            pressing ? "opacity-20" : "opacity-100"
+          }`}
+          data-beta-feedback
+        >
+          베타 의견 →{" "}
+          <span className="text-white/70 underline underline-offset-2">
+            feedback@doma.kr
+          </span>
+        </span>
       </span>
     </button>
   );

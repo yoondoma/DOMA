@@ -693,6 +693,15 @@ function BattlefieldIntro({
 
       {/* 발견 v0 — 홈 한 줄 · 진영 아래 · 하단 탭 아님 */}
       <DiscoverStrip light={light} onSelect={onDiscoverSelect} />
+
+      <p
+        className={`px-5 py-3 text-center text-[11px] tracking-[0.04em] ${
+          light ? "text-black/40" : "text-white/40"
+        }`}
+        data-beta-feedback
+      >
+        베타 의견 → feedback@doma.kr
+      </p>
     </div>
   );
 }

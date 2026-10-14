@@ -346,6 +346,18 @@ export function SettingsSheet({
                         hint: "전장 규칙 · DOMA",
                         onClick: () => setPanel("help"),
                       },
+                      {
+                        id: "beta-feedback",
+                        label: "베타 피드백",
+                        hint: "feedback@doma.kr · 전투/공유/칭호만",
+                        onClick: () => {
+                          window.location.href =
+                            "mailto:feedback@doma.kr?subject=DOMA%20베타%20피드백";
+                          onToast?.(
+                            "피드백 → feedback@doma.kr (메일 앱이 열립니다)",
+                          );
+                        },
+                      },
                     ],
                   },
                 ] as const
@@ -771,6 +783,22 @@ export function SettingsSheet({
               <p>
                 글 좋아요는 하루 5회(오늘 의견만). 댓글♥·공유·스크랩은
                 무제한. 작성 쿨다운 3분.
+              </p>
+              <p
+                className="border border-neutral-800 px-3 py-2.5 text-[12px] leading-relaxed"
+                data-beta-feedback
+              >
+                베타 피드백 →{" "}
+                <a
+                  href="mailto:feedback@doma.kr?subject=DOMA%20베타%20피드백"
+                  className="text-white underline underline-offset-4"
+                >
+                  feedback@doma.kr
+                </a>
+                <span className="text-neutral-500">
+                  {" "}
+                  · 전투 / 공유 / 칭호만 적어 주세요
+                </span>
               </p>
               <button
                 type="button"
