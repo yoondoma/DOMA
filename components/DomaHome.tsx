@@ -20,11 +20,13 @@ import { ProfileScreen } from "@/components/ProfileScreen";
 import { PullRefresh } from "@/components/PullRefresh";
 import { RulesSheet } from "@/components/RulesSheet";
 import { SearchSheet } from "@/components/SearchSheet";
+import { AdSlot } from "@/components/AdSlot";
 import {
   ProfileEditSheet,
   type EditableProfile,
 } from "@/components/ProfileEditSheet";
 import { SettingsSheet } from "@/components/SettingsSheet";
+import { isAdPreviewEnabled } from "@/lib/ad-preview";
 import { PROFILE_USER } from "@/lib/profile-mock";
 import { ShareResultCard } from "@/components/ShareResultCard";
 import { SupportBar } from "@/components/SupportBar";
@@ -93,6 +95,7 @@ export function DomaHome() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [profileEditOpen, setProfileEditOpen] = useState(false);
+  const [gateSplashOpen, setGateSplashOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [editableProfile, setEditableProfile] = useState<EditableProfile>({
     name: PROFILE_USER.name,
@@ -439,8 +442,19 @@ export function DomaHome() {
   );
 
   if (!entered) {
-    return <TouchGate onEnter={() => setEntered(true)} />;
+    return (
+      <TouchGate
+        onEnter={() => {
+          setEntered(true);
+          if (isAdPreviewEnabled()) setGateSplashOpen(true);
+        }}
+      />
+    );
   }
+
+  const shutdownIdle =
+    storeSnap.clock.state === "LOCKED" ||
+    storeSnap.clock.state === "COOLDOWN";
 
   return (
     <div
@@ -518,6 +532,9 @@ export function DomaHome() {
             onRefresh={handleRefresh}
             light={lightShell}
           >
+            {shutdownIdle ? (
+              <AdSlot id="shutdown_idle" light={lightShell} />
+            ) : null}
             <ArenaBar
               arena={INITIAL_ARENA}
               opinions={feedOpinions}
@@ -683,6 +700,12 @@ export function DomaHome() {
         onToast={showToast}
       />
       <RulesSheet open={rulesOpen} onClose={() => setRulesOpen(false)} />
+      {gateSplashOpen ? (
+        <AdSlot
+          id="gate_splash"
+          onSkip={() => setGateSplashOpen(false)}
+        />
+      ) : null}
       <BottomNav
         active={navTab}
         onChange={handleNavChange}

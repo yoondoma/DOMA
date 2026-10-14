@@ -2,8 +2,11 @@
 
 import html2canvas from "html2canvas";
 import { useRef, useState } from "react";
+import { AdSlot } from "@/components/AdSlot";
 import { DomaWordmark } from "@/components/DomaWordmark";
+import { PROFILE_GAMER } from "@/lib/profile-mock";
 import type { ShareResult } from "@/lib/share-result-mock";
+import { resolveCosmetics } from "@/lib/types/cosmetics";
 
 type CardRatio = "square" | "story";
 
@@ -34,6 +37,8 @@ export function ShareResultCard({
   const sideTone = result.mySide === "NEXUS" ? "black" : "white";
   const outcomeLabel = result.outcome === "win" ? "승" : "패";
   const isWin = result.outcome === "win";
+  const cosmetics = resolveCosmetics(PROFILE_GAMER.cosmetics);
+  const verdictTheme = cosmetics.verdictTheme ?? "bw";
 
   const capture = async (mode: "download" | "share") => {
     if (!cardRef.current || busy) return;
@@ -137,6 +142,7 @@ export function ShareResultCard({
       <div className="flex flex-1 items-center justify-center overflow-auto px-4 pb-4">
         <div
           ref={cardRef}
+          data-verdict-theme={verdictTheme}
           className={`relative w-full max-w-[340px] overflow-hidden border border-white/25 ${
             ratio === "square" ? "aspect-square" : "aspect-[9/16] max-h-[72dvh]"
           } ${
@@ -272,6 +278,12 @@ export function ShareResultCard({
             >
               PROOF · DOMA KR
             </p>
+            {/* 중계 워터마크 자리 — 판결 본문·진영색 밖 */}
+            <AdSlot
+              id="verdict_card_footer"
+              light={sideTone === "white"}
+              className="mt-2 border-x-0"
+            />
           </div>
         </div>
       </div>

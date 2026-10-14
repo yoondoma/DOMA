@@ -25,6 +25,7 @@ import {
   type TitleDetail,
 } from "@/lib/profile-mock";
 import { domaStore, useDomaStore, useSession } from "@/lib/store";
+import { resolveCosmetics } from "@/lib/types/cosmetics";
 import type { UiDemo } from "@/lib/ui-demo";
 import type { DailyTitle, ScoreEvent } from "@/lib/types/gamification";
 
@@ -110,6 +111,10 @@ export function ProfileScreen({
   );
 
   const gamer = { ...PROFILE_GAMER, username: display.name };
+  const cosmetics = resolveCosmetics(
+    profileUser?.cosmetics ?? PROFILE_GAMER.cosmetics,
+  );
+  const frameId = cosmetics.frame ?? "bw";
 
   const openTitle = (badge: DailyTitle) => {
     const found =
@@ -186,6 +191,7 @@ export function ProfileScreen({
             <div
               className="flex size-14 shrink-0 items-center justify-center border border-neutral-200 text-[18px] font-bold tracking-wide"
               aria-hidden
+              data-cosmetic-frame={frameId}
             >
               {display.avatarChar}
             </div>

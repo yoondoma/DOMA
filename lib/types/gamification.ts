@@ -8,6 +8,8 @@
  * - score는 음수가 될 수 있으나, 티어 해석 시 0 하한으로 클램프한다.
  */
 
+import type { Cosmetics } from "@/lib/types/cosmetics";
+
 /** 매치 결과 → 포인트 가감 */
 export const POINT_RULES = {
   WIN: 1,
@@ -260,6 +262,8 @@ export type UserProfileType = {
   wins: number;
   losses: number;
   dailyTitles: DailyTitle[];
+  /** 코스메틱 예약 — 기본 omit = B&W · 티어·승패 무관 */
+  cosmetics?: Cosmetics;
 };
 
 /** score 기준으로 currentTier를 맞춘 프로필 스냅샷 */

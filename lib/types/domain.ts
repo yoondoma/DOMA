@@ -5,6 +5,8 @@
  * TimeState·dayId 규칙 → `docs/24h-timeline` (스토어 메모)
  */
 
+import type { Cosmetics } from "@/lib/types/cosmetics";
+
 /** KST 전장 날짜 키 — OPEN된 날. 형식 `YYYY-MM-DD` */
 export type DayId = string;
 
@@ -28,6 +30,8 @@ export type User = {
   bio: string;
   /** gamification UserProfileType.id 와 맞출 때 사용 */
   createdAtUtc: string;
+  /** 코스메틱 예약 — 기본 omit/null = B&W. 티어 무관 */
+  cosmetics?: Cosmetics;
 };
 
 /** 당일 참전 세션 (유저 × dayId) */

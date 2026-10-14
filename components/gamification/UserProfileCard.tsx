@@ -1,5 +1,6 @@
 import { GirdleMark } from "@/components/SideMarks";
 import { TierBadge } from "@/components/gamification/TierBadge";
+import { resolveCosmetics } from "@/lib/types/cosmetics";
 import type {
   DailyTitle,
   UserProfileType,
@@ -29,11 +30,14 @@ export function UserProfileCard({
 }: UserProfileCardProps) {
   const { currentTier: t, score, dailyTitles, username } = user;
   const primary = dailyTitles[0];
+  const cosmetics = resolveCosmetics(user.cosmetics);
 
   return (
     <div
       className={["text-white", className].join(" ")}
       aria-label={`${username} 칭호`}
+      data-cosmetic-frame={cosmetics.frame ?? "bw"}
+      data-cosmetic-handle={cosmetics.handleEffect ?? "bw"}
     >
       <button
         type="button"

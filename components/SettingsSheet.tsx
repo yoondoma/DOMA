@@ -2,6 +2,11 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import {
+  loadAdPreviewPrefs,
+  saveAdPreviewPrefs,
+  type AdPreviewPrefs,
+} from "@/lib/ad-preview";
+import {
   loadSoundPrefs,
   saveSoundPrefs,
   type SoundPrefs,
@@ -24,7 +29,7 @@ type SettingsSheetProps = {
   onToast?: (message: string) => void;
 };
 
-type Panel = "menu" | "account" | "privacy" | "sound" | "help";
+type Panel = "menu" | "account" | "privacy" | "sound" | "help" | "monetize";
 
 const SWITCHABLE = ["soohan", "mira.k", "zero.nexus", "han.aegis"] as const;
 const DM_OPTIONS: DmPolicy[] = ["everyone", "mutual", "off"];
@@ -67,12 +72,16 @@ export function SettingsSheet({
     domaStore.getPrivacy(),
   );
   const [sound, setSoundLocal] = useState<SoundPrefs>(() => loadSoundPrefs());
+  const [adPreview, setAdPreview] = useState<AdPreviewPrefs>(() =>
+    loadAdPreviewPrefs(),
+  );
 
   useEffect(() => {
     if (open) {
       setPanel("menu");
       setPrivacyLocal(domaStore.getPrivacy());
       setSoundLocal(loadSoundPrefs());
+      setAdPreview(loadAdPreviewPrefs());
     }
   }, [open, snap.privacyByUser, snap.session?.userId]);
 
@@ -139,7 +148,9 @@ export function SettingsSheet({
           ? "프라이버시·차단"
           : panel === "sound"
             ? "앱 사운드"
-            : "도움말";
+            : panel === "monetize"
+              ? "광고·꾸미기"
+              : "도움말";
 
   return (
     <div
@@ -288,6 +299,32 @@ export function SettingsSheet({
                           stroke="currentColor"
                           strokeWidth="1.5"
                           strokeLinecap="round"
+                        />
+                      </svg>
+                    ),
+                  },
+                  {
+                    id: "monetize",
+                    label: "광고·꾸미기 (준비 중)",
+                    hint: adPreview.enabled
+                      ? "슬롯 미리보기 켜짐"
+                      : "슬롯 · 스킨 훅",
+                    onClick: () => setPanel("monetize"),
+                    icon: (
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                        <rect
+                          x="4.5"
+                          y="6.5"
+                          width="15"
+                          height="11"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                        />
+                        <path
+                          d="M8 12h8M10 9.5h4"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="square"
                         />
                       </svg>
                     ),
@@ -484,6 +521,57 @@ export function SettingsSheet({
                   />
                 </button>
               </div>
+            </div>
+          ) : null}
+
+          {panel === "monetize" ? (
+            <div className="px-2" data-monetize-settings>
+              <p className="px-1 py-3 text-[13px] leading-relaxed text-neutral-200">
+                광고는 전장 주변(게이트·사이드보드·피드 사이)만.
+                지지·%·타이머·TOP 본문·티어 부스트는 없습니다. 꾸미기는
+                코스메틱만 · 승패 무관.
+              </p>
+              <div className="flex items-center justify-between gap-3 border-b border-neutral-800 py-3.5">
+                <div className="min-w-0">
+                  <p className="text-[14px] text-white">광고 슬롯 미리보기</p>
+                  <p className="mt-0.5 text-[12px] text-neutral-200">
+                    Sponsored 자리만 표시 · SDK 없음
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={adPreview.enabled}
+                  aria-label="광고 슬롯 미리보기"
+                  onClick={() => {
+                    const next = saveAdPreviewPrefs({
+                      enabled: !adPreview.enabled,
+                    });
+                    setAdPreview(next);
+                    onToast?.(
+                      next.enabled
+                        ? "광고 슬롯 미리보기를 켰습니다"
+                        : "광고 슬롯 미리보기를 껐습니다",
+                    );
+                  }}
+                  className={`relative h-7 w-12 shrink-0 border transition-colors ${
+                    adPreview.enabled
+                      ? "border-white bg-white"
+                      : "border-neutral-600 bg-neutral-900"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 size-5 border border-neutral-800 bg-black transition-[left] ${
+                      adPreview.enabled ? "left-[1.35rem]" : "left-0.5"
+                    }`}
+                  />
+                </button>
+              </div>
+              <p className="mt-4 px-1 text-[12px] leading-relaxed text-neutral-200">
+                스킨·상점 UI는 준비 중. 프로필·공유 카드는{" "}
+                <span className="text-white">cosmetics</span> 필드만
+                읽습니다 (기본 B&W).
+              </p>
             </div>
           ) : null}
 

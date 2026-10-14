@@ -59,6 +59,8 @@ export const PROFILE_GAMER: UserProfileType = withResolvedTier({
     createDailyTitle("10.12", "SPEAR"),
     createDailyTitle("09.30", "VICTOR"),
   ],
+  /** 기본 B&W — 스킨 UI 없음 */
+  cosmetics: {},
 });
 
 /** 성향 — 흑(도전자)·백(방어자) 참여·승패·지지 비율 목 */

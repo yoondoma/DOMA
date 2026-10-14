@@ -2,9 +2,12 @@
 
 import html2canvas from "html2canvas";
 import { useRef, useState } from "react";
+import { AdSlot } from "@/components/AdSlot";
 import { DomaMark } from "@/components/DomaMark";
 import { DomaWordmark } from "@/components/DomaWordmark";
 import { TierBadge } from "@/components/gamification/TierBadge";
+import { PROFILE_GAMER } from "@/lib/profile-mock";
+import { resolveCosmetics } from "@/lib/types/cosmetics";
 import type {
   DailyTitle,
   DailyTitleType,
@@ -108,6 +111,8 @@ export function ViralShareCard({
 
   const stamp = stampForTitle(payload.title.type);
   const fileBase = `doma-viral-${payload.title.date.replace(".", "")}-${ratio}`;
+  const cosmetics = resolveCosmetics(PROFILE_GAMER.cosmetics);
+  const verdictTheme = cosmetics.verdictTheme ?? "bw";
 
   const capture = async (mode: "download" | "copy" | "share") => {
     if (!cardRef.current || busy) return;
@@ -219,6 +224,7 @@ export function ViralShareCard({
       <div className="flex flex-1 items-center justify-center overflow-auto px-4 pb-4">
         <div
           ref={cardRef}
+          data-verdict-theme={verdictTheme}
           className={`relative w-full max-w-[340px] overflow-hidden border border-neutral-200 bg-black text-white ${
             ratio === "square" ? "aspect-square" : "aspect-[9/16] max-h-[72dvh]"
           }`}
@@ -275,6 +281,7 @@ export function ViralShareCard({
               <p className="text-[9px] tracking-[0.28em] text-neutral-600">
                 domakr
               </p>
+              <AdSlot id="verdict_card_footer" className="mt-2 border-x-0" />
             </div>
           </div>
         </div>
