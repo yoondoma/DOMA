@@ -323,7 +323,16 @@ export function DomaHome() {
           onOpenHistory={() => setCalendarOpen(true)}
           onOpenSearch={() => setSearchOpen(true)}
           onOpenSettings={() => setSettingsOpen(true)}
-          trailing={navTab === "profile" ? "settings" : "search"}
+          tab={
+            navTab === "compose"
+              ? "home"
+              : (navTab as "home" | "messages" | "alerts" | "profile")
+          }
+          profileLabel={
+            navTab === "profile"
+              ? editableProfile.handle || editableProfile.name
+              : undefined
+          }
           surface={homeSurface}
           onSurfaceChange={
             navTab === "home"

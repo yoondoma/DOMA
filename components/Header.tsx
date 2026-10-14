@@ -1,25 +1,31 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { DomaWordmark } from "@/components/DomaWordmark";
 
 export type HomeSurface = "today" | "tomorrow";
 
+/** 하단 탭에 대응하는 헤더 슬롯 모드 (+ 제외) */
+export type HeaderTab = "home" | "messages" | "alerts" | "profile";
+
 type HeaderProps = {
-  /** @deprecated 헤더 타이머 제거 — 전장 카운트다운만 사용. 호환용 유지 */
+  /** @deprecated 헤더 타이머 제거 — 호환용 유지 */
   endsAt?: string;
-  /** 방어자 탭일 때 흰 톤 */
+  /** 방어자 탭일 때 흰 톤 (홈만) */
   tone?: "dark" | "light";
   refreshing?: boolean;
   onRefresh?: () => void;
   onOpenHistory?: () => void;
   onOpenSearch?: () => void;
-  /** 본인 프로필 탭 — 검색 대신 설정 */
   onOpenSettings?: () => void;
-  /** 우측 액션: 기본 검색 · 프로필=설정 */
+  /** @deprecated tab으로 대체 */
   trailing?: "search" | "settings";
-  /** 오늘 아레나 | 내일 필드 — 1급 전환 */
   surface?: HomeSurface;
   onSurfaceChange?: (surface: HomeSurface) => void;
+  /** 하단 탭 — 슬롯 내용만 교체 */
+  tab?: HeaderTab;
+  /** 프로필 탭 중앙 라벨 (핸들 우선) */
+  profileLabel?: string;
 };
 
 function CalendarIcon() {
@@ -83,9 +89,28 @@ function SettingsIcon() {
   );
 }
 
+/** 좌·우 슬롯 폭 고정 (비어 있어도 size-10) */
+function Slot({
+  children,
+  className = "",
+}: {
+  children?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`flex size-10 shrink-0 items-center justify-center ${className}`}
+    >
+      {children ?? <span className="size-10" aria-hidden />}
+    </div>
+  );
+}
+
 /**
- * 왼쪽 달력 · 중앙 DOMA 워드마크 · 오른쪽 검색
- * 마크 심볼·헤더 타이머 없음 (판결 카운트다운은 전장 본문만)
+ * 탭별 상단 헤더 슬롯
+ * 홈: 달력 · DOMA KR · 검색 (+ 오늘|내일)
+ * 메시지/알림: — · 타이틀 · —
+ * 프로필: — · 핸들 · 설정
  */
 export function Header({
   tone = "dark",
@@ -94,11 +119,37 @@ export function Header({
   onOpenHistory,
   onOpenSearch,
   onOpenSettings,
-  trailing = "search",
   surface = "today",
   onSurfaceChange,
+  tab = "home",
+  profileLabel,
 }: HeaderProps) {
-  const light = tone === "light";
+  const home = tab === "home";
+  const light = home && tone === "light";
+  const ink = light ? "text-black" : "text-white";
+  const muted = light ? "text-neutral-500" : "text-muted";
+
+  const centerKey =
+    tab === "home"
+      ? "logo"
+      : tab === "profile"
+        ? `profile:${profileLabel ?? ""}`
+        : tab;
+
+  const centerTitle =
+    tab === "messages"
+      ? "메시지"
+      : tab === "alerts"
+        ? "알림"
+        : tab === "profile"
+          ? profileLabel
+            ? profileLabel.startsWith("@")
+              ? profileLabel
+              : `@${profileLabel}`
+            : "프로필"
+          : null;
+
+  const showSurface = home && Boolean(onSurfaceChange);
 
   return (
     <header
@@ -108,70 +159,80 @@ export function Header({
           : "border-white/12 bg-black/92"
       }`}
     >
-      <div className="relative mx-auto flex max-w-[560px] items-center px-3 py-2.5">
-        <button
-          type="button"
-          onClick={onOpenHistory}
-          className={`flex size-10 shrink-0 items-center justify-center ${
-            light ? "text-black" : "text-white"
-          }`}
-          aria-label="전투 기록"
-        >
-          <CalendarIcon />
-        </button>
-
-        <div className="flex min-w-0 flex-1 flex-col items-center justify-center">
-          <button
-            type="button"
-            onClick={onRefresh}
-            disabled={refreshing}
-            aria-label="새로고침"
-            aria-busy={refreshing || undefined}
-            className={refreshing ? "logo-refresh" : undefined}
-          >
-            <h1 className="leading-none">
-              <DomaWordmark size="md" light={light} />
-            </h1>
-          </button>
-          {refreshing ? (
-            <span
-              className={`mt-1 text-[10px] tracking-[0.14em] ${
-                light ? "text-neutral-500" : "text-muted"
-              }`}
+      <div className="relative mx-auto flex h-14 max-w-[560px] items-center px-3">
+        {/* LEFT */}
+        <Slot>
+          {home ? (
+            <button
+              type="button"
+              onClick={onOpenHistory}
+              className={`flex size-10 items-center justify-center ${ink}`}
+              aria-label="전투 기록"
             >
+              <CalendarIcon />
+            </button>
+          ) : null}
+        </Slot>
+
+        {/* CENTER */}
+        <div className="flex min-w-0 flex-1 flex-col items-center justify-center">
+          <div key={centerKey} className="header-slot-fade">
+            {home ? (
+              <button
+                type="button"
+                onClick={onRefresh}
+                disabled={refreshing}
+                aria-label="새로고침"
+                aria-busy={refreshing || undefined}
+                className={refreshing ? "logo-refresh" : undefined}
+              >
+                <h1 className="leading-none">
+                  <DomaWordmark size="md" light={light} />
+                </h1>
+              </button>
+            ) : (
+              <h1
+                className={`truncate px-2 font-[family-name:var(--font-syne)] text-[17px] font-bold tracking-tight ${ink}`}
+              >
+                {centerTitle}
+              </h1>
+            )}
+          </div>
+          {home && refreshing ? (
+            <span className={`mt-0.5 text-[10px] tracking-[0.14em] ${muted}`}>
               업데이트 중
             </span>
           ) : null}
         </div>
 
-        {trailing === "settings" ? (
-          <button
-            type="button"
-            onClick={onOpenSettings}
-            className={`flex size-10 shrink-0 items-center justify-center ${
-              light ? "text-black" : "text-white"
-            }`}
-            aria-label="설정"
-          >
-            <SettingsIcon />
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={onOpenSearch}
-            className={`flex size-10 shrink-0 items-center justify-center ${
-              light ? "text-black" : "text-white"
-            }`}
-            aria-label="검색"
-          >
-            <SearchIcon />
-          </button>
-        )}
+        {/* RIGHT */}
+        <Slot>
+          {home ? (
+            <button
+              type="button"
+              onClick={onOpenSearch}
+              className={`flex size-10 items-center justify-center ${ink}`}
+              aria-label="검색"
+            >
+              <SearchIcon />
+            </button>
+          ) : tab === "profile" ? (
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              className={`flex size-10 items-center justify-center ${ink}`}
+              aria-label="설정"
+            >
+              <SettingsIcon />
+            </button>
+          ) : null}
+        </Slot>
       </div>
 
-      {onSurfaceChange ? (
+      {/* 오늘|내일 — 홈 전용 */}
+      {showSurface ? (
         <div
-          className={`mx-auto grid max-w-[560px] grid-cols-2 border-t ${
+          className={`mx-auto grid h-10 max-w-[560px] grid-cols-2 border-t ${
             light ? "border-black/10" : "border-white/10"
           }`}
           role="tablist"
@@ -181,8 +242,8 @@ export function Header({
             type="button"
             role="tab"
             aria-selected={surface === "today"}
-            onClick={() => onSurfaceChange("today")}
-            className={`py-2 text-[12px] font-bold tracking-[0.14em] ${
+            onClick={() => onSurfaceChange?.("today")}
+            className={`text-[12px] font-bold tracking-[0.14em] ${
               surface === "today"
                 ? light
                   ? "border-b-2 border-black text-black"
@@ -196,8 +257,8 @@ export function Header({
             type="button"
             role="tab"
             aria-selected={surface === "tomorrow"}
-            onClick={() => onSurfaceChange("tomorrow")}
-            className={`py-2 text-[12px] font-bold tracking-[0.14em] ${
+            onClick={() => onSurfaceChange?.("tomorrow")}
+            className={`text-[12px] font-bold tracking-[0.14em] ${
               surface === "tomorrow"
                 ? light
                   ? "border-b-2 border-black text-black"

@@ -97,12 +97,6 @@ export function NotificationsScreen({
       className="mx-auto max-w-[560px] bg-black text-white"
       aria-label="알림"
     >
-      <div className="border-b border-white/15 px-4 py-3">
-        <h2 className="font-[family-name:var(--font-syne)] text-[17px] font-bold tracking-tight">
-          알림
-        </h2>
-      </div>
-
       {uiDemo === "loading" ? (
         <StatusBlock kind="loading" message="불러오는 중" />
       ) : uiDemo === "error" ? (

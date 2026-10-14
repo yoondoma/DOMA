@@ -221,14 +221,7 @@ export function MessagesScreen({
       aria-label="메시지"
     >
       {!open ? (
-        <>
-          <div className="border-b border-white/15 px-4 py-3">
-            <h2 className="font-[family-name:var(--font-syne)] text-[17px] font-bold tracking-tight">
-              메시지
-            </h2>
-          </div>
-          <ThreadList onOpen={setOpen} uiDemo={uiDemo} onRetry={onRetry} />
-        </>
+        <ThreadList onOpen={setOpen} uiDemo={uiDemo} onRetry={onRetry} />
       ) : (
         <ChatView
           thread={open}
