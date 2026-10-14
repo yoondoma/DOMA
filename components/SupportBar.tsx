@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { ShieldMark, SpearMark } from "@/components/SideMarks";
 import type { Side } from "@/lib/types";
 
@@ -39,7 +40,7 @@ function CrackDivider() {
   );
 }
 
-/** 셸 하단 독 — BottomNav 바로 위 (fixed 아님 · 뷰포트에 항상 노출) */
+/** 셸 하단 독 — 지지 · 돌격/방어 보조 카피 · 짧은 충격 피드백 */
 export function SupportBar({
   nexusPercent,
   aegisPercent,
@@ -48,20 +49,30 @@ export function SupportBar({
   joined,
   onJoin,
 }: SupportBarProps) {
+  const [flash, setFlash] = useState<Side | null>(null);
+
+  const strike = (side: Side) => {
+    setFlash(side);
+    window.setTimeout(() => setFlash(null), 280);
+    onJoin(side);
+  };
+
   return (
     <div
       className="relative z-[45] w-full shrink-0 border-t border-white/20"
       aria-label="진영 지지"
+      data-support-bar
     >
       <div className="relative mx-auto flex min-h-[84px] max-w-[560px] overflow-hidden">
         <CrackDivider />
         <button
           type="button"
-          onClick={() => onJoin("NEXUS")}
+          onClick={() => strike("NEXUS")}
           aria-label="도전자 진영 지지"
+          data-support-side="NEXUS"
           className={`relative flex flex-1 flex-col items-start justify-center gap-0.5 bg-black px-3 py-2.5 text-left text-white ${
             joined === "NEXUS" ? "opacity-100" : "active:opacity-80"
-          }`}
+          } ${flash === "NEXUS" ? "support-strike-nexus" : ""}`}
           style={{ flexBasis: `${nexusPercent}%` }}
         >
           <span className="inline-flex items-center gap-1.5">
@@ -70,7 +81,9 @@ export function SupportBar({
               {nexusPercent}%
             </span>
           </span>
-          <span className="text-[11px] font-medium">도전자 진영 지지</span>
+          <span className="text-[11px] font-medium tracking-[0.04em]">
+            지지 · 돌격
+          </span>
           <span className="text-[10px] text-muted">
             {joined === "NEXUS" ? "참전 중 · " : ""}
             {nexusVotes.toLocaleString("ko-KR")}명
@@ -78,11 +91,12 @@ export function SupportBar({
         </button>
         <button
           type="button"
-          onClick={() => onJoin("AEGIS")}
+          onClick={() => strike("AEGIS")}
           aria-label="방어자 진영 지지"
+          data-support-side="AEGIS"
           className={`relative flex flex-1 flex-col items-end justify-center gap-0.5 bg-white px-3 py-2.5 text-right text-black ${
             joined === "AEGIS" ? "opacity-100" : "active:opacity-80"
-          }`}
+          } ${flash === "AEGIS" ? "support-strike-aegis" : ""}`}
           style={{ flexBasis: `${aegisPercent}%` }}
         >
           <span className="inline-flex items-center gap-1.5">
@@ -91,7 +105,9 @@ export function SupportBar({
             </span>
             <ShieldMark size={15} />
           </span>
-          <span className="text-[11px] font-medium">방어자 진영 지지</span>
+          <span className="text-[11px] font-medium tracking-[0.04em]">
+            지지 · 방어
+          </span>
           <span className="text-[10px] text-neutral-500">
             {joined === "AEGIS" ? "참전 중 · " : ""}
             {aegisVotes.toLocaleString("ko-KR")}명

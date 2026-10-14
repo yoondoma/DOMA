@@ -6,6 +6,7 @@ import { SafetyMenu } from "@/components/SafetyMenu";
 import { StatusBlock } from "@/components/StatusBlock";
 import { TrojanMark } from "@/components/TrojanMark";
 import {
+  TierAvatarFrame,
   TierBadge,
   UserProfileCard,
   ViralShareCard,
@@ -186,13 +187,12 @@ export function ProfileScreen({
                 <TrojanMark count={profileTrojan} />
               </p>
             </div>
-            <div
-              className="flex size-14 shrink-0 items-center justify-center border border-neutral-200 text-[18px] font-bold tracking-wide"
-              aria-hidden
-              data-cosmetic-frame={frameId}
+            <TierAvatarFrame
+              tier={gamer.currentTier.code}
+              className="text-[18px] font-bold tracking-wide text-white"
             >
-              {display.avatarChar}
-            </div>
+              <span data-cosmetic-frame={frameId}>{display.avatarChar}</span>
+            </TierAvatarFrame>
           </div>
 
           <p className="mt-4 text-[14px] leading-[1.55] text-white">

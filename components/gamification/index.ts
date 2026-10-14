@@ -1,5 +1,9 @@
 export { DailyTitleStamp } from "@/components/gamification/DailyTitleStamp";
 export { TierBadge, isInvertedTier } from "@/components/gamification/TierBadge";
+export {
+  TierAvatarFrame,
+  TierEmblem,
+} from "@/components/gamification/TierEmblem";
 export { UserProfileCard } from "@/components/gamification/UserProfileCard";
 export {
   ViralShareCard,

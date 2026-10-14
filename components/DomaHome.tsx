@@ -248,7 +248,9 @@ export function DomaHome() {
       return next;
     });
     showToast(
-      side === "NEXUS" ? "도전자 진영에 참전했습니다" : "방어자 진영에 참전했습니다",
+      side === "NEXUS"
+        ? "지지 · 돌격 — 도전자 진영"
+        : "지지 · 방어 — 방어자 진영",
     );
   };
 
@@ -522,6 +524,8 @@ export function DomaHome() {
               opinions={feedOpinions}
               view={arenaView}
               shellLight={lightShell}
+              nexusPercent={nexusPercent}
+              aegisPercent={aegisPercent}
               onChangeView={(v) => {
                 setArenaView(v);
                 if (v === "intro") setFocusOpinionId(null);

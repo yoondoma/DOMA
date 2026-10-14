@@ -10,6 +10,8 @@ import {
 } from "react";
 import { DiscoverStrip } from "@/components/DiscoverStrip";
 import { OpinionSocial } from "@/components/OpinionSocial";
+import { VsCard } from "@/components/VsCard";
+import { WarTicker } from "@/components/WarTicker";
 import { LEFT_USER_LABEL } from "@/lib/account-display";
 import type { ContextualSharePayload } from "@/lib/contextual-share";
 import type { DiscoverItem } from "@/lib/discover-mock";
@@ -145,6 +147,9 @@ type ArenaBarProps = {
   onChangeView: (view: ArenaView) => void;
   /** 셸 톤 = 지금 보고 있는 진영 (도전=블랙 · 방어=화이트) */
   shellLight: boolean;
+  /** 실시간 지지율 — VS 카드 */
+  nexusPercent?: number;
+  aegisPercent?: number;
   focusOpinionId?: string | null;
   uiDemo?: UiDemo;
   onRetry?: () => void;
@@ -475,6 +480,8 @@ function BattlefieldIntro({
   onOpenShareCard,
   onDiscoverSelect,
   light,
+  nexusPercent,
+  aegisPercent,
 }: {
   arena: ArenaState;
   champion: Opinion | null;
@@ -486,6 +493,8 @@ function BattlefieldIntro({
   onOpenShareCard?: (payload: ContextualSharePayload) => void;
   onDiscoverSelect?: (item: DiscoverItem) => void;
   light: boolean;
+  nexusPercent: number;
+  aegisPercent: number;
 }) {
   const timer = useTimerUrgency(arena.endsAt);
 
@@ -551,8 +560,23 @@ function BattlefieldIntro({
         >
           {formatKstTodayImmersion()}
         </p>
-        {/* 좋아요/진영이동 HUD — 접힌 첫 화면에서는 숨김 · 진영 펼침(sticky)에서만 */}
+        {/* 얇은 VS 기하 — 타이머 아래 · 주제 위 */}
+        <p
+          className={`mt-3 inline-flex items-center gap-2 text-[10px] font-bold tracking-[0.22em] ${
+            light ? "text-black/45" : "text-white/45"
+          }`}
+          aria-hidden
+          data-vs-emblem
+        >
+          <span className="bg-black px-1.5 py-0.5 text-white">도전</span>
+          <span>VS</span>
+          <span className="bg-white px-1.5 py-0.5 text-black ring-1 ring-black/25">
+            방어
+          </span>
+        </p>
       </div>
+
+      <WarTicker light={light} />
 
       {/* 오늘의 전장 — 주제 본문 */}
       <div
@@ -629,6 +653,12 @@ function BattlefieldIntro({
           </button>
         ) : null}
       </div>
+
+      <VsCard
+        nexusPercent={nexusPercent}
+        aegisPercent={aegisPercent}
+        light={light}
+      />
 
       {/* 최고 전투글 — 진영 진입 전 첫 화면에서 본문까지 보이게 */}
       <div
@@ -786,6 +816,8 @@ export function ArenaBar({
   view,
   onChangeView,
   shellLight,
+  nexusPercent = arena.nexusPercent,
+  aegisPercent = arena.aegisPercent,
   focusOpinionId = null,
   uiDemo = "normal",
   onRetry,
@@ -925,6 +957,8 @@ export function ArenaBar({
             onOpenShareCard={onOpenShareCard}
             onDiscoverSelect={onDiscoverSelect}
             light={light}
+            nexusPercent={nexusPercent}
+            aegisPercent={aegisPercent}
           />
         </div>
       </section>
@@ -995,6 +1029,13 @@ export function ArenaBar({
           </p>
           <RulesHud light={light} className="mt-2.5" />
         </div>
+
+        <VsCard
+          nexusPercent={nexusPercent}
+          aegisPercent={aegisPercent}
+          compact
+          light={light}
+        />
 
         <div
           className={`grid grid-cols-2 border-b ${

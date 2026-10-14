@@ -411,3 +411,66 @@ body {
 .status-pulse {
   animation: status-pulse 1.2s ease-in-out infinite;
 }
+
+/* 전황 티커 — 얇은 마키 · 주제 압도 금지 */
+.war-ticker {
+  overflow: hidden;
+}
+
+.war-ticker-track {
+  width: max-content;
+  animation: war-ticker-scroll 42s linear infinite;
+}
+
+@keyframes war-ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .war-ticker-track {
+    animation: none;
+  }
+}
+
+/* 지지 충격 — 짧은 스케일 + 1프레임 강조 · 파티클 없음 */
+@keyframes support-strike-n {
+  0% {
+    transform: scale(1);
+    filter: none;
+  }
+  35% {
+    transform: scale(0.985);
+    box-shadow: inset 0 0 0 2px #e10600;
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: none;
+  }
+}
+
+@keyframes support-strike-a {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(0.985);
+    box-shadow: inset 0 0 0 2px #0a0a0a;
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: none;
+  }
+}
+
+.support-strike-nexus {
+  animation: support-strike-n 280ms ease-out;
+}
+
+.support-strike-aegis {
+  animation: support-strike-a 280ms ease-out;
+}
