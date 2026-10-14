@@ -42,18 +42,25 @@ export function useSession(): {
   }, [snap]);
 }
 
-/** 홈/피드용 UI Opinion[] */
+/** 홈/피드용 UI Opinion[] — 차단 유저 글 제외 */
 export function useUiOpinions(dayId?: string): UiOpinion[] {
   const snap = useDomaStore();
   return useMemo(() => {
-    const ops = dayId
+    const sid = snap.session?.userId;
+    const blocked = new Set(
+      (snap.blocks ?? [])
+        .filter((b) => b.blockerId === sid)
+        .map((b) => b.blockedId),
+    );
+    const ops = (dayId
       ? snap.opinions.filter((o) => o.dayId === dayId)
-      : snap.opinions.filter((o) => o.dayId === snap.clock.dayId);
+      : snap.opinions.filter((o) => o.dayId === snap.clock.dayId)
+    ).filter((o) => !blocked.has(o.authorId));
     return toUiOpinions(
       ops,
       snap.users,
       snap.likes,
-      snap.session?.userId ?? null,
+      sid ?? null,
     );
   }, [snap, dayId]);
 }

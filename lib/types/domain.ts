@@ -91,6 +91,32 @@ export type Reply = {
   createdAtUtc: string;
 };
 
+/** 차단 — blocker가 blocked를 숨김 */
+export type Block = {
+  id: string;
+  blockerId: string;
+  blockedId: string;
+  createdAtUtc: string;
+};
+
+export type ReportTargetKind = "opinion" | "user" | "reply";
+
+export type ReportReason =
+  | "spam"
+  | "harassment"
+  | "misinfo";
+
+/** 신고 (목업 수집) */
+export type Report = {
+  id: string;
+  reporterId: string;
+  targetKind: ReportTargetKind;
+  targetId: string;
+  reason: ReportReason;
+  note?: string;
+  createdAtUtc: string;
+};
+
 /** 종료·확정된 하루 전장 (달력/전과) */
 export type BattleDay = {
   dayId: DayId;

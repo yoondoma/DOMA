@@ -52,6 +52,11 @@ export function FollowListScreen({
         bio: u.bio,
       }));
     }
+    const blocked = new Set(
+      (snap.blocks ?? [])
+        .filter((b) => b.blockerId === me?.id)
+        .map((b) => b.blockedId),
+    );
     const ids = new Set(
       snap.follows
         .filter((f) =>
@@ -59,7 +64,8 @@ export function FollowListScreen({
             ? f.followerId === profileUserId
             : f.followeeId === profileUserId,
         )
-        .map((f) => (mode === "following" ? f.followeeId : f.followerId)),
+        .map((f) => (mode === "following" ? f.followeeId : f.followerId))
+        .filter((id) => !blocked.has(id)),
     );
     const rows = snap.users.filter((u) => ids.has(u.id));
     if (rows.length > 0) {
@@ -76,7 +82,16 @@ export function FollowListScreen({
       displayName: u.name,
       bio: u.bio,
     }));
-  }, [uiDemo, profileUserId, mode, legacyUsers, snap.follows, snap.users]);
+  }, [
+    uiDemo,
+    profileUserId,
+    mode,
+    legacyUsers,
+    snap.follows,
+    snap.users,
+    snap.blocks,
+    me?.id,
+  ]);
 
   if (!open) return null;
   const title = mode === "following" ? "팔로잉" : "팔로워";

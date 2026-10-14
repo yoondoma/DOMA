@@ -1,10 +1,12 @@
 import type {
   BattleDay,
+  Block,
   Camp,
   Follow,
   Like,
   Opinion,
   Reply,
+  Report,
   Session,
   TimelineClock,
   TopicCandidate,
@@ -31,6 +33,8 @@ export type StoreSnapshot = {
   follows: Follow[];
   likes: Like[];
   replies: Reply[];
+  blocks: Block[];
+  reports: Report[];
   battleDays: BattleDay[];
   arenaMeta: ArenaMeta;
 };

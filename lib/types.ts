@@ -11,6 +11,7 @@ export type Opinion = {
   id: string;
   side: Side;
   author: string;
+  authorId?: string;
   text: string;
   likes: number;
   replies?: number;

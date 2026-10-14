@@ -76,8 +76,14 @@ export function OpinionSocial({
 
   const thread = useMemo(() => {
     const users = new Map(snap.users.map((u) => [u.id, u]));
+    const sid = snap.session?.userId;
+    const blocked = new Set(
+      (snap.blocks ?? [])
+        .filter((b) => b.blockerId === sid)
+        .map((b) => b.blockedId),
+    );
     return snap.replies
-      .filter((r) => r.opinionId === opinionId)
+      .filter((r) => r.opinionId === opinionId && !blocked.has(r.authorId))
       .map((r) => ({
         ...r,
         handle: users.get(r.authorId)?.handle ?? "user",

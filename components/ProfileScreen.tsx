@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { FollowListScreen } from "@/components/FollowListScreen";
+import { SafetyMenu } from "@/components/SafetyMenu";
 import { StatusBlock } from "@/components/StatusBlock";
 import {
   TierBadge,
@@ -125,9 +126,19 @@ export function ProfileScreen({
           ) : null}
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <h2 className="font-[family-name:var(--font-syne)] text-[22px] font-bold leading-none tracking-tight">
-                {display.name}
-              </h2>
+              <div className="flex items-start gap-2">
+                <h2 className="font-[family-name:var(--font-syne)] text-[22px] font-bold leading-none tracking-tight">
+                  {display.name}
+                </h2>
+                {!isSelf && profileUser ? (
+                  <SafetyMenu
+                    userId={profileUser.id}
+                    reportKind="user"
+                    reportTargetId={profileUser.id}
+                    onToast={showToast}
+                  />
+                ) : null}
+              </div>
               <p className="mt-1.5 text-[14px] text-neutral-200">
                 @{display.handle}
               </p>

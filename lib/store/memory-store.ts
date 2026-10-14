@@ -2,21 +2,27 @@
 
 import { resolveTimelineClock } from "@/lib/kst";
 import type {
+  Block,
   Camp,
   DayId,
   Follow,
   Like,
   Opinion,
   Reply,
+  Report,
+  ReportReason,
+  ReportTargetKind,
   Session,
   TopicCandidate,
   User,
 } from "@/lib/types/domain";
 import {
+  makeBlockId,
   makeFollowId,
   makeLikeId,
   makeOpinionId,
   makeReplyId,
+  makeReportId,
   makeSessionId,
   makeTopicCandidateId,
 } from "@/lib/types/ids";
@@ -35,6 +41,17 @@ function clone<T>(v: T): T {
   return structuredClone(v);
 }
 
+function normalizeSnap(parsed: StoreSnapshot): StoreSnapshot {
+  return {
+    ...parsed,
+    blocks: parsed.blocks ?? [],
+    reports: parsed.reports ?? [],
+    likes: parsed.likes ?? [],
+    replies: parsed.replies ?? [],
+    follows: parsed.follows ?? [],
+  };
+}
+
 function loadPersisted(): StoreSnapshot | null {
   if (typeof window === "undefined") return null;
   try {
@@ -42,7 +59,7 @@ function loadPersisted(): StoreSnapshot | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as StoreSnapshot;
     if (parsed?.version !== 1) return null;
-    return parsed;
+    return normalizeSnap(parsed);
   } catch {
     return null;
   }
@@ -489,6 +506,81 @@ class MemoryStore {
       this.snap.follows.filter((f) => f.followeeId === uid).map((f) => f.followerId),
     );
     return this.snap.users.filter((u) => ids.has(u.id));
+  }
+
+  /** 세션이 차단한 userId 집합 */
+  blockedUserIds(): Set<string> {
+    const sid = this.snap.session?.userId;
+    if (!sid) return new Set();
+    return new Set(
+      this.snap.blocks
+        .filter((b) => b.blockerId === sid)
+        .map((b) => b.blockedId),
+    );
+  }
+
+  isBlocked(userId: string): boolean {
+    return this.blockedUserIds().has(userId);
+  }
+
+  blockUser(blockedId: string): Block {
+    const next = clone(this.snap);
+    if (!next.session) throw new Error("SESSION_REQUIRED");
+    const blockerId = next.session.userId;
+    if (blockerId === blockedId) throw new Error("CANNOT_BLOCK_SELF");
+    const id = makeBlockId(blockerId, blockedId);
+    const existing = next.blocks.find((b) => b.id === id);
+    if (existing) return existing;
+    const row: Block = {
+      id,
+      blockerId,
+      blockedId,
+      createdAtUtc: new Date().toISOString(),
+    };
+    next.blocks = [...next.blocks, row];
+    // 맞팔 정리
+    next.follows = next.follows.filter(
+      (f) =>
+        !(
+          (f.followerId === blockerId && f.followeeId === blockedId) ||
+          (f.followerId === blockedId && f.followeeId === blockerId)
+        ),
+    );
+    this.commit(next);
+    return row;
+  }
+
+  unblockUser(blockedId: string): boolean {
+    const next = clone(this.snap);
+    if (!next.session) throw new Error("SESSION_REQUIRED");
+    const id = makeBlockId(next.session.userId, blockedId);
+    const before = next.blocks.length;
+    next.blocks = next.blocks.filter((b) => b.id !== id);
+    if (next.blocks.length === before) return false;
+    this.commit(next);
+    return true;
+  }
+
+  reportTarget(input: {
+    targetKind: ReportTargetKind;
+    targetId: string;
+    reason: ReportReason;
+    note?: string;
+  }): Report {
+    const next = clone(this.snap);
+    if (!next.session) throw new Error("SESSION_REQUIRED");
+    const row: Report = {
+      id: makeReportId(),
+      reporterId: next.session.userId,
+      targetKind: input.targetKind,
+      targetId: input.targetId,
+      reason: input.reason,
+      note: input.note,
+      createdAtUtc: new Date().toISOString(),
+    };
+    next.reports = [...next.reports, row];
+    this.commit(next);
+    return row;
   }
 
   /** 목: 지지율 소폭 흔들림 */

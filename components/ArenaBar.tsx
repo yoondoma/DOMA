@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { OpinionSocial } from "@/components/OpinionSocial";
+import { SafetyMenu } from "@/components/SafetyMenu";
 import { StatusBlock } from "@/components/StatusBlock";
 import { ShieldMark, SideBadge, SpearMark } from "@/components/SideMarks";
 import { BATTLE_HISTORY } from "@/lib/battle-history";
@@ -127,6 +128,14 @@ function OpinionRow({
             <SideBadge side={op.side} />
           </div>
         </div>
+        {op.authorId ? (
+          <SafetyMenu
+            userId={op.authorId}
+            reportKind="opinion"
+            reportTargetId={op.id}
+            light={light}
+          />
+        ) : null}
       </div>
       <p
         className={`line-clamp-2 pl-10 text-[13px] leading-[1.4] ${
@@ -521,13 +530,21 @@ export function ArenaBar({
                     <div className="mb-1.5 flex items-center gap-2">
                       <SmallAvatar name={top.author} light={light} />
                       <span
-                        className={`truncate text-[13px] font-semibold ${
+                        className={`min-w-0 flex-1 truncate text-[13px] font-semibold ${
                           light ? "text-black" : "text-white"
                         }`}
                       >
                         @{top.author}
                       </span>
                       <SideBadge side={top.side} />
+                      {top.authorId ? (
+                        <SafetyMenu
+                          userId={top.authorId}
+                          reportKind="opinion"
+                          reportTargetId={top.id}
+                          light={light}
+                        />
+                      ) : null}
                     </div>
                     <p
                       className={`line-clamp-3 font-[family-name:var(--font-syne)] text-[14px] leading-[1.45] ${

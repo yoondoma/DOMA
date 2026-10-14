@@ -9,6 +9,8 @@ export const ID = {
   follow: "fol",
   like: "lk",
   reply: "rp",
+  block: "blk",
+  report: "rpt",
 } as const;
 
 function stamp(): string {
@@ -48,6 +50,14 @@ export function makeLikeId(
 
 export function makeReplyId(opinionId: string): string {
   return `${ID.reply}_${opinionId}_${stamp()}`;
+}
+
+export function makeBlockId(blockerId: string, blockedId: string): string {
+  return `${ID.block}_${blockerId}_${blockedId}`;
+}
+
+export function makeReportId(): string {
+  return `${ID.report}_${stamp()}`;
 }
 
 /** UI Side ↔ Camp */

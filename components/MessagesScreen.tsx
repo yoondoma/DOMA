@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { StatusBlock } from "@/components/StatusBlock";
+import { SafetyMenu } from "@/components/SafetyMenu";
 import {
   CHAT_BY_THREAD,
   MESSAGE_THREADS,
   type MessageThread,
   type SocialProfile,
 } from "@/lib/social-mock";
+import { useDomaStore } from "@/lib/store";
+import { userIdFromHandle } from "@/lib/types/ids";
 import type { UiDemo } from "@/lib/ui-demo";
 
 function Avatar({ name }: { name: string }) {
@@ -30,6 +33,23 @@ function ThreadList({
   uiDemo: UiDemo;
   onRetry?: () => void;
 }) {
+  const snap = useDomaStore();
+  const threads = useMemo(() => {
+    if (uiDemo === "empty") return [];
+    const sid = snap.session?.userId;
+    const blocked = new Set(
+      (snap.blocks ?? [])
+        .filter((b) => b.blockerId === sid)
+        .map((b) => b.blockedId),
+    );
+    return MESSAGE_THREADS.filter((t) => {
+      const uid =
+        snap.users.find((u) => u.handle === t.handle)?.id ??
+        userIdFromHandle(t.handle);
+      return !blocked.has(uid);
+    });
+  }, [snap, uiDemo]);
+
   if (uiDemo === "loading") {
     return <StatusBlock kind="loading" message="불러오는 중" />;
   }
@@ -43,7 +63,7 @@ function ThreadList({
       />
     );
   }
-  if (MESSAGE_THREADS.length === 0 || uiDemo === "empty") {
+  if (threads.length === 0) {
     return (
       <StatusBlock kind="empty" message="아직 대화가 없습니다." />
     );
@@ -51,7 +71,7 @@ function ThreadList({
 
   return (
     <ul aria-label="메시지 목록">
-      {MESSAGE_THREADS.map((t) => (
+      {threads.map((t) => (
         <li key={t.id}>
           <button
             type="button"
@@ -105,6 +125,13 @@ function ChatView({
   onBack: () => void;
   onOpenProfile: (profile: SocialProfile) => void;
 }) {
+  const snap = useDomaStore();
+  const peerId =
+    snap.users.find((u) => u.handle === thread.handle)?.id ??
+    userIdFromHandle(thread.handle);
+  const blocked = (snap.blocks ?? []).some(
+    (b) => b.blockerId === snap.session?.userId && b.blockedId === peerId,
+  );
   const lines = CHAT_BY_THREAD[thread.id] ?? [];
   const openProfile = () =>
     onOpenProfile({
@@ -137,9 +164,19 @@ function ChatView({
             <p className="truncate text-[12px] text-muted">@{thread.handle}</p>
           </div>
         </button>
+        <SafetyMenu
+          userId={peerId}
+          reportKind="user"
+          reportTargetId={peerId}
+        />
       </div>
 
-      {lines.length === 0 ? (
+      {blocked ? (
+        <StatusBlock
+          kind="empty"
+          message="차단한 이용자와의 대화입니다."
+        />
+      ) : lines.length === 0 ? (
         <StatusBlock kind="empty" message="대화를 시작해 보세요." />
       ) : (
         <ul className="space-y-2 px-4 py-4" aria-label="대화 내용">

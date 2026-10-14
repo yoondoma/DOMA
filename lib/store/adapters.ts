@@ -13,6 +13,7 @@ export function toUiOpinion(
     id: op.id,
     side: sideFromCamp(op.camp),
     author: user?.handle ?? op.authorId.replace(/^usr_/, ""),
+    authorId: op.authorId,
     text: op.body,
     likes: op.likeCount,
     replies: op.replyCount,
