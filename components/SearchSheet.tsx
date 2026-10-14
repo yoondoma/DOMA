@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AdSlot } from "@/components/AdSlot";
 import { StatusBlock } from "@/components/StatusBlock";
 import {
   SEARCH_KIND_LABEL,
@@ -104,8 +103,6 @@ export function SearchSheet({
             })}
           </div>
         </div>
-
-        <AdSlot id="discover_row" />
 
         {uiDemo === "loading" ? (
           <StatusBlock kind="loading" message="불러오는 중" />

@@ -615,15 +615,15 @@ export function SettingsSheet({
           {panel === "monetize" ? (
             <div className="px-2" data-monetize-settings>
               <p className="px-1 py-3 text-[13px] leading-relaxed text-neutral-200">
-                광고는 전장 주변(게이트·사이드보드·피드 사이)만.
-                지지·%·타이머·TOP 본문·티어 부스트는 없습니다. 꾸미기는
-                코스메틱만 · 승패 무관.
+                광고는 오늘·내일 전장 아래 칸 하나씩만. 입장 게이트·피드
+                남발 없음. 지지·%·타이머·TOP 본문·티어 부스트는 없습니다.
+                꾸미기는 코스메틱만 · 승패 무관.
               </p>
               <div className="flex items-center justify-between gap-3 border-b border-neutral-800 py-3.5">
                 <div className="min-w-0">
                   <p className="text-[14px] text-white">광고 슬롯 미리보기</p>
                   <p className="mt-0.5 text-[12px] text-neutral-200">
-                    기본 켜짐 · 빈「광고 자리」만 · SDK 없음
+                    오늘·내일 아래 · 빈「Sponsored」· SDK 없음
                   </p>
                 </div>
                 <button

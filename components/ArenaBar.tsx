@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Fragment,
   useCallback,
   useEffect,
   useMemo,
@@ -9,7 +8,6 @@ import {
   useState,
   type UIEvent,
 } from "react";
-import { AdSlot } from "@/components/AdSlot";
 import { DiscoverStrip } from "@/components/DiscoverStrip";
 import { OpinionSocial } from "@/components/OpinionSocial";
 import { LEFT_USER_LABEL } from "@/lib/account-display";
@@ -448,23 +446,16 @@ function CampFeedPage({
           </li>
         ) : rising.length === 0 ? null : (
           rising.map((op, i) => (
-            <Fragment key={op.id}>
-              <OpinionRow
-                op={op}
-                index={i}
-                focused={focusOpinionId === op.id}
-                light={light}
-                onToast={onToast}
-                onOpenShareCard={onOpenShareCard}
-                shareTopic={shareTopic}
-              />
-              {/* 의견 N개마다 1 · 지지/TOP 본문 밖 */}
-              {(i + 1) % 3 === 0 ? (
-                <li className="list-none" aria-hidden={false}>
-                  <AdSlot id="feed_native" light={light} />
-                </li>
-              ) : null}
-            </Fragment>
+            <OpinionRow
+              key={op.id}
+              op={op}
+              index={i}
+              focused={focusOpinionId === op.id}
+              light={light}
+              onToast={onToast}
+              onOpenShareCard={onOpenShareCard}
+              shareTopic={shareTopic}
+            />
           ))
         )}
       </ul>
@@ -745,9 +736,6 @@ function BattlefieldIntro({
         )}
       </div>
 
-      {/* 사이드보드 — TOP/%/타이머 밖 · 진영 위 */}
-      <AdSlot id="arena_rail" light={light} />
-
       {/* 진영 — 창/방패 (셸과 별개로 흑|백 정체성) */}
       <div
         className={`grid grid-cols-2 gap-0 border-b ${
@@ -1007,9 +995,6 @@ export function ArenaBar({
           </p>
           <RulesHud light={light} className="mt-2.5" />
         </div>
-
-        {/* 사이드보드 — sticky 주제 아래 · 진영 탭 위 */}
-        <AdSlot id="arena_rail" light={light} />
 
         <div
           className={`grid grid-cols-2 border-b ${

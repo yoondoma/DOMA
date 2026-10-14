@@ -1,26 +1,14 @@
 /**
  * 광고 슬롯 미리보기 — SDK/네트워크 없음.
- * 기본 ON · 빈 Sponsored「광고 자리」플레이스홀더.
- * 설정 토글·`?ads=0` / NEXT_PUBLIC_AD_PREVIEW=0 으로 끌 수 있음.
+ * 확정: today_below · tomorrow_below 만 (product-ops).
+ * 기본 ON · `?ads=0` / 설정으로 끌 수 있음.
  */
 
-export type AdSlotId =
-  | "gate_splash"
-  | "arena_rail"
-  | "feed_native"
-  | "verdict_card_footer"
-  | "discover_row"
-  | "calendar_banner"
-  | "shutdown_idle";
+export type AdSlotId = "today_below" | "tomorrow_below";
 
 export const AD_SLOT_IDS: readonly AdSlotId[] = [
-  "gate_splash",
-  "arena_rail",
-  "feed_native",
-  "verdict_card_footer",
-  "discover_row",
-  "calendar_banner",
-  "shutdown_idle",
+  "today_below",
+  "tomorrow_below",
 ] as const;
 
 const STORAGE_KEY = "doma.adPreview.v1";
@@ -87,7 +75,6 @@ export function saveAdPreviewPrefs(
     ...loadAdPreviewPrefs(),
     ...patch,
   };
-  /** 쿼리/env로 켠 경우에도 스토리지에 저장해 설정 UI와 동기 */
   if (typeof window !== "undefined") {
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));

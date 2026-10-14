@@ -2,7 +2,6 @@
 
 import html2canvas from "html2canvas";
 import { useRef, useState } from "react";
-import { AdSlot } from "@/components/AdSlot";
 import { DomaWordmark } from "@/components/DomaWordmark";
 import { PROFILE_GAMER } from "@/lib/profile-mock";
 import type { ShareResult } from "@/lib/share-result-mock";
@@ -278,12 +277,6 @@ export function ShareResultCard({
             >
               PROOF · DOMA KR
             </p>
-            {/* 중계 워터마크 자리 — 판결 본문·진영색 밖 */}
-            <AdSlot
-              id="verdict_card_footer"
-              light={sideTone === "white"}
-              className="mt-2 border-x-0"
-            />
           </div>
         </div>
       </div>

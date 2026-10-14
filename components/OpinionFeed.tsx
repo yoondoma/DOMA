@@ -1,7 +1,6 @@
 "use client";
 
-import { Fragment, useMemo } from "react";
-import { AdSlot } from "@/components/AdSlot";
+import { useMemo } from "react";
 import { SideBadge } from "@/components/SideMarks";
 import { formatPostTimeKst } from "@/lib/format-time";
 import { useUiOpinions } from "@/lib/store";
@@ -125,14 +124,7 @@ export function OpinionFeed({ opinions: opinionsProp }: OpinionFeedProps) {
           </li>
         ) : (
           hot.map((op, index) => (
-            <Fragment key={`hot-${op.id}`}>
-              <OpinionRow op={op} index={index} />
-              {(index + 1) % 3 === 0 ? (
-                <li>
-                  <AdSlot id="feed_native" />
-                </li>
-              ) : null}
-            </Fragment>
+            <OpinionRow key={`hot-${op.id}`} op={op} index={index} />
           ))
         )}
       </ul>

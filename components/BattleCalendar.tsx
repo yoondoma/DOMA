@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AdSlot } from "@/components/AdSlot";
 import { GirdleMark, ShieldMark, SpearMark } from "@/components/SideMarks";
 import {
   BATTLE_HISTORY,
@@ -454,7 +453,6 @@ export function BattleCalendar({
             </ul>
           ) : (
             <div className="px-3 pb-6 pt-4" aria-label="전투 기록 달력">
-              <AdSlot id="calendar_banner" className="mb-3" />
               <p className="text-center text-[13px] font-semibold tracking-wide">
                 {BATTLE_YEAR}년 {BATTLE_MONTH}월
               </p>

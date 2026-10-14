@@ -27,7 +27,6 @@ import {
   type EditableProfile,
 } from "@/components/ProfileEditSheet";
 import { SettingsSheet } from "@/components/SettingsSheet";
-import { isAdPreviewEnabled } from "@/lib/ad-preview";
 import { PROFILE_USER } from "@/lib/profile-mock";
 import { ContextualShareCard } from "@/components/ContextualShareCard";
 import { ShareResultCard } from "@/components/ShareResultCard";
@@ -98,7 +97,6 @@ export function DomaHome() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [profileEditOpen, setProfileEditOpen] = useState(false);
-  const [gateSplashOpen, setGateSplashOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [leftSocialId, setLeftSocialId] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
@@ -440,19 +438,8 @@ export function DomaHome() {
   );
 
   if (!entered) {
-    return (
-      <TouchGate
-        onEnter={() => {
-          setEntered(true);
-          if (isAdPreviewEnabled()) setGateSplashOpen(true);
-        }}
-      />
-    );
+    return <TouchGate onEnter={() => setEntered(true)} />;
   }
-
-  const shutdownIdle =
-    storeSnap.clock.state === "LOCKED" ||
-    storeSnap.clock.state === "COOLDOWN";
 
   return (
     <div
@@ -530,9 +517,6 @@ export function DomaHome() {
             onRefresh={handleRefresh}
             light={lightShell}
           >
-            {shutdownIdle ? (
-              <AdSlot id="shutdown_idle" light={lightShell} />
-            ) : null}
             <ArenaBar
               arena={INITIAL_ARENA}
               opinions={feedOpinions}
@@ -565,20 +549,24 @@ export function DomaHome() {
                 showToast("지금 뜨거운 전장");
               }}
             />
+            <AdSlot id="today_below" light={lightShell} />
           </PullRefresh>
         ) : null}
 
         {!guestProfile && navTab === "home" && homeSurface === "tomorrow" ? (
-          <TomorrowField
-            candidates={tomorrowCandidates}
-            supportedId={supportedTomorrowId}
-            onSupport={handleSupportTomorrow}
-            onPropose={() => setTomorrowComposeOpen(true)}
-            uiDemo={uiDemo}
-            onRetry={onRetry}
-            onToast={showToast}
-            onNeedLogin={() => showToast("로그인이 필요합니다")}
-          />
+          <>
+            <TomorrowField
+              candidates={tomorrowCandidates}
+              supportedId={supportedTomorrowId}
+              onSupport={handleSupportTomorrow}
+              onPropose={() => setTomorrowComposeOpen(true)}
+              uiDemo={uiDemo}
+              onRetry={onRetry}
+              onToast={showToast}
+              onNeedLogin={() => showToast("로그인이 필요합니다")}
+            />
+            <AdSlot id="tomorrow_below" light={lightShell} />
+          </>
         ) : null}
 
         {!guestProfile && navTab === "messages" ? (
@@ -726,12 +714,6 @@ export function DomaHome() {
         onToast={showToast}
       />
       <RulesSheet open={rulesOpen} onClose={() => setRulesOpen(false)} />
-      {gateSplashOpen ? (
-        <AdSlot
-          id="gate_splash"
-          onSkip={() => setGateSplashOpen(false)}
-        />
-      ) : null}
       <BottomNav
         active={navTab}
         onChange={handleNavChange}

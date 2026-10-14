@@ -2,7 +2,6 @@
 
 import html2canvas from "html2canvas";
 import { useRef, useState } from "react";
-import { AdSlot } from "@/components/AdSlot";
 import { DomaMark } from "@/components/DomaMark";
 import { DomaWordmark } from "@/components/DomaWordmark";
 import { TierBadge } from "@/components/gamification/TierBadge";
@@ -278,7 +277,6 @@ export function ViralShareCard({
               <p className="text-[9px] tracking-[0.28em] text-neutral-600">
                 domakr
               </p>
-              <AdSlot id="verdict_card_footer" className="mt-2 border-x-0" />
             </div>
           </div>
         </div>
