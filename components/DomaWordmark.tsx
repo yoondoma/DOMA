@@ -74,15 +74,55 @@ export function DomaWordmark({
         const fontDescent =
           m.fontBoundingBoxDescent ?? m.actualBoundingBoxDescent ?? fs * 0.2;
         const actualAscent = m.actualBoundingBoxAscent ?? fontAscent * 0.75;
-        const actualRight = m.actualBoundingBoxRight ?? fs * 0.7;
         const actualLeft = m.actualBoundingBoxLeft ?? 0;
+        const actualRight = m.actualBoundingBoxRight ?? fs * 0.7;
 
-        // em 박스 안 베이스라인 ≈ fontAscent (line-height:1 가정)
         const emH = fontAscent + fontDescent || a.height;
         const baseline = a.top + (fontAscent / emH) * a.height;
         inkTop = baseline - actualAscent;
-        // 원점 ≈ a.left - actualLeft (음수 좌측 베어링 보정)
-        inkRight = a.left - actualLeft + actualRight;
+
+        /**
+         * actualBoundingBoxRight = 아래 세리프(최대폭).
+         * 위첨자 밴드의 대각 잉크를 캔버스로 다시 샘플링.
+         */
+        const scale = 4;
+        const pad = 4;
+        const cw = Math.ceil((fs * 1.3 + pad) * scale);
+        const ch = Math.ceil((emH + pad) * scale);
+        canvas.width = cw;
+        canvas.height = ch;
+        // width reset clears context state
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, cw, ch);
+        ctx.setTransform(scale, 0, 0, scale, 0, 0);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = `${computed.fontWeight} ${fs}px ${computed.fontFamily}`;
+        ctx.textBaseline = "alphabetic";
+        const originX = pad - actualLeft;
+        ctx.fillText("A", originX, fontAscent + pad / scale);
+
+        const inkTopLocal = pad / scale + fontAscent - actualAscent;
+        const bandBot = inkTopLocal + Math.max(fs * 0.24, actualAscent * 0.3);
+        const y0 = Math.max(0, Math.floor(inkTopLocal * scale));
+        const y1 = Math.min(ch, Math.ceil(bandBot * scale));
+        const img = ctx.getImageData(0, y0, cw, Math.max(1, y1 - y0));
+        let maxX = 0;
+        const rows = Math.max(1, y1 - y0);
+        for (let y = 0; y < rows; y++) {
+          for (let x = cw - 1; x >= 0; x--) {
+            if (img.data[(y * cw + x) * 4 + 3] > 24) {
+              if (x > maxX) maxX = x;
+              break;
+            }
+          }
+        }
+        if (maxX > 0) {
+          const localRight = maxX / scale;
+          // localRight는 originX 기준 캔버스 x → 글리프 로컬
+          inkRight = a.left + (localRight - originX);
+        } else {
+          inkRight = a.left - actualLeft + actualRight * 0.55;
+        }
       }
 
       const gap = 3;
