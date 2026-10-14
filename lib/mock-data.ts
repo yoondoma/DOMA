@@ -21,6 +21,13 @@ export const INITIAL_ARENA: ArenaState = {
 
 export const INITIAL_OPINIONS: Opinion[] = [
   {
+    id: "op-you-1",
+    side: "NEXUS",
+    author: "you",
+    text: "지성의 핵심이 패턴 인식이라면, ‘완전히’의 기준을 감정으로 낮추지 말자. 증거 없으면 판결도 없다.",
+    likes: 42,
+  },
+  {
     id: "op-1",
     side: "AEGIS",
     author: "mira.k",
@@ -32,7 +39,7 @@ export const INITIAL_OPINIONS: Opinion[] = [
     id: "op-2",
     side: "NEXUS",
     author: "zero.nexus",
-    text: "지성의 핵심이 패턴 인식과 예측이라면, 이미 많은 영역에서 인간은 뒤처졌다. '완전히'의 기준을 감정으로 낮추지 말자. 증거는 벤치마크에 있다.",
+    text: "지성의 핵심이 패턴 인식과 예측이라면, 이미 많은 영역에서 인간은 뒤처졌다. '완전히'의 기준을 감정으로 낮추지 말자. 증거는 벤치마크에 있다. @soohan 이 기준을 같이 보자.",
     likes: 481,
   },
   {

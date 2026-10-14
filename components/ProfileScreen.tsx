@@ -31,6 +31,8 @@ type ProfileScreenProps = {
   isSelf?: boolean;
   profile?: EditableProfile;
   onOpenSettings?: () => void;
+  /** 타인 프로필에서 뒤로 (DM·알림 등) */
+  onBack?: () => void;
 };
 
 /** Threads형 · 팔로워/티어/전과 상세 · score 기반 */
@@ -39,6 +41,7 @@ export function ProfileScreen({
   isSelf = true,
   profile,
   onOpenSettings,
+  onBack,
 }: ProfileScreenProps) {
   const [tab, setTab] = useState<ProfileTab>("posts");
   const [viralTitle, setViralTitle] = useState<DailyTitle | null>(null);
@@ -80,6 +83,16 @@ export function ProfileScreen({
         aria-label="프로필"
       >
         <div className="px-4 pb-5 pt-5">
+          {onBack ? (
+            <button
+              type="button"
+              onClick={onBack}
+              className="mb-3 -ml-1 px-1 py-1 text-[13px] text-neutral-200"
+              aria-label="뒤로"
+            >
+              ← 뒤로
+            </button>
+          ) : null}
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <h2 className="font-[family-name:var(--font-syne)] text-[22px] font-bold leading-none tracking-tight">

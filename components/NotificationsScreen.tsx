@@ -1,6 +1,10 @@
 "use client";
 
-import { APP_NOTIFICATIONS, type AppNotification } from "@/lib/social-mock";
+import {
+  APP_NOTIFICATIONS,
+  type AppNotification,
+  type NotificationTarget,
+} from "@/lib/social-mock";
 
 function kindLabel(kind: AppNotification["kind"]): string {
   switch (kind) {
@@ -62,14 +66,23 @@ function KindMark({ kind }: { kind: AppNotification["kind"] }) {
   );
 }
 
+function targetHint(target: NotificationTarget): string | null {
+  if (target.type === "share") return "탭하여 증명 카드 · 캡처";
+  if (target.type === "arena") return "탭하여 아레나로";
+  if (target.type === "opinion") return "탭하여 해당 글로";
+  if (target.type === "profile") return "탭하여 프로필로";
+  return null;
+}
+
 type NotificationsScreenProps = {
-  /** 결과 확정(전투) 알림 → 증명 카드 */
-  onOpenShareCard?: () => void;
+  onNavigate: (target: NotificationTarget) => void;
+  onOpenProfile?: (handle: string) => void;
 };
 
-/** Threads/X형 알림 리스트 — 가볍게 */
+/** Threads/X형 알림 — 본문 탭=대상 화면, 아바타·핸들=프로필 */
 export function NotificationsScreen({
-  onOpenShareCard,
+  onNavigate,
+  onOpenProfile,
 }: NotificationsScreenProps) {
   return (
     <section
@@ -89,67 +102,87 @@ export function NotificationsScreen({
       ) : (
         <ul aria-label="알림 목록">
           {APP_NOTIFICATIONS.map((n) => {
-            const opensShare =
-              Boolean(onOpenShareCard) &&
-              n.kind === "battle" &&
-              n.text.includes("결과 확정");
-            const body = (
-              <>
-                <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center border border-white/20">
-                  <KindMark kind={n.kind} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold tracking-[0.14em] text-muted">
-                      {kindLabel(n.kind)}
-                    </span>
-                    <span className="ml-auto text-[11px] text-muted">
-                      {n.timeLabel}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-[14px] leading-[1.45] text-white/95">
-                    {n.actor !== "DOMA" ? (
-                      <span className="font-semibold">@{n.actor}</span>
-                    ) : null}
-                    {n.actor !== "DOMA" ? " " : null}
-                    {n.text}
-                  </p>
-                  {opensShare ? (
-                    <p className="mt-1.5 text-[11px] tracking-[0.08em] text-muted">
-                      탭하여 증명 카드 · 캡처
-                    </p>
-                  ) : null}
-                </div>
-                {n.unread ? (
-                  <span
-                    className="mt-2 size-2 shrink-0 rounded-full bg-white"
-                    aria-label="읽지 않음"
-                  />
-                ) : null}
-              </>
-            );
+            const hint = targetHint(n.target);
+            const label =
+              n.target.type === "share"
+                ? "결과 증명 카드 열기"
+                : n.target.type === "arena"
+                  ? "아레나로 이동"
+                  : n.target.type === "opinion"
+                    ? "해당 글로 이동"
+                    : "프로필로 이동";
+            const canOpenActor =
+              Boolean(onOpenProfile) && n.actor !== "DOMA";
             return (
               <li key={n.id}>
-                {opensShare ? (
-                  <button
-                    type="button"
-                    onClick={onOpenShareCard}
-                    className={`flex w-full gap-3 border-b border-white/10 px-4 py-3.5 text-left active:bg-white/[0.06] ${
-                      n.unread ? "bg-white/[0.03]" : ""
-                    }`}
-                    aria-label="결과 증명 카드 열기"
-                  >
-                    {body}
-                  </button>
-                ) : (
-                  <div
-                    className={`flex gap-3 border-b border-white/10 px-4 py-3.5 ${
-                      n.unread ? "bg-white/[0.03]" : ""
-                    }`}
-                  >
-                    {body}
+                <div
+                  className={`flex w-full items-start gap-3 border-b border-white/10 px-4 py-3.5 ${
+                    n.unread ? "bg-white/[0.03]" : ""
+                  }`}
+                >
+                  {canOpenActor ? (
+                    <button
+                      type="button"
+                      onClick={() => onOpenProfile?.(n.actor)}
+                      className="mt-0.5 flex size-9 shrink-0 items-center justify-center border border-white/20 text-[12px] font-bold text-muted active:bg-white/10"
+                      aria-label={`@${n.actor} 프로필`}
+                    >
+                      {n.actor.slice(0, 1).toUpperCase()}
+                    </button>
+                  ) : (
+                    <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center border border-white/20">
+                      <KindMark kind={n.kind} />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold tracking-[0.14em] text-muted">
+                        {kindLabel(n.kind)}
+                      </span>
+                      <span className="ml-auto text-[11px] text-muted">
+                        {n.timeLabel}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[14px] leading-[1.45] text-white/95">
+                      {canOpenActor ? (
+                        <button
+                          type="button"
+                          onClick={() => onOpenProfile?.(n.actor)}
+                          className="font-semibold text-white"
+                          aria-label={`@${n.actor} 프로필`}
+                        >
+                          @{n.actor}
+                        </button>
+                      ) : n.actor !== "DOMA" ? (
+                        <span className="font-semibold">@{n.actor}</span>
+                      ) : null}
+                      {n.actor !== "DOMA" ? " " : null}
+                      <button
+                        type="button"
+                        onClick={() => onNavigate(n.target)}
+                        className="text-left text-white/95"
+                        aria-label={label}
+                      >
+                        {n.text}
+                      </button>
+                    </p>
+                    {hint ? (
+                      <button
+                        type="button"
+                        onClick={() => onNavigate(n.target)}
+                        className="mt-1.5 block text-[11px] tracking-[0.08em] text-muted"
+                      >
+                        {hint}
+                      </button>
+                    ) : null}
                   </div>
-                )}
+                  {n.unread ? (
+                    <span
+                      className="mt-2 size-2 shrink-0 rounded-full bg-white"
+                      aria-label="읽지 않음"
+                    />
+                  ) : null}
+                </div>
               </li>
             );
           })}

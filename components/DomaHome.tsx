@@ -25,6 +25,11 @@ import { WieldBar } from "@/components/WieldBar";
 import { INITIAL_ARENA, INITIAL_OPINIONS } from "@/lib/mock-data";
 import { MOCK_SHARE_RESULT } from "@/lib/share-result-mock";
 import {
+  profileForHandle,
+  type NotificationTarget,
+  type SocialProfile,
+} from "@/lib/social-mock";
+import {
   INITIAL_TOMORROW_TOPICS,
   type TomorrowCandidate,
 } from "@/lib/tomorrow-topics";
@@ -69,6 +74,11 @@ export function DomaHome() {
     bio: PROFILE_USER.bio,
     avatarChar: PROFILE_USER.name.slice(0, 1),
   });
+  /** 알림·DM에서 연 타인 프로필 */
+  const [guestProfile, setGuestProfile] = useState<SocialProfile | null>(null);
+  const [returnTab, setReturnTab] = useState<NavTab | null>(null);
+  /** 알림 → 해당 글 하이라이트 */
+  const [focusOpinionId, setFocusOpinionId] = useState<string | null>(null);
   const refreshLock = useRef(false);
 
   const lightShell =
@@ -185,12 +195,60 @@ export function DomaHome() {
       setChoiceOpen(true);
       return;
     }
+    setGuestProfile(null);
+    setReturnTab(null);
     if (tab === "home") {
       setArenaView("intro");
       setHomeSurface("today");
+      setFocusOpinionId(null);
     }
     setNavTab(tab);
   };
+
+  const openGuestProfile = useCallback(
+    (profile: SocialProfile, from: NavTab) => {
+      const resolved = profileForHandle(profile.handle);
+      setReturnTab(from);
+      setGuestProfile({
+        ...resolved,
+        name: profile.name || resolved.name,
+        handle: profile.handle || resolved.handle,
+      });
+    },
+    [],
+  );
+
+  const handleNotificationNavigate = useCallback(
+    (target: NotificationTarget) => {
+      if (target.type === "share") {
+        setShareOpen(true);
+        return;
+      }
+      if (target.type === "arena") {
+        setGuestProfile(null);
+        setFocusOpinionId(null);
+        setHomeSurface("today");
+        setArenaView("intro");
+        setNavTab("home");
+        showToast("오늘 아레나로 이동했습니다");
+        return;
+      }
+      if (target.type === "opinion") {
+        setGuestProfile(null);
+        setHomeSurface("today");
+        setArenaView(target.side);
+        setFocusOpinionId(target.opinionId);
+        setNavTab("home");
+        showToast("해당 글로 이동했습니다");
+        return;
+      }
+      if (target.type === "profile") {
+        openGuestProfile(profileForHandle(target.handle), "alerts");
+        setNavTab("alerts");
+      }
+    },
+    [openGuestProfile, showToast],
+  );
 
   if (!entered) {
     return <TouchGate onEnter={() => setEntered(true)} />;
@@ -228,7 +286,24 @@ export function DomaHome() {
           }
         />
 
-        {navTab === "home" && homeSurface === "today" ? (
+        {guestProfile ? (
+          <ProfileScreen
+            isSelf={false}
+            profile={{
+              name: guestProfile.name,
+              handle: guestProfile.handle,
+              bio: guestProfile.bio,
+              avatarChar: guestProfile.avatarChar,
+            }}
+            onBack={() => {
+              setGuestProfile(null);
+              if (returnTab) setNavTab(returnTab);
+              setReturnTab(null);
+            }}
+          />
+        ) : null}
+
+        {!guestProfile && navTab === "home" && homeSurface === "today" ? (
           <PullRefresh
             refreshing={refreshing}
             onRefresh={handleRefresh}
@@ -238,12 +313,16 @@ export function DomaHome() {
               arena={INITIAL_ARENA}
               opinions={opinions}
               view={arenaView}
-              onChangeView={setArenaView}
+              onChangeView={(v) => {
+                setArenaView(v);
+                if (v === "intro") setFocusOpinionId(null);
+              }}
+              focusOpinionId={focusOpinionId}
             />
           </PullRefresh>
         ) : null}
 
-        {navTab === "home" && homeSurface === "tomorrow" ? (
+        {!guestProfile && navTab === "home" && homeSurface === "tomorrow" ? (
           <TomorrowField
             candidates={tomorrowCandidates}
             supportedId={supportedTomorrowId}
@@ -252,13 +331,22 @@ export function DomaHome() {
           />
         ) : null}
 
-        {navTab === "messages" ? <MessagesScreen /> : null}
-
-        {navTab === "alerts" ? (
-          <NotificationsScreen onOpenShareCard={() => setShareOpen(true)} />
+        {!guestProfile && navTab === "messages" ? (
+          <MessagesScreen
+            onOpenProfile={(p) => openGuestProfile(p, "messages")}
+          />
         ) : null}
 
-        {navTab === "profile" ? (
+        {!guestProfile && navTab === "alerts" ? (
+          <NotificationsScreen
+            onNavigate={handleNotificationNavigate}
+            onOpenProfile={(handle) => {
+              openGuestProfile(profileForHandle(handle), "alerts");
+            }}
+          />
+        ) : null}
+
+        {!guestProfile && navTab === "profile" ? (
           <ProfileScreen
             isSelf
             profile={editableProfile}

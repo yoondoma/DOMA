@@ -5,6 +5,7 @@ import {
   CHAT_BY_THREAD,
   MESSAGE_THREADS,
   type MessageThread,
+  type SocialProfile,
 } from "@/lib/social-mock";
 
 function Avatar({ name }: { name: string }) {
@@ -81,28 +82,44 @@ function ThreadList({
 function ChatView({
   thread,
   onBack,
+  onOpenProfile,
 }: {
   thread: MessageThread;
   onBack: () => void;
+  onOpenProfile: (profile: SocialProfile) => void;
 }) {
   const lines = CHAT_BY_THREAD[thread.id] ?? [];
+  const openProfile = () =>
+    onOpenProfile({
+      name: thread.name,
+      handle: thread.handle,
+      bio: "",
+      avatarChar: thread.name.slice(0, 1).toUpperCase(),
+    });
 
   return (
     <div aria-label={`${thread.name}과의 대화`}>
-      <div className="flex items-center gap-2 border-b border-white/15 px-3 py-3">
+      <div className="flex items-center gap-1 border-b border-white/15 px-2 py-2.5">
         <button
           type="button"
           onClick={onBack}
-          className="px-2 py-1 text-[13px] text-muted"
+          className="shrink-0 px-2 py-1 text-[13px] text-muted"
           aria-label="목록으로"
         >
           ←
         </button>
-        <Avatar name={thread.name} />
-        <div className="min-w-0">
-          <p className="truncate text-[14px] font-semibold">{thread.name}</p>
-          <p className="truncate text-[12px] text-muted">@{thread.handle}</p>
-        </div>
+        <button
+          type="button"
+          onClick={openProfile}
+          className="flex min-w-0 flex-1 items-center gap-2 px-1 py-1 text-left active:bg-white/[0.06]"
+          aria-label={`${thread.name} 프로필 보기`}
+        >
+          <Avatar name={thread.name} />
+          <div className="min-w-0">
+            <p className="truncate text-[14px] font-semibold">{thread.name}</p>
+            <p className="truncate text-[12px] text-muted">@{thread.handle}</p>
+          </div>
+        </button>
       </div>
 
       {lines.length === 0 ? (
@@ -133,8 +150,12 @@ function ChatView({
   );
 }
 
-/** Threads/X형 DM 목록 — 가볍게 */
-export function MessagesScreen() {
+type MessagesScreenProps = {
+  onOpenProfile: (profile: SocialProfile) => void;
+};
+
+/** Threads/X형 DM — 헤더 탭 시 상대 프로필 */
+export function MessagesScreen({ onOpenProfile }: MessagesScreenProps) {
   const [open, setOpen] = useState<MessageThread | null>(null);
 
   return (
@@ -152,7 +173,14 @@ export function MessagesScreen() {
           <ThreadList onOpen={setOpen} />
         </>
       ) : (
-        <ChatView thread={open} onBack={() => setOpen(null)} />
+        <ChatView
+          thread={open}
+          onBack={() => setOpen(null)}
+          onOpenProfile={(p) => {
+            // 핸들로 풍부한 목 프로필 쓰도록 부모에서 resolve
+            onOpenProfile(p);
+          }}
+        />
       )}
     </section>
   );

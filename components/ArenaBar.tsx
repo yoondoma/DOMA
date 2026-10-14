@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { ShieldMark, SideBadge, SpearMark } from "@/components/SideMarks";
 import type { ArenaState, ArenaView, Opinion, Side } from "@/lib/types";
 
@@ -9,6 +9,8 @@ type ArenaBarProps = {
   opinions: Opinion[];
   view: ArenaView;
   onChangeView: (view: ArenaView) => void;
+  /** 알림 등에서 연 글 — 하이라이트·스크롤 */
+  focusOpinionId?: string | null;
 };
 
 function topOpinionForSide(opinions: Opinion[], side: Side): Opinion | null {
@@ -60,15 +62,24 @@ function OpinionRow({
   op,
   light,
   index,
+  focused,
 }: {
   op: Opinion;
   light: boolean;
   index: number;
+  focused?: boolean;
 }) {
   return (
     <li
+      data-opinion-id={op.id}
       className={`feed-item border-b px-4 py-2.5 ${
         light ? "border-black/10" : "border-white/10"
+      } ${
+        focused
+          ? light
+            ? "bg-black/[0.06] ring-1 ring-inset ring-black/40"
+            : "bg-white/[0.08] ring-1 ring-inset ring-white/50"
+          : ""
       }`}
       style={{ animationDelay: `${index * 30}ms` }}
     >
@@ -112,6 +123,7 @@ export function ArenaBar({
   opinions,
   view,
   onChangeView,
+  focusOpinionId = null,
 }: ArenaBarProps) {
   const selected: Side | null =
     view === "NEXUS" || view === "AEGIS" ? view : null;
@@ -122,6 +134,17 @@ export function ArenaBar({
     () => (selected ? topOpinionForSide(opinions, selected) : null),
     [opinions, selected],
   );
+
+  useEffect(() => {
+    if (!focusOpinionId || !selected) return;
+    const el = document.querySelector<HTMLElement>(
+      `[data-opinion-id="${focusOpinionId}"]`,
+    );
+    if (!el) return;
+    window.requestAnimationFrame(() => {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }, [focusOpinionId, selected, view]);
 
   const rising = useMemo(() => {
     if (!selected || !top) return [];
@@ -321,7 +344,18 @@ export function ArenaBar({
                     TOP 의견 · {sideLabel}
                   </p>
                   {top ? (
-                    <article>
+                    <article
+                      data-opinion-id={
+                        focusOpinionId === top.id ? top.id : undefined
+                      }
+                      className={
+                        focusOpinionId === top.id
+                          ? light
+                            ? "rounded-sm bg-black/[0.06] p-2 ring-1 ring-black/40"
+                            : "rounded-sm bg-white/[0.08] p-2 ring-1 ring-white/50"
+                          : undefined
+                      }
+                    >
                       <div className="mb-1.5 flex items-center gap-2">
                         <SmallAvatar name={top.author} light={light} />
                         <span
@@ -388,7 +422,13 @@ export function ArenaBar({
                     </li>
                   ) : (
                     rising.map((op, i) => (
-                      <OpinionRow key={op.id} op={op} light={light} index={i} />
+                      <OpinionRow
+                        key={op.id}
+                        op={op}
+                        light={light}
+                        index={i}
+                        focused={focusOpinionId === op.id}
+                      />
                     ))
                   )}
                 </ul>
@@ -418,6 +458,9 @@ export function ArenaBar({
                       op={op}
                       light={light}
                       index={i}
+                      focused={
+                        focusOpinionId === op.id && top?.id !== op.id
+                      }
                     />
                   ))}
                 </ul>
