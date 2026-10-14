@@ -185,10 +185,13 @@ function OpinionRow({
         {op.text}
       </p>
       <OpinionSocial
-        opinionId={op.id}
+        parentKind="opinion"
+        targetId={op.id}
         likes={op.likes}
         replies={op.replies ?? 0}
         likedByMe={op.likedByMe}
+        previewText={op.text}
+        authorHandle={op.author}
         light={light}
       />
     </li>
@@ -299,10 +302,13 @@ function CampFeedPage({
             </p>
             <div className="mt-2 flex justify-center">
               <OpinionSocial
-                opinionId={top.id}
+                parentKind="opinion"
+                targetId={top.id}
                 likes={top.likes}
                 replies={top.replies ?? 0}
                 likedByMe={top.likedByMe}
+                previewText={top.text}
+                authorHandle={top.author}
                 light={light}
                 indent={false}
               />

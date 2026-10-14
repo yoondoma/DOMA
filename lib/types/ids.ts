@@ -1,4 +1,10 @@
-import type { Camp, DayId, LikeTargetKind } from "@/lib/types/domain";
+import type {
+  Camp,
+  DayId,
+  LikeTargetKind,
+  ReplyParentKind,
+  ScrapTargetKind,
+} from "@/lib/types/domain";
 
 /** id 접두 — API 이관 시에도 유지 */
 export const ID = {
@@ -11,6 +17,7 @@ export const ID = {
   reply: "rp",
   block: "blk",
   report: "rpt",
+  scrap: "scr",
 } as const;
 
 function stamp(): string {
@@ -48,8 +55,19 @@ export function makeLikeId(
   return `${ID.like}_${targetKind}_${targetId}_${userId}`;
 }
 
-export function makeReplyId(opinionId: string): string {
-  return `${ID.reply}_${opinionId}_${stamp()}`;
+export function makeReplyId(
+  parentKind: ReplyParentKind,
+  parentId: string,
+): string {
+  return `${ID.reply}_${parentKind}_${parentId}_${stamp()}`;
+}
+
+export function makeScrapId(
+  userId: string,
+  targetKind: ScrapTargetKind,
+  targetId: string,
+): string {
+  return `${ID.scrap}_${targetKind}_${targetId}_${userId}`;
 }
 
 export function makeBlockId(blockerId: string, blockedId: string): string {

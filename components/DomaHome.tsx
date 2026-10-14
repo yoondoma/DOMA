@@ -429,6 +429,8 @@ export function DomaHome() {
             onPropose={() => setTomorrowComposeOpen(true)}
             uiDemo={uiDemo}
             onRetry={onRetry}
+            onToast={showToast}
+            onNeedLogin={() => showToast("로그인이 필요합니다")}
           />
         ) : null}
 

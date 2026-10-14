@@ -7,6 +7,7 @@ import type {
   Opinion,
   Reply,
   Report,
+  Scrap,
   Session,
   TimelineClock,
   TopicCandidate,
@@ -37,6 +38,7 @@ export type StoreSnapshot = {
   replies: Reply[];
   blocks: Block[];
   reports: Report[];
+  scraps: Scrap[];
   battleDays: BattleDay[];
   arenaMeta: ArenaMeta;
 };

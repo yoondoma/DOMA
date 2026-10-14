@@ -9,9 +9,12 @@ import type {
   Like,
   Opinion,
   Reply,
+  ReplyParentKind,
   Report,
   ReportReason,
   ReportTargetKind,
+  Scrap,
+  ScrapTargetKind,
   Session,
   TopicCandidate,
   User,
@@ -23,6 +26,7 @@ import {
   makeOpinionId,
   makeReplyId,
   makeReportId,
+  makeScrapId,
   makeSessionId,
   makeTopicCandidateId,
 } from "@/lib/types/ids";
@@ -33,12 +37,37 @@ import type {
   StoreSnapshot,
 } from "@/lib/store/types";
 
-const STORAGE_KEY = "doma.store.v1";
+const STORAGE_KEY = "doma.store.v2";
 
 type Listener = () => void;
 
 function clone<T>(v: T): T {
   return structuredClone(v);
+}
+
+/** 구 opinionId 전용 댓글 → parentKind/parentId */
+function normalizeReply(r: Reply & { opinionId?: string }): Reply {
+  if (r.parentKind && r.parentId) {
+    return {
+      id: r.id,
+      parentKind: r.parentKind,
+      parentId: r.parentId,
+      authorId: r.authorId,
+      body: r.body,
+      likeCount: r.likeCount ?? 0,
+      createdAtUtc: r.createdAtUtc,
+    };
+  }
+  const legacyId = r.opinionId ?? r.parentId;
+  return {
+    id: r.id,
+    parentKind: "opinion",
+    parentId: legacyId,
+    authorId: r.authorId,
+    body: r.body,
+    likeCount: r.likeCount ?? 0,
+    createdAtUtc: r.createdAtUtc,
+  };
 }
 
 function normalizeSnap(parsed: StoreSnapshot): StoreSnapshot {
@@ -47,7 +76,10 @@ function normalizeSnap(parsed: StoreSnapshot): StoreSnapshot {
     blocks: parsed.blocks ?? [],
     reports: parsed.reports ?? [],
     likes: parsed.likes ?? [],
-    replies: parsed.replies ?? [],
+    replies: (parsed.replies ?? []).map((r) =>
+      normalizeReply(r as Reply & { opinionId?: string }),
+    ),
+    scraps: parsed.scraps ?? [],
     follows: parsed.follows ?? [],
   };
 }
@@ -249,9 +281,26 @@ class MemoryStore {
     return this.snap.likes;
   }
 
-  listReplies(opinionId?: string): Reply[] {
-    if (!opinionId) return this.snap.replies;
-    return this.snap.replies.filter((r) => r.opinionId === opinionId);
+  listReplies(parentKind?: ReplyParentKind, parentId?: string): Reply[] {
+    if (!parentKind || !parentId) return this.snap.replies;
+    return this.snap.replies.filter(
+      (r) => r.parentKind === parentKind && r.parentId === parentId,
+    );
+  }
+
+  listScraps(userId?: string): Scrap[] {
+    const uid = userId ?? this.snap.session?.userId;
+    if (!uid) return [];
+    return this.snap.scraps
+      .filter((s) => s.userId === uid)
+      .sort((a, b) => b.createdAtUtc.localeCompare(a.createdAtUtc));
+  }
+
+  hasScraped(targetKind: ScrapTargetKind, targetId: string): boolean {
+    const sid = this.snap.session?.userId;
+    if (!sid) return false;
+    const id = makeScrapId(sid, targetKind, targetId);
+    return this.snap.scraps.some((s) => s.id === id);
   }
 
   listBattleDays() {
@@ -418,6 +467,10 @@ class MemoryStore {
       next.opinions = next.opinions.map((o) =>
         o.id === targetId ? { ...o, likeCount: o.likeCount + 1 } : o,
       );
+    } else if (targetKind === "reply") {
+      next.replies = next.replies.map((r) =>
+        r.id === targetId ? { ...r, likeCount: r.likeCount + 1 } : r,
+      );
     }
     this.commit(next);
     return row;
@@ -435,6 +488,12 @@ class MemoryStore {
         o.id === targetId
           ? { ...o, likeCount: Math.max(0, o.likeCount - 1) }
           : o,
+      );
+    } else if (targetKind === "reply") {
+      next.replies = next.replies.map((r) =>
+        r.id === targetId
+          ? { ...r, likeCount: Math.max(0, r.likeCount - 1) }
+          : r,
       );
     }
     this.commit(next);
@@ -454,25 +513,61 @@ class MemoryStore {
     return { liked: true };
   }
 
-  addReply(opinionId: string, body: string): Reply {
+  addReply(
+    parentKind: ReplyParentKind,
+    parentId: string,
+    body: string,
+  ): Reply {
     const next = clone(this.snap);
     if (!next.session) throw new Error("SESSION_REQUIRED");
     const trimmed = body.trim();
     if (!trimmed) throw new Error("EMPTY_REPLY");
     const row: Reply = {
-      id: makeReplyId(opinionId),
-      opinionId,
+      id: makeReplyId(parentKind, parentId),
+      parentKind,
+      parentId,
       authorId: next.session.userId,
       body: trimmed.slice(0, 280),
       likeCount: 0,
       createdAtUtc: new Date().toISOString(),
     };
     next.replies = [...next.replies, row];
-    next.opinions = next.opinions.map((o) =>
-      o.id === opinionId ? { ...o, replyCount: o.replyCount + 1 } : o,
-    );
+    if (parentKind === "opinion") {
+      next.opinions = next.opinions.map((o) =>
+        o.id === parentId ? { ...o, replyCount: o.replyCount + 1 } : o,
+      );
+    }
     this.commit(next);
     return row;
+  }
+
+  toggleScrap(
+    targetKind: ScrapTargetKind,
+    targetId: string,
+    meta: { preview: string; authorHandle?: string },
+  ): { scraped: boolean } {
+    const next = clone(this.snap);
+    if (!next.session) throw new Error("SESSION_REQUIRED");
+    const userId = next.session.userId;
+    const id = makeScrapId(userId, targetKind, targetId);
+    const existing = next.scraps.find((s) => s.id === id);
+    if (existing) {
+      next.scraps = next.scraps.filter((s) => s.id !== id);
+      this.commit(next);
+      return { scraped: false };
+    }
+    const row: Scrap = {
+      id,
+      userId,
+      targetKind,
+      targetId,
+      preview: meta.preview.slice(0, 200),
+      authorHandle: meta.authorHandle,
+      createdAtUtc: new Date().toISOString(),
+    };
+    next.scraps = [...next.scraps, row];
+    this.commit(next);
+    return { scraped: true };
   }
 
   /** 본인 글만 삭제 (선택) */
@@ -482,9 +577,14 @@ class MemoryStore {
     const op = next.opinions.find((o) => o.id === opinionId);
     if (!op || op.authorId !== next.session.userId) return false;
     next.opinions = next.opinions.filter((o) => o.id !== opinionId);
-    next.replies = next.replies.filter((r) => r.opinionId !== opinionId);
+    next.replies = next.replies.filter(
+      (r) => !(r.parentKind === "opinion" && r.parentId === opinionId),
+    );
     next.likes = next.likes.filter(
       (l) => !(l.targetKind === "opinion" && l.targetId === opinionId),
+    );
+    next.scraps = next.scraps.filter(
+      (s) => !(s.targetKind === "opinion" && s.targetId === opinionId),
     );
     this.commit(next);
     return true;

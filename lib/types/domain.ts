@@ -72,7 +72,7 @@ export type Follow = {
   createdAtUtc: string;
 };
 
-export type LikeTargetKind = "opinion" | "reply" | "topic";
+export type LikeTargetKind = "opinion" | "reply" | "topic" | "field";
 
 export type Like = {
   id: string;
@@ -82,12 +82,30 @@ export type Like = {
   createdAtUtc: string;
 };
 
+/** 댓글 부모 — 오늘 글 / 내일 주제 / 필드 의견 */
+export type ReplyParentKind = "opinion" | "topic" | "field";
+
 export type Reply = {
   id: string;
-  opinionId: string;
+  parentKind: ReplyParentKind;
+  parentId: string;
   authorId: string;
   body: string;
   likeCount: number;
+  createdAtUtc: string;
+};
+
+/** 스크랩(북마크) 대상 */
+export type ScrapTargetKind = "opinion" | "topic" | "field" | "reply";
+
+export type Scrap = {
+  id: string;
+  userId: string;
+  targetKind: ScrapTargetKind;
+  targetId: string;
+  /** 목록 미리보기 */
+  preview: string;
+  authorHandle?: string;
   createdAtUtc: string;
 };
 

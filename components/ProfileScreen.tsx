@@ -27,8 +27,16 @@ import { domaStore, useDomaStore, useSession } from "@/lib/store";
 import type { UiDemo } from "@/lib/ui-demo";
 import type { DailyTitle, ScoreEvent } from "@/lib/types/gamification";
 
-type ProfileTab = "posts" | "battles";
+type ProfileTab = "posts" | "scraps" | "battles";
 type FollowMode = "following" | "followers";
+
+function scrapKindLabel(kind: string): string {
+  if (kind === "opinion") return "오늘 전장";
+  if (kind === "topic") return "내일 주제";
+  if (kind === "field") return "필드 의견";
+  if (kind === "reply") return "댓글";
+  return kind;
+}
 
 type ProfileScreenProps = {
   onOpenShareCard?: () => void;
@@ -106,6 +114,14 @@ export function ProfileScreen({
       ) ?? null;
     setTitleDetail(found ?? { ...badge, round: 0, topic: "", note: "" });
   };
+
+  const profileScraps = useMemo(() => {
+    const uid = profileUser?.id;
+    if (!uid) return isSelf ? domaStore.listScraps() : [];
+    return snap.scraps
+      .filter((s) => s.userId === uid)
+      .sort((a, b) => b.createdAtUtc.localeCompare(a.createdAtUtc));
+  }, [snap.scraps, profileUser, isSelf]);
 
   return (
     <>
@@ -233,7 +249,7 @@ export function ProfileScreen({
         </div>
 
         <div
-          className="grid grid-cols-2 border-y border-neutral-800"
+          className="grid grid-cols-3 border-y border-neutral-800"
           role="tablist"
           aria-label="프로필 탭"
         >
@@ -249,6 +265,19 @@ export function ProfileScreen({
             }`}
           >
             글
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === "scraps"}
+            onClick={() => setTab("scraps")}
+            className={`py-2.5 text-[13px] tracking-[0.06em] ${
+              tab === "scraps"
+                ? "border-b border-white text-white"
+                : "text-neutral-200"
+            }`}
+          >
+            스크랩
           </button>
           <button
             type="button"
@@ -310,6 +339,32 @@ export function ProfileScreen({
                   </p>
                   <p className="mt-2 text-[12px] tabular-nums text-neutral-200">
                     ♥ {p.likes}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )
+        ) : tab === "scraps" ? (
+          uiDemo === "empty" || profileScraps.length === 0 ? (
+            <StatusBlock
+              kind="empty"
+              message="스크랩한 글이 없습니다."
+            />
+          ) : (
+            <ul aria-label="스크랩" className="pb-4">
+              {profileScraps.map((s) => (
+                <li
+                  key={s.id}
+                  className="border-b border-neutral-800 px-4 py-3.5"
+                >
+                  <div className="flex items-baseline justify-between gap-3 text-[11px] tracking-[0.08em] text-neutral-200">
+                    <span>{scrapKindLabel(s.targetKind)}</span>
+                    {s.authorHandle ? (
+                      <span className="text-white">@{s.authorHandle}</span>
+                    ) : null}
+                  </div>
+                  <p className="mt-1.5 line-clamp-3 text-[14px] leading-[1.5] text-white">
+                    {s.preview}
                   </p>
                 </li>
               ))}

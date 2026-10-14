@@ -11,6 +11,8 @@ import type {
   BattleDay,
   Follow,
   Opinion,
+  Reply,
+  Scrap,
   Session,
   TopicCandidate,
   User,
@@ -18,6 +20,8 @@ import type {
 import {
   campFromSide,
   makeFollowId,
+  makeReplyId,
+  makeScrapId,
   makeSessionId,
   userIdFromHandle,
 } from "@/lib/types/ids";
@@ -104,7 +108,7 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
 
   const topicCandidates: TopicCandidate[] = INITIAL_TOMORROW_TOPICS.map(
     (t, i) => ({
-      id: t.id.startsWith("tm-") ? t.id.replace(/^tm-/, "tc_") : t.id,
+      id: t.id,
       targetDayId,
       title: t.title,
       body: t.note,
@@ -116,6 +120,67 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
       ).toISOString(),
     }),
   );
+
+  const seedOpinion = opinions.find((o) => o.id === "op-2") ?? opinions[0];
+  const seedFieldPreview =
+    "도심이 끝나는 게 아니라 ‘우연한 밀도의 도시’가 끝난다. 주제를 여기로 이끌자.";
+  const replies: Reply[] = seedOpinion
+    ? [
+        {
+          id: makeReplyId("opinion", seedOpinion.id),
+          parentKind: "opinion",
+          parentId: seedOpinion.id,
+          authorId: userIdFromHandle("mira.k"),
+          body: "기준을 벤치마크로만 두면 책임 문제가 비게 된다. 같이 보자.",
+          likeCount: 3,
+          createdAtUtc: clock.serverNowUtc,
+        },
+      ]
+    : [];
+  if (seedOpinion) {
+    seedOpinion.replyCount = 1;
+  }
+
+  const mira = byHandle.get("mira.k")!;
+  const scraps: Scrap[] = [
+    {
+      id: makeScrapId(me.id, "opinion", seedOpinion?.id ?? "op-2"),
+      userId: me.id,
+      targetKind: "opinion",
+      targetId: seedOpinion?.id ?? "op-2",
+      preview: seedOpinion?.body ?? "",
+      authorHandle: "zero.nexus",
+      createdAtUtc: clock.serverNowUtc,
+    },
+    {
+      id: makeScrapId(me.id, "field", "fo-1"),
+      userId: me.id,
+      targetKind: "field",
+      targetId: "fo-1",
+      preview: seedFieldPreview,
+      authorHandle: "mira.k",
+      createdAtUtc: clock.serverNowUtc,
+    },
+    {
+      id: makeScrapId(me.id, "topic", "tm-1"),
+      userId: me.id,
+      targetKind: "topic",
+      targetId: "tm-1",
+      preview: "원격 근무는 도시의 중심을 끝낼 것인가?",
+      authorHandle: "soohan",
+      createdAtUtc: clock.serverNowUtc,
+    },
+    {
+      id: makeScrapId(mira.id, "opinion", "op-1"),
+      userId: mira.id,
+      targetKind: "opinion",
+      targetId: "op-1",
+      preview:
+        "대체는 '완전'이 아니라 '재배치'다. AI는 계산과 검색을 삼키지만, 책임·맥락·가치 판단은 인간에게 남는다.",
+      authorHandle: "mira.k",
+      createdAtUtc: clock.serverNowUtc,
+    },
+  ];
 
   const follows: Follow[] = [];
   for (const f of PROFILE_FOLLOWING) {
@@ -160,7 +225,8 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
     topicCandidates,
     follows,
     likes: [],
-    replies: [],
+    replies,
+    scraps,
     blocks: [],
     reports: [],
     battleDays,

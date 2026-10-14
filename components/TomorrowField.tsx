@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { OpinionSocial } from "@/components/OpinionSocial";
 import { StatusBlock } from "@/components/StatusBlock";
 import { formatCountdown, nextOpenAtKstIso } from "@/lib/kst";
+import { domaStore, useDomaStore } from "@/lib/store";
 import {
   FIELD_OPINIONS,
   type TomorrowCandidate,
@@ -16,6 +18,8 @@ type TomorrowFieldProps = {
   supportedId: string | null;
   uiDemo?: UiDemo;
   onRetry?: () => void;
+  onToast?: (message: string) => void;
+  onNeedLogin?: () => void;
 };
 
 function stanceLabel(stance: "support" | "lead" | "question") {
@@ -50,9 +54,16 @@ export function TomorrowField({
   supportedId,
   uiDemo = "normal",
   onRetry,
+  onToast,
+  onNeedLogin,
 }: TomorrowFieldProps) {
+  const snap = useDomaStore();
   const [pickedId, setPickedId] = useState<string | null>(null);
   const confirmRemaining = useTopicConfirmCountdown();
+
+  const replyCountFor = (kind: "topic" | "field", id: string) =>
+    snap.replies.filter((r) => r.parentKind === kind && r.parentId === id)
+      .length;
 
   const shown =
     uiDemo === "empty" ? ([] as TomorrowCandidate[]) : candidates;
@@ -180,22 +191,40 @@ export function TomorrowField({
                   </span>
                 </button>
                 {picked ? (
-                  <div className="flex gap-2 border-t border-white/10 px-4 py-3">
-                    <button
-                      type="button"
-                      disabled={supportedId === c.id}
-                      onClick={() => onSupport(c.id)}
-                      className="flex-1 border border-white bg-white py-2 text-[12px] font-bold tracking-[0.1em] text-black disabled:border-white/25 disabled:bg-transparent disabled:text-muted"
-                    >
-                      {supportedId === c.id ? "지지함" : "이 주제 지지"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onSupport(c.id)}
-                      className="flex-1 border border-white/40 py-2 text-[12px] font-bold tracking-[0.1em] text-white"
-                    >
-                      이끌기
-                    </button>
+                  <div className="border-t border-white/10 px-4 py-3">
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        disabled={supportedId === c.id}
+                        onClick={() => onSupport(c.id)}
+                        className="flex-1 border border-white bg-white py-2 text-[12px] font-bold tracking-[0.1em] text-black disabled:border-white/25 disabled:bg-transparent disabled:text-muted"
+                      >
+                        {supportedId === c.id ? "지지함" : "이 주제 지지"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onSupport(c.id)}
+                        className="flex-1 border border-white/40 py-2 text-[12px] font-bold tracking-[0.1em] text-white"
+                      >
+                        이끌기
+                      </button>
+                    </div>
+                    <OpinionSocial
+                      parentKind="topic"
+                      targetId={c.id}
+                      likes={
+                        snap.likes.filter(
+                          (l) =>
+                            l.targetKind === "topic" && l.targetId === c.id,
+                        ).length
+                      }
+                      replies={replyCountFor("topic", c.id)}
+                      likedByMe={domaStore.hasLiked("topic", c.id)}
+                      previewText={c.title}
+                      indent={false}
+                      onToast={onToast}
+                      onNeedLogin={onNeedLogin}
+                    />
                   </div>
                 ) : null}
               </li>
@@ -262,9 +291,6 @@ export function TomorrowField({
                       <span className="border border-white/25 px-1.5 py-0.5 text-[10px] tracking-[0.08em] text-muted">
                         {stanceLabel(op.stance)}
                       </span>
-                      <span className="ml-auto text-[11px] tabular-nums text-muted">
-                        ♥ {op.likes}
-                      </span>
                     </div>
                     <p className="mt-1.5 truncate text-[11px] text-muted">
                       {topic}
@@ -272,6 +298,20 @@ export function TomorrowField({
                     <p className="mt-1.5 text-[14px] leading-[1.55] text-white/90">
                       {op.text}
                     </p>
+                    <OpinionSocial
+                      parentKind="field"
+                      targetId={op.id}
+                      likes={
+                        op.likes + (domaStore.hasLiked("field", op.id) ? 1 : 0)
+                      }
+                      replies={replyCountFor("field", op.id)}
+                      likedByMe={domaStore.hasLiked("field", op.id)}
+                      previewText={op.text}
+                      authorHandle={op.author}
+                      indent={false}
+                      onToast={onToast}
+                      onNeedLogin={onNeedLogin}
+                    />
                   </li>
                 );
               })}
