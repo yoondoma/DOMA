@@ -132,13 +132,13 @@ function ThreadList({
             <button
               type="button"
               onClick={() => onOpen(t)}
-              className="flex w-full items-start gap-3 border-b border-white/10 px-4 py-3.5 text-left active:bg-white/[0.04]"
+              className="flex w-full items-start gap-3 border-b border-white/10 px-4 py-3 text-left active:bg-white/[0.04]"
             >
               <Avatar name={t.name} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline gap-1.5">
                   <span
-                    className={`truncate text-[14px] ${
+                    className={`truncate text-[14px] leading-tight ${
                       t.unread
                         ? "font-bold text-white"
                         : "font-semibold text-white"
@@ -154,12 +154,12 @@ function ThreadList({
                       요청함
                     </span>
                   ) : null}
-                  <span className="ml-auto shrink-0 text-[11px] text-muted">
+                  <span className="ml-auto shrink-0 text-[11px] tabular-nums text-muted">
                     {t.timeLabel}
                   </span>
                 </div>
                 <p
-                  className={`mt-0.5 truncate text-[13px] ${
+                  className={`mt-0.5 truncate text-[13px] leading-snug ${
                     t.unread ? "text-white/90" : "text-muted"
                   }`}
                 >

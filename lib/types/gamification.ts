@@ -172,9 +172,9 @@ export const DAILY_TITLE_TYPES = [
   "SHIELD",
   "VICTOR",
   "FINGER",
-  /** 확정 주제 원글 — 성 토마스의 허리띠(영구) */
+  /** 확정 주제 원글 — 성 토마스의 허리띠(영구) · XP 0 */
   "PROPOSER",
-  /** 내일 후보 TOP5 — 부차 칭호 */
+  /** @deprecated 안건자 폐지 — 구 데이터 호환만 */
   "AGENDA",
 ] as const;
 
@@ -208,9 +208,10 @@ export const TITLE_POINT_BONUS: Record<DailyTitleType, number> = {
   SPEAR: 2,
   SHIELD: 2,
   VICTOR: 5,
-  FINGER: 8,
-  PROPOSER: 10,
-  AGENDA: 3,
+  /** 손가락·제안자 = XP 0 (locked) */
+  FINGER: 0,
+  PROPOSER: 0,
+  AGENDA: 0,
 };
 
 export type DailyTitle = {

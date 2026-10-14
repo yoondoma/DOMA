@@ -16,12 +16,7 @@ type SearchSheetProps = {
   onRetry?: () => void;
 };
 
-const FILTERS: Array<SearchKind | "all"> = [
-  "all",
-  "user",
-  "keyword",
-  "topic",
-];
+const FILTERS: Array<SearchKind | "all"> = ["all", "battle", "proposal"];
 
 export function SearchSheet({
   open,
@@ -76,7 +71,7 @@ export function SearchSheet({
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="이용자 · 키워드 · 전투 주제"
+            placeholder="전투 글 · 제안 검색"
             autoFocus
             className="w-full border border-white/25 bg-black px-3 py-2.5 text-[14px] text-white outline-none placeholder:text-neutral-500 focus:border-white/50"
           />
@@ -114,7 +109,14 @@ export function SearchSheet({
             onAction={onRetry}
           />
         ) : (
-          <ul className="overflow-y-auto" aria-label="검색 결과">
+          <ul className="min-h-0 flex-1 overflow-y-auto" aria-label="검색 결과">
+            {!query.trim() && results.length > 0 ? (
+              <li className="border-b border-white/10 px-4 py-2">
+                <p className="text-[11px] tracking-[0.08em] text-muted">
+                  전투 글 · 제안 · 유저 탭 없음
+                </p>
+              </li>
+            ) : null}
             {results.length === 0 ? (
               <li>
                 <StatusBlock
@@ -122,7 +124,7 @@ export function SearchSheet({
                   message={
                     query.trim()
                       ? "검색 결과가 없습니다."
-                      : "검색어를 입력해 보세요."
+                      : "전투 글과 제안만 검색됩니다."
                   }
                 />
               </li>

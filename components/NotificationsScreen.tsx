@@ -168,7 +168,7 @@ export function NotificationsScreen({
             return (
               <li key={n.id}>
                 <div
-                  className={`flex w-full items-start gap-3 border-b border-white/10 px-4 py-3.5 ${
+                  className={`flex w-full items-start gap-3 border-b border-white/10 px-4 py-3 ${
                     n.unread ? "bg-white/[0.03]" : ""
                   }`}
                 >

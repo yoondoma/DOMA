@@ -73,9 +73,9 @@ export const PROFILE_GAMER: UserProfileType = withResolvedTier({
   ],
   dailyTitles: [
     createDailyTitle("10.14", "PROPOSER"),
-    createDailyTitle("10.13", "AGENDA"),
     createDailyTitle("10.24", "FINGER"),
     createDailyTitle("10.12", "SPEAR"),
+    createDailyTitle("10.11", "SHIELD"),
     createDailyTitle("09.30", "VICTOR"),
   ],
   /** 기본 B&W — 스킨 UI 없음 */
@@ -222,22 +222,22 @@ export const PROFILE_TITLE_DETAILS: TitleDetail[] = [
     note: "그날의 전장 주제를 제시한 제안자. 성 토마스의 허리띠 — 만져서 증명.",
   },
   {
-    ...createDailyTitle("10.13", "AGENDA"),
-    round: 0,
-    topic: "원격 근무는 도시의 중심을 끝낼 것인가?",
-    note: "내일 후보 TOP5 안건자. 확정 제안자와 별도 · 부차 포인트.",
-  },
-  {
     ...createDailyTitle("10.24", "FINGER"),
     round: 412,
     topic: "인공지능은 인간의 지성을 완전히 대체할 것인가?",
-    note: "당일 최다 채택·인용으로 도마의 손가락.",
+    note: "당일 승리 TOP 의견 · 도마의 손가락(반지). XP 0.",
   },
   {
     ...createDailyTitle("10.12", "SPEAR"),
     round: 400,
     topic: "표현의 자유는 혐오를 포함해야 하는가?",
     note: "도전자 진영 대표 진술.",
+  },
+  {
+    ...createDailyTitle("10.11", "SHIELD"),
+    round: 399,
+    topic: "현금 없는 사회는 자유를 줄이는가?",
+    note: "방어자 진영 대표 진술.",
   },
   {
     ...createDailyTitle("09.30", "VICTOR"),

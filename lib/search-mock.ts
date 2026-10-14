@@ -1,4 +1,9 @@
-export type SearchKind = "user" | "keyword" | "topic";
+/**
+ * 검색 인덱스 목 — 전투 글 + 제안만 (social-rules F19).
+ * 유저 전용 탭 없음 · 댓글·DM 제외.
+ */
+
+export type SearchKind = "battle" | "proposal";
 
 export type SearchItem = {
   id: string;
@@ -8,77 +13,70 @@ export type SearchItem = {
 };
 
 export const SEARCH_KIND_LABEL: Record<SearchKind, string> = {
-  user: "이용자",
-  keyword: "키워드",
-  topic: "전투 주제",
+  battle: "전투 글",
+  proposal: "제안",
 };
 
 export const SEARCH_INDEX: SearchItem[] = [
   {
-    id: "u1",
-    kind: "user",
-    title: "@zero.nexus",
-    subtitle: "도전자 · 최근 TOP 3회",
+    id: "b1",
+    kind: "battle",
+    title: "지성의 핵심이 패턴 인식이라면, ‘완전히’의 기준을 감정으로 낮추지 말자.",
+    subtitle: "제 412회 · 도전자 · @soohan",
   },
   {
-    id: "u2",
-    kind: "user",
-    title: "@mira.k",
-    subtitle: "방어자 · 소수의견 기록",
+    id: "b2",
+    kind: "battle",
+    title: "대체는 이미 일어났다. 남은 건 인정할 용기뿐이다.",
+    subtitle: "제 412회 · 도전자 · @zero.nexus",
   },
   {
-    id: "u3",
-    kind: "user",
-    title: "@pulse",
-    subtitle: "도전자 · 참전 128회",
+    id: "b3",
+    kind: "battle",
+    title: "판단·책임·고통을 모델에 넘길 수 없다면, 지성은 아직 인간 쪽에 있다.",
+    subtitle: "제 412회 · 방어자 · @mira.k",
   },
   {
-    id: "u4",
-    kind: "user",
-    title: "@han.aegis",
-    subtitle: "방어자 · 승률 54%",
+    id: "b4",
+    kind: "battle",
+    title: "혐오를 막겠다고 자유를 자르면, 칼자루는 항상 권력 손에 남는다.",
+    subtitle: "제 401회 · 도전자 · @pulse",
   },
   {
-    id: "k1",
-    kind: "keyword",
-    title: "인공지능",
-    subtitle: "키워드 · 관련 전투 12",
+    id: "b5",
+    kind: "battle",
+    title: "현금 없는 사회는 추적이 기본값이 된다. 그게 자유인가.",
+    subtitle: "제 409회 · 도전자 · @han.aegis",
   },
   {
-    id: "k2",
-    kind: "keyword",
-    title: "표현의 자유",
-    subtitle: "키워드 · 관련 전투 7",
+    id: "p1",
+    kind: "proposal",
+    title: "원격 근무는 도시의 중심을 끝낼 것인가?",
+    subtitle: "내일 후보 · 지지 128",
   },
   {
-    id: "k3",
-    kind: "keyword",
-    title: "기본소득",
-    subtitle: "키워드 · 관련 전투 4",
+    id: "p2",
+    kind: "proposal",
+    title: "기본소득은 노동 동력을 약화시키는가?",
+    subtitle: "내일 후보 · 지지 96",
+  },
+  {
+    id: "p3",
+    kind: "proposal",
+    title: "동물원 제도는 폐지되어야 하는가?",
+    subtitle: "내일 후보 · 지지 71",
+  },
+  {
+    id: "p4",
+    kind: "proposal",
+    title: "표현의 자유는 혐오 발언까지 포함하는가?",
+    subtitle: "과거 확정 · 제 401회",
   },
   {
     id: "t1",
-    kind: "topic",
+    kind: "proposal",
     title: "인공지능은 인간의 지성을 완전히 대체할 것인가?",
-    subtitle: "제 412회 전투 · 진행 중",
-  },
-  {
-    id: "t2",
-    kind: "topic",
-    title: "표현의 자유는 혐오 발언까지 포함하는가?",
-    subtitle: "제 401회 전투 · 도전자 승 54%",
-  },
-  {
-    id: "t3",
-    kind: "topic",
-    title: "현금 없는 사회는 자유를 줄이는가?",
-    subtitle: "제 409회 전투 · 도전자 승 58%",
-  },
-  {
-    id: "t4",
-    kind: "topic",
-    title: "동물원 제도는 폐지되어야 하는가?",
-    subtitle: "제 412회 전투 · 방어자 승 54%",
+    subtitle: "오늘 전장 · 제 412회 진행 중",
   },
 ];
 

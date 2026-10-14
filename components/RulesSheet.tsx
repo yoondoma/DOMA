@@ -72,8 +72,8 @@ export function RulesSheet({ open, onClose }: RulesSheetProps) {
 
         <p className="mt-4 text-[12px] leading-[1.55] text-white/70">
           <span className="text-white">제안자</span>(허리띠·영구)는 확정 주제
-          원글만. 후보 TOP5는{" "}
-          <span className="text-white">안건자</span>. 일일 칭호와 동시 가능.
+          원글만. <span className="text-white">도마의 손가락</span>은 당일
+          승리 TOP 의견. 둘 다 XP 0 · 일일 칭호와 동시 가능.
         </p>
 
         <p className="mt-3 text-[12px] leading-[1.55] text-white/70">

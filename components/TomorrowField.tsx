@@ -121,7 +121,7 @@ export function TomorrowField({
           </span>
         </p>
         <p className="mt-3 text-[10px] tracking-[0.08em] text-white/35">
-          매일 08:00 OPEN · 후보가 오늘 안건으로 확정
+          매일 08:00 OPEN · 후보가 오늘 주제로 확정
         </p>
       </div>
 
@@ -194,9 +194,6 @@ export function TomorrowField({
                     <span className="mt-1.5 block text-[12px] tabular-nums text-muted">
                       지지 {c.votes.toLocaleString("ko-KR")} · {pct}% · 이끔{" "}
                       {c.stewards}
-                      <span className="ml-1.5 tracking-[0.08em] text-white/55">
-                        · 안건자
-                      </span>
                       {topicCreatedAt.get(c.id) ? (
                         <time
                           className="ml-1.5 tabular-nums text-white/45"
