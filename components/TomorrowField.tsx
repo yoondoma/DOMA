@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { formatCountdown, nextOpenAtKstIso } from "@/lib/kst";
 import {
   FIELD_OPINIONS,
   type TomorrowCandidate,
@@ -19,6 +20,21 @@ function stanceLabel(stance: "support" | "lead" | "question") {
   return "질문";
 }
 
+/** 다음 08:00 KST(주제 확정·OPEN)까지 */
+function useTopicConfirmCountdown(): string {
+  const [remaining, setRemaining] = useState("--:--:--");
+  useEffect(() => {
+    const tick = () => {
+      const ends = new Date(nextOpenAtKstIso()).getTime();
+      setRemaining(formatCountdown(ends - Date.now()));
+    };
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  return remaining;
+}
+
 /**
  * 내일 필드 — 오늘 아레나와 같은 계층:
  * 위 TOP 토픽 → 아래 현재 올라오는 실시간 의견 (스크롤로 이어짐)
@@ -30,6 +46,7 @@ export function TomorrowField({
   supportedId,
 }: TomorrowFieldProps) {
   const [pickedId, setPickedId] = useState<string | null>(null);
+  const confirmRemaining = useTopicConfirmCountdown();
 
   const ranked = useMemo(
     () => [...candidates].sort((a, b) => b.votes - a.votes),
@@ -58,14 +75,33 @@ export function TomorrowField({
       className="mx-auto max-w-[560px] bg-black text-white"
       aria-label="내일의 주제 필드"
     >
-      <div
-        className="flex min-h-[26dvh] flex-col justify-center px-5 pb-6 pt-10"
-        aria-label="내일 필드 안내"
-      >
-        <p className="text-[11px] tracking-[0.18em] text-muted">
+      {/* 주제 확정 카운트다운 — 헤더 타이머 없음, 전장과 같은 빨간 톤 */}
+      <div className="border-b border-white/10 px-5 pb-5 pt-6 text-center">
+        <p className="text-[11px] font-medium tracking-[0.22em] text-white/45">
           다음 도마 · 필드
         </p>
-        <h2 className="mt-3 font-[family-name:var(--font-syne)] text-[26px] font-bold leading-[1.28] tracking-tight sm:text-[28px]">
+        <p className="mt-4 text-[11px] tracking-[0.18em] text-white/55">
+          내일의 주제 확정까지
+        </p>
+        <p
+          className="mt-2 font-mono text-[34px] font-semibold leading-none tracking-[0.06em] text-timer tabular-nums sm:text-[38px]"
+          aria-label={`주제 확정까지 ${confirmRemaining}`}
+        >
+          {confirmRemaining}
+          <span className="ml-2 align-middle text-[13px] font-medium tracking-[0.14em] text-timer/90">
+            남음
+          </span>
+        </p>
+        <p className="mt-3 text-[10px] tracking-[0.08em] text-white/35">
+          매일 08:00 OPEN · 후보가 오늘 안건으로 확정
+        </p>
+      </div>
+
+      <div
+        className="flex flex-col justify-center px-5 pb-6 pt-7"
+        aria-label="내일 필드 안내"
+      >
+        <h2 className="font-[family-name:var(--font-syne)] text-[26px] font-bold leading-[1.28] tracking-tight sm:text-[28px]">
           내일의 주제 정하기
         </h2>
         <p className="mt-4 max-w-[36em] text-[15px] leading-[1.7] text-white/78">
