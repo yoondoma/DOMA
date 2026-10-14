@@ -1,0 +1,38 @@
+"use client";
+
+import { useEffect, useMemo, useSyncExternalStore } from "react";
+import { toUiOpinions } from "@/lib/store/adapters";
+import { domaStore } from "@/lib/store/memory-store";
+import type { StoreSnapshot } from "@/lib/store/types";
+import type { Opinion as UiOpinion } from "@/lib/types";
+
+function subscribe(onChange: () => void) {
+  return domaStore.subscribe(onChange);
+}
+
+function getSnapshot(): StoreSnapshot {
+  return domaStore.getSnapshot();
+}
+
+function getServerSnapshot(): StoreSnapshot {
+  return domaStore.getSnapshot();
+}
+
+/** 스토어 스냅샷 구독 */
+export function useDomaStore(): StoreSnapshot {
+  useEffect(() => {
+    domaStore.init();
+  }, []);
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
+
+/** 홈/피드용 UI Opinion[] */
+export function useUiOpinions(dayId?: string): UiOpinion[] {
+  const snap = useDomaStore();
+  return useMemo(() => {
+    const ops = dayId
+      ? snap.opinions.filter((o) => o.dayId === dayId)
+      : snap.opinions.filter((o) => o.dayId === snap.clock.dayId);
+    return toUiOpinions(ops, snap.users);
+  }, [snap, dayId]);
+}

@@ -1,5 +1,12 @@
+/**
+ * UI 뷰 모델 (화면 컴포넌트용).
+ * 도메인 엔티티·Camp/dayId → `lib/types/domain.ts`
+ * 스토어 → `lib/store`
+ */
+
 export type Side = "NEXUS" | "AEGIS";
 
+/** @deprecated 도메인은 `lib/types/domain`.Opinion — 화면 호환용 뷰 */
 export type Opinion = {
   id: string;
   side: Side;
@@ -8,6 +15,8 @@ export type Opinion = {
   likes: number;
   isTopMinority?: boolean;
 };
+
+export type { Camp, DayId, TimeState } from "@/lib/types/domain";
 
 export type ArenaState = {
   round: number;

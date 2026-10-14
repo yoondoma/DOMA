@@ -22,19 +22,21 @@ import { TomorrowCompose } from "@/components/TomorrowCompose";
 import { TomorrowField } from "@/components/TomorrowField";
 import { TouchGate } from "@/components/TouchGate";
 import { WieldBar } from "@/components/WieldBar";
-import { INITIAL_ARENA, INITIAL_OPINIONS } from "@/lib/mock-data";
+import { INITIAL_ARENA } from "@/lib/mock-data";
 import { MOCK_SHARE_RESULT } from "@/lib/share-result-mock";
 import {
   profileForHandle,
   type NotificationTarget,
   type SocialProfile,
 } from "@/lib/social-mock";
+import { campFromSide } from "@/lib/types/ids";
 import {
   INITIAL_TOMORROW_TOPICS,
   type TomorrowCandidate,
 } from "@/lib/tomorrow-topics";
-import type { ArenaView, Opinion, Side } from "@/lib/types";
+import type { ArenaView, Side } from "@/lib/types";
 import { useUiDemo } from "@/lib/use-ui-demo";
+import { domaStore, useUiOpinions } from "@/lib/store";
 
 function bumpPercents(
   nexus: number,
@@ -47,10 +49,10 @@ function bumpPercents(
 
 export function DomaHome() {
   const { demo: uiDemo, retry: onRetry } = useUiDemo();
+  const storeOpinions = useUiOpinions();
   const [nexusPercent, setNexusPercent] = useState(INITIAL_ARENA.nexusPercent);
   const [aegisPercent, setAegisPercent] = useState(INITIAL_ARENA.aegisPercent);
   const [joined, setJoined] = useState<Side | null>(null);
-  const [opinions, setOpinions] = useState<Opinion[]>(INITIAL_OPINIONS);
   const [arenaView, setArenaView] = useState<ArenaView>("intro");
   const [navTab, setNavTab] = useState<NavTab>("home");
   const [choiceOpen, setChoiceOpen] = useState(false);
@@ -86,7 +88,7 @@ export function DomaHome() {
   const lightShell =
     navTab === "home" && homeSurface === "today" && arenaView === "AEGIS";
 
-  const feedOpinions = uiDemo === "empty" ? [] : opinions;
+  const feedOpinions = uiDemo === "empty" ? [] : storeOpinions;
 
   const openCompose = useCallback(() => {
     setChoiceOpen(true);
@@ -106,12 +108,7 @@ export function DomaHome() {
       const { nexus, aegis } = bumpPercents(nexusPercent);
       setNexusPercent(nexus);
       setAegisPercent(aegis);
-      setOpinions((prev) =>
-        prev.map((op) => ({
-          ...op,
-          likes: op.likes + (Math.random() > 0.55 ? 1 : 0),
-        })),
-      );
+      domaStore.bumpArenaShares();
       setRefreshing(false);
       refreshLock.current = false;
       showToast("최신 상태로 업데이트했습니다");
@@ -122,6 +119,7 @@ export function DomaHome() {
     if (joined === side) return;
 
     setJoined(side);
+    domaStore.setJoinedCamp(campFromSide(side));
     setNexusPercent((prev) => {
       const next =
         side === "NEXUS"
@@ -138,14 +136,12 @@ export function DomaHome() {
   const handleSubmitToday = (text: string, imageName?: string) => {
     const side: Side =
       joined ?? (arenaView === "AEGIS" ? "AEGIS" : "NEXUS");
-    const next: Opinion = {
-      id: `op-${Date.now()}`,
-      side,
-      author: "you",
-      text: imageName ? `${text} · [이미지]` : text,
-      likes: 0,
-    };
-    setOpinions((prev) => [...prev, next]);
+    const body = imageName ? `${text} · [이미지]` : text;
+    domaStore.createOpinion({
+      body,
+      camp: campFromSide(side),
+      authorId: domaStore.getUserByHandle("you")?.id,
+    });
     setNavTab("home");
     setArenaView("intro");
     showToast(

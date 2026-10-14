@@ -2,10 +2,12 @@
 
 import { useMemo } from "react";
 import { SideBadge } from "@/components/SideMarks";
+import { useUiOpinions } from "@/lib/store";
 import type { Opinion } from "@/lib/types";
 
 type OpinionFeedProps = {
-  opinions: Opinion[];
+  /** 생략 시 목 스토어 오늘 글 */
+  opinions?: Opinion[];
 };
 
 function HeartMark() {
@@ -64,7 +66,9 @@ function OpinionRow({ op, index }: { op: Opinion; index: number }) {
 }
 
 /** 실시간 올라오는 의견 + HOT 글 */
-export function OpinionFeed({ opinions }: OpinionFeedProps) {
+export function OpinionFeed({ opinions: opinionsProp }: OpinionFeedProps) {
+  const fromStore = useUiOpinions();
+  const opinions = opinionsProp ?? fromStore;
   const live = useMemo(() => {
     // 목: id 역순 ≈ 최근 · 첫 화면 peek는 2개
     return [...opinions].reverse().slice(0, 2);
