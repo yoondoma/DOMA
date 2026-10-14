@@ -125,7 +125,7 @@ export function DomaWordmark({
       }
 
       /** 유튜브식 완전 밀착 대신 2~6px 여유 — 게이트·헤더 동일 */
-      const gap = size === "lg" ? 5 : 4;
+      const gap = size === "lg" ? 6 : 5;
       setPos({
         // 캡 꼭지에 더 붙게 1px 상향 (광학)
         top: Math.max(0, inkTop - parent.top - 1),
