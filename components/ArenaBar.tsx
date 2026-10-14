@@ -219,10 +219,9 @@ function BattlefieldIntro({
           aria-selected={false}
           aria-label="도전자"
           onClick={() => onPickSide("NEXUS")}
-          className="flex min-h-[120px] flex-col items-center justify-center gap-2.5 border-r border-white/15 bg-black px-3 py-5 text-white active:bg-white/[0.04]"
+          className="flex min-h-[104px] items-center justify-center border-r border-white/15 bg-black px-3 py-5 text-white active:bg-white/[0.04]"
         >
-          <SpearMark size={36} />
-          <span className="text-[14px] font-bold tracking-[0.16em]">도전자</span>
+          <span className="text-[16px] font-bold tracking-[0.16em]">도전자</span>
         </button>
         <button
           type="button"
@@ -230,10 +229,9 @@ function BattlefieldIntro({
           aria-selected={false}
           aria-label="방어자"
           onClick={() => onPickSide("AEGIS")}
-          className="flex min-h-[120px] flex-col items-center justify-center gap-2.5 bg-white px-3 py-5 text-black active:bg-neutral-100"
+          className="flex min-h-[104px] items-center justify-center bg-white px-3 py-5 text-black active:bg-neutral-100"
         >
-          <ShieldMark size={36} />
-          <span className="text-[14px] font-bold tracking-[0.16em]">방어자</span>
+          <span className="text-[16px] font-bold tracking-[0.16em]">방어자</span>
         </button>
       </div>
 

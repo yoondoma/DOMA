@@ -1,6 +1,5 @@
 "use client";
 
-import { DomaMark } from "@/components/DomaMark";
 import { DomaWordmark } from "@/components/DomaWordmark";
 
 export type HomeSurface = "today" | "tomorrow";
@@ -64,7 +63,6 @@ function SearchIcon() {
   );
 }
 
-/** 톱니바퀴 — 이빨이 읽히는 cog (해/스포크 아님) */
 function SettingsIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -86,8 +84,8 @@ function SettingsIcon() {
 }
 
 /**
- * 좌: DOMA 마크 + 큰 워드마크 · 우: 달력·검색
- * 빨간 타이머는 헤더에 두지 않음 (전장 카운트다운만)
+ * 왼쪽 달력 · 중앙 DOMA 워드마크 · 오른쪽 검색
+ * 마크 심볼·헤더 타이머 없음 (판결 카운트다운은 전장 본문만)
  */
 export function Header({
   tone = "dark",
@@ -110,71 +108,67 @@ export function Header({
           : "border-white/12 bg-black/92"
       }`}
     >
-      <div className="relative mx-auto flex max-w-[560px] items-center gap-2 px-3 py-2.5">
+      <div className="relative mx-auto flex max-w-[560px] items-center px-3 py-2.5">
         <button
           type="button"
-          onClick={onRefresh}
-          disabled={refreshing}
-          aria-label="새로고침"
-          aria-busy={refreshing || undefined}
-          className={`flex min-w-0 flex-1 items-center gap-2.5 text-left ${
-            refreshing ? "logo-refresh" : ""
+          onClick={onOpenHistory}
+          className={`flex size-10 shrink-0 items-center justify-center ${
+            light ? "text-black" : "text-white"
           }`}
+          aria-label="전투 기록"
         >
-          <DomaMark size={34} light={light} />
-          <h1 className="min-w-0 leading-none">
-            <DomaWordmark size="md" light={light} />
-          </h1>
+          <CalendarIcon />
         </button>
 
-        <div className="flex shrink-0 items-center gap-0.5">
+        <div className="flex min-w-0 flex-1 flex-col items-center justify-center">
           <button
             type="button"
-            onClick={onOpenHistory}
-            className={`flex size-10 items-center justify-center ${
+            onClick={onRefresh}
+            disabled={refreshing}
+            aria-label="새로고침"
+            aria-busy={refreshing || undefined}
+            className={refreshing ? "logo-refresh" : undefined}
+          >
+            <h1 className="leading-none">
+              <DomaWordmark size="md" light={light} />
+            </h1>
+          </button>
+          {refreshing ? (
+            <span
+              className={`mt-1 text-[10px] tracking-[0.14em] ${
+                light ? "text-neutral-500" : "text-muted"
+              }`}
+            >
+              업데이트 중
+            </span>
+          ) : null}
+        </div>
+
+        {trailing === "settings" ? (
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className={`flex size-10 shrink-0 items-center justify-center ${
               light ? "text-black" : "text-white"
             }`}
-            aria-label="전투 기록"
+            aria-label="설정"
           >
-            <CalendarIcon />
+            <SettingsIcon />
           </button>
-          {trailing === "settings" ? (
-            <button
-              type="button"
-              onClick={onOpenSettings}
-              className={`flex size-10 items-center justify-center ${
-                light ? "text-black" : "text-white"
-              }`}
-              aria-label="설정"
-            >
-              <SettingsIcon />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={onOpenSearch}
-              className={`flex size-10 items-center justify-center ${
-                light ? "text-black" : "text-white"
-              }`}
-              aria-label="검색"
-            >
-              <SearchIcon />
-            </button>
-          )}
-        </div>
+        ) : (
+          <button
+            type="button"
+            onClick={onOpenSearch}
+            className={`flex size-10 shrink-0 items-center justify-center ${
+              light ? "text-black" : "text-white"
+            }`}
+            aria-label="검색"
+          >
+            <SearchIcon />
+          </button>
+        )}
       </div>
 
-      {refreshing ? (
-        <p
-          className={`pb-1.5 text-center text-[10px] tracking-[0.14em] ${
-            light ? "text-neutral-500" : "text-muted"
-          }`}
-        >
-          업데이트 중
-        </p>
-      ) : null}
-
-      {/* 오늘 | 내일 — 나란한 1급 서피스 */}
       {onSurfaceChange ? (
         <div
           className={`mx-auto grid max-w-[560px] grid-cols-2 border-t ${
