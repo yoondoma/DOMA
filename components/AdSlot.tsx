@@ -17,7 +17,9 @@ type AdSlotProps = {
 };
 
 function useAdPreview(): boolean {
-  const [on, setOn] = useState(false);
+  const [on, setOn] = useState(() =>
+    typeof window !== "undefined" ? loadAdPreviewPrefs().enabled : false,
+  );
   useEffect(() => {
     setOn(loadAdPreviewPrefs().enabled);
     const sync = () => setOn(loadAdPreviewPrefs().enabled);
