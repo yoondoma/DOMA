@@ -524,8 +524,6 @@ export function DomaHome() {
               opinions={feedOpinions}
               view={arenaView}
               shellLight={lightShell}
-              nexusPercent={nexusPercent}
-              aegisPercent={aegisPercent}
               onChangeView={(v) => {
                 setArenaView(v);
                 if (v === "intro") setFocusOpinionId(null);

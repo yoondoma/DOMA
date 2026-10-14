@@ -10,8 +10,6 @@ import {
 } from "react";
 import { DiscoverStrip } from "@/components/DiscoverStrip";
 import { OpinionSocial } from "@/components/OpinionSocial";
-import { VsCard } from "@/components/VsCard";
-import { WarTicker } from "@/components/WarTicker";
 import { LEFT_USER_LABEL } from "@/lib/account-display";
 import type { ContextualSharePayload } from "@/lib/contextual-share";
 import type { DiscoverItem } from "@/lib/discover-mock";
@@ -147,9 +145,6 @@ type ArenaBarProps = {
   onChangeView: (view: ArenaView) => void;
   /** 셸 톤 = 지금 보고 있는 진영 (도전=블랙 · 방어=화이트) */
   shellLight: boolean;
-  /** 실시간 지지율 — VS 카드 */
-  nexusPercent?: number;
-  aegisPercent?: number;
   focusOpinionId?: string | null;
   uiDemo?: UiDemo;
   onRetry?: () => void;
@@ -468,39 +463,26 @@ function CampFeedPage({
   );
 }
 
-/** 첫 화면 — 주제·시놉시스·진영(창/방패)·그날 TOP */
+/** 첫 화면 — 주제·시놉시스·진영 진입(창/방패). VS/티커/TOP 없음. */
 function BattlefieldIntro({
   arena,
-  champion,
   onPickSide,
-  uiDemo,
-  onRetry,
-  onCompose,
   onOpenRules,
   onOpenShareCard,
   onDiscoverSelect,
   light,
-  nexusPercent,
-  aegisPercent,
 }: {
   arena: ArenaState;
-  champion: Opinion | null;
   onPickSide: (side: Side) => void;
-  uiDemo: UiDemo;
-  onRetry?: () => void;
-  onCompose?: () => void;
   onOpenRules?: () => void;
   onOpenShareCard?: (payload: ContextualSharePayload) => void;
   onDiscoverSelect?: (item: DiscoverItem) => void;
   light: boolean;
-  nexusPercent: number;
-  aegisPercent: number;
 }) {
   const timer = useTimerUrgency(arena.endsAt);
 
   const ink = light ? "text-black" : "text-white";
   const soft = light ? "text-black/55" : "text-white/55";
-  const faint = light ? "text-black/40" : "text-white/45";
   const border = light ? "border-black/12" : "border-white/10";
 
   return (
@@ -508,6 +490,7 @@ function BattlefieldIntro({
       className={light ? "bg-white text-black" : "bg-black text-white"}
       aria-label="오늘 전장"
       data-shell={light ? "light" : "dark"}
+      data-arena-intro
     >
       <div
         className={`battlefield-rise border-b px-5 pb-4 pt-5 text-center ${border}`}
@@ -560,23 +543,7 @@ function BattlefieldIntro({
         >
           {formatKstTodayImmersion()}
         </p>
-        {/* 얇은 VS 기하 — 타이머 아래 · 주제 위 */}
-        <p
-          className={`mt-3 inline-flex items-center gap-2 text-[10px] font-bold tracking-[0.22em] ${
-            light ? "text-black/45" : "text-white/45"
-          }`}
-          aria-hidden
-          data-vs-emblem
-        >
-          <span className="bg-black px-1.5 py-0.5 text-white">도전</span>
-          <span>VS</span>
-          <span className="bg-white px-1.5 py-0.5 text-black ring-1 ring-black/25">
-            방어
-          </span>
-        </p>
       </div>
-
-      <WarTicker light={light} />
 
       {/* 오늘의 전장 — 주제 본문 */}
       <div
@@ -654,119 +621,7 @@ function BattlefieldIntro({
         ) : null}
       </div>
 
-      <VsCard
-        nexusPercent={nexusPercent}
-        aegisPercent={aegisPercent}
-        light={light}
-      />
-
-      {/* 최고 전투글 — 진영 진입 전 첫 화면에서 본문까지 보이게 */}
-      <div
-        className={`border-y ${border}`}
-        aria-label="현재의 챔피언"
-        data-intro-top-opinion
-      >
-        {uiDemo === "loading" ? (
-          <StatusBlock kind="loading" message="불러오는 중" light={light} />
-        ) : uiDemo === "error" ? (
-          <StatusBlock
-            kind="error"
-            message="의견을 불러오지 못했습니다."
-            actionLabel="다시 시도"
-            onAction={onRetry}
-            light={light}
-          />
-        ) : !champion ? (
-          <StatusBlock
-            kind="empty"
-            message="아직 올라온 의견이 없습니다."
-            actionLabel={onCompose ? "글쓰기" : undefined}
-            onAction={onCompose}
-            light={light}
-          />
-        ) : (
-          <div className="px-5 py-5 text-center">
-            <p className={`text-[10px] font-bold tracking-[0.2em] ${faint}`}>
-              TOP 의견 ·{" "}
-              {champion.side === "NEXUS" ? "도전자" : "방어자"}
-            </p>
-            <div className={`mt-3 border-t pt-3.5 ${border}`}>
-              <div className="flex flex-col items-center gap-1.5">
-                <SmallAvatar
-                  name={
-                    champion.authorLeft ? LEFT_USER_LABEL : champion.author
-                  }
-                  light={light}
-                />
-                <div className="flex flex-wrap items-center justify-center gap-1.5">
-                  <span
-                    className={`text-[14px] font-semibold ${ink}`}
-                    data-author-left={champion.authorLeft ? "1" : undefined}
-                  >
-                    {champion.authorLeft
-                      ? LEFT_USER_LABEL
-                      : `@${champion.author}`}
-                  </span>
-                  <SideBadge side={champion.side} />
-                  <TrojanMark
-                    count={champion.trojanCount ?? 0}
-                    light={light}
-                  />
-                  {champion.createdAtUtc ? (
-                    <time
-                      className={`text-[11px] tabular-nums ${soft}`}
-                      dateTime={champion.createdAtUtc}
-                    >
-                      {formatPostTimeKst(champion.createdAtUtc)}
-                    </time>
-                  ) : null}
-                </div>
-              </div>
-              <p
-                className={`mx-auto mt-2.5 max-w-[36em] line-clamp-3 text-[13px] leading-[1.5] ${
-                  light ? "text-black/85" : "text-white/85"
-                }`}
-              >
-                {champion.text}
-              </p>
-              <p
-                className={`mt-2 text-[11px] tabular-nums ${
-                  light ? "text-neutral-500" : "text-muted"
-                }`}
-              >
-                지지 {champion.supports ?? 0}
-                <span className="mx-1.5 opacity-40">·</span>
-                좋아요 {champion.likes}
-              </p>
-              {onOpenShareCard ? (
-                <button
-                  type="button"
-                  onClick={() =>
-                    onOpenShareCard({
-                      kind: "opinion",
-                      side: champion.side,
-                      round: arena.round,
-                      topic: arena.topic,
-                      opinionText: champion.text,
-                      authorHandle: champion.authorLeft
-                        ? undefined
-                        : champion.author,
-                      authorLeft: champion.authorLeft,
-                    })
-                  }
-                  className={`mt-3 text-[12px] tracking-[0.08em] underline-offset-4 hover:underline ${soft}`}
-                  aria-label="TOP 의견 공유"
-                  data-share-top-opinion
-                >
-                  이 의견 공유
-                </button>
-              ) : null}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* 진영 — 창/방패 (셸과 별개로 흑|백 정체성) */}
+      {/* 진영 — 누르면 해당 진영 의견 칸으로 */}
       <div
         className={`grid grid-cols-2 gap-0 border-b ${
           light ? "border-black/15" : "border-white/15"
@@ -807,7 +662,7 @@ function BattlefieldIntro({
 /**
  * 오늘 전장
  * - 셸 톤 = 보고 있는 진영 (도전=블랙 · 방어=화이트)
- * - intro: 주제·진영·TOP (중앙)
+ * - intro: 주제·진영 진입 (VS/티커/TOP 없음)
  * - 스와이프: 좌 도전자 / 우 방어자 피드
  */
 export function ArenaBar({
@@ -816,8 +671,6 @@ export function ArenaBar({
   view,
   onChangeView,
   shellLight,
-  nexusPercent = arena.nexusPercent,
-  aegisPercent = arena.aegisPercent,
   focusOpinionId = null,
   uiDemo = "normal",
   onRetry,
@@ -948,17 +801,11 @@ export function ArenaBar({
         <div className="mx-auto max-w-[560px]">
           <BattlefieldIntro
             arena={arena}
-            champion={champion}
             onPickSide={(side) => onChangeView(side)}
-            uiDemo={uiDemo}
-            onRetry={onRetry}
-            onCompose={onCompose}
             onOpenRules={onOpenRules}
             onOpenShareCard={onOpenShareCard}
             onDiscoverSelect={onDiscoverSelect}
             light={light}
-            nexusPercent={nexusPercent}
-            aegisPercent={aegisPercent}
           />
         </div>
       </section>
@@ -1029,13 +876,6 @@ export function ArenaBar({
           </p>
           <RulesHud light={light} className="mt-2.5" />
         </div>
-
-        <VsCard
-          nexusPercent={nexusPercent}
-          aegisPercent={aegisPercent}
-          compact
-          light={light}
-        />
 
         <div
           className={`grid grid-cols-2 border-b ${
