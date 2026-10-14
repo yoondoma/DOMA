@@ -116,6 +116,42 @@ function ScrapMark({
   );
 }
 
+/** 판결 지지 — 도장/인장 심볼 (한글 「지지」 대신) */
+function SupportMark({
+  filled,
+  className,
+}: {
+  filled?: boolean;
+  className?: string;
+}) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      className={`shrink-0 ${className ?? ""}`}
+      aria-hidden
+    >
+      <path
+        d="M12 3.5 18.5 7v5.2c0 3.8-2.7 6.7-6.5 8-3.8-1.3-6.5-4.2-6.5-8V7L12 3.5Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+        fill={filled ? "currentColor" : "none"}
+        fillOpacity={filled ? 0.2 : 0}
+      />
+      <path
+        d="M9.2 12.2 11.1 14l3.7-4.2"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 type OpinionSocialProps = {
   /** @deprecated parentKind=opinion + targetId 사용 */
   opinionId?: string;
@@ -407,14 +443,19 @@ export function OpinionSocial({
           <button
             type="button"
             onClick={onSupport}
-            className={`inline-flex items-center gap-1 text-[13px] font-semibold tabular-nums ${
+            className={`inline-flex items-center gap-1.5 text-[13px] font-semibold tabular-nums ${
               supportedByMe ? active : muted
             }`}
             aria-pressed={Boolean(supportedByMe)}
             aria-label={supportedByMe ? "지지 해제" : "지지"}
             title="판결 지지"
+            data-support-action
           >
-            지지 {supports}
+            <SupportMark
+              filled={supportedByMe}
+              className={supportedByMe ? active : muted}
+            />
+            {supports}
           </button>
         ) : null}
         <button

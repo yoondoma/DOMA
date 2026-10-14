@@ -677,8 +677,7 @@ function BattlefieldIntro({
           onClick={() => onPickSide("NEXUS")}
           className="camp-press flex min-h-[80px] flex-col items-center justify-center gap-1.5 border-r border-paper/15 bg-ink px-3 py-3.5 text-paper active:bg-paper/[0.04]"
         >
-          <SpearMark size={24} />
-          <span className="text-[13px] font-bold tracking-[0.16em]">도전자</span>
+          <SpearMark size={28} />
         </button>
         <button
           type="button"
@@ -689,8 +688,7 @@ function BattlefieldIntro({
           className="camp-press flex min-h-[80px] flex-col items-center justify-center gap-1.5 bg-defend px-3 py-3.5 text-ink active:brightness-95"
           data-shell="defend"
         >
-          <ShieldMark size={24} />
-          <span className="text-[13px] font-bold tracking-[0.16em]">방어자</span>
+          <ShieldMark size={28} />
         </button>
       </div>
 
@@ -989,10 +987,7 @@ export function ArenaBar({
               selected === "NEXUS" ? "opacity-100" : "opacity-45"
             }`}
           >
-            <SpearMark size={22} />
-            <span className="text-[11px] font-bold tracking-[0.16em]">
-              도전자
-            </span>
+            <SpearMark size={24} />
           </button>
           <button
             type="button"
@@ -1005,10 +1000,7 @@ export function ArenaBar({
             }`}
             data-shell="defend"
           >
-            <ShieldMark size={22} />
-            <span className="text-[11px] font-bold tracking-[0.16em]">
-              방어자
-            </span>
+            <ShieldMark size={24} />
           </button>
         </div>
 

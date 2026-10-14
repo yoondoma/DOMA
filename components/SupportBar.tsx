@@ -17,8 +17,7 @@ type SupportBarProps = {
 export const SUPPORT_BAR_HEIGHT_PX = 44;
 
 /**
- * sticky `[흑 지지]` `[백 지지]` — intro + 진영 피드
- * Tension 게이지만 크림슨. 탭 scale(0.96)
+ * sticky 흑/백 지지 — 창·방패 심볼 + %만 (한글 라벨 없음)
  */
 export function SupportBar({
   nexusPercent,
@@ -43,6 +42,7 @@ export function SupportBar({
       data-support-bar
       data-thumb-zone
       data-slim="true"
+      data-hud-symbols
     >
       <div
         className="mx-auto flex h-1 max-w-[560px] overflow-hidden"
@@ -77,12 +77,12 @@ export function SupportBar({
             transition: "flex-basis 500ms ease, opacity 150ms ease",
           }}
         >
-          <SpearMark size={12} />
-          <span className="text-[12px] font-semibold tracking-[0.08em]">
-            흑 지지
-          </span>
-          <span className="text-[11px] font-bold tabular-nums text-paper/70">
+          <SpearMark size={14} />
+          <span className="text-[12px] font-bold tabular-nums leading-none">
             {nexusPercent}%
+          </span>
+          <span className="text-[10px] tabular-nums leading-none text-paper/55">
+            {nexusVotes.toLocaleString("ko-KR")}
           </span>
         </button>
         <button
@@ -99,13 +99,13 @@ export function SupportBar({
             transition: "flex-basis 500ms ease, opacity 150ms ease",
           }}
         >
-          <span className="text-[11px] font-bold tabular-nums text-ink/65">
+          <span className="text-[10px] tabular-nums leading-none text-ink/50">
+            {aegisVotes.toLocaleString("ko-KR")}
+          </span>
+          <span className="text-[12px] font-bold tabular-nums leading-none">
             {aegisPercent}%
           </span>
-          <span className="text-[12px] font-semibold tracking-[0.08em]">
-            백 지지
-          </span>
-          <ShieldMark size={12} />
+          <ShieldMark size={14} />
         </button>
       </div>
     </div>
