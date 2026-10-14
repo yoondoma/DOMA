@@ -13,6 +13,8 @@ export type Opinion = {
   author: string;
   text: string;
   likes: number;
+  replies?: number;
+  likedByMe?: boolean;
   isTopMinority?: boolean;
 };
 

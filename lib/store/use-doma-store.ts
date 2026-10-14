@@ -49,6 +49,11 @@ export function useUiOpinions(dayId?: string): UiOpinion[] {
     const ops = dayId
       ? snap.opinions.filter((o) => o.dayId === dayId)
       : snap.opinions.filter((o) => o.dayId === snap.clock.dayId);
-    return toUiOpinions(ops, snap.users);
+    return toUiOpinions(
+      ops,
+      snap.users,
+      snap.likes,
+      snap.session?.userId ?? null,
+    );
   }, [snap, dayId]);
 }

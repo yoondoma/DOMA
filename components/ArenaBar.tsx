@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { OpinionSocial } from "@/components/OpinionSocial";
 import { StatusBlock } from "@/components/StatusBlock";
 import { ShieldMark, SideBadge, SpearMark } from "@/components/SideMarks";
 import { BATTLE_HISTORY } from "@/lib/battle-history";
@@ -126,14 +127,6 @@ function OpinionRow({
             <SideBadge side={op.side} />
           </div>
         </div>
-        <span
-          className={`inline-flex shrink-0 items-center gap-1 text-[11px] tabular-nums ${
-            light ? "text-neutral-500" : "text-muted"
-          }`}
-        >
-          <HeartMark className={light ? "text-neutral-500" : "text-muted"} />
-          {op.likes}
-        </span>
       </div>
       <p
         className={`line-clamp-2 pl-10 text-[13px] leading-[1.4] ${
@@ -142,6 +135,13 @@ function OpinionRow({
       >
         {op.text}
       </p>
+      <OpinionSocial
+        opinionId={op.id}
+        likes={op.likes}
+        replies={op.replies ?? 0}
+        likedByMe={op.likedByMe}
+        light={light}
+      />
     </li>
   );
 }
@@ -528,16 +528,6 @@ export function ArenaBar({
                         @{top.author}
                       </span>
                       <SideBadge side={top.side} />
-                      <span
-                        className={`ml-auto inline-flex items-center gap-1 text-[11px] tabular-nums ${
-                          light ? "text-neutral-500" : "text-muted"
-                        }`}
-                      >
-                        <HeartMark
-                          className={light ? "text-neutral-500" : "text-muted"}
-                        />
-                        {top.likes}
-                      </span>
                     </div>
                     <p
                       className={`line-clamp-3 font-[family-name:var(--font-syne)] text-[14px] leading-[1.45] ${
@@ -546,6 +536,14 @@ export function ArenaBar({
                     >
                       “{top.text}”
                     </p>
+                    <OpinionSocial
+                      opinionId={top.id}
+                      likes={top.likes}
+                      replies={top.replies ?? 0}
+                      likedByMe={top.likedByMe}
+                      light={light}
+                      indent={false}
+                    />
                   </article>
                 ) : (
                   <StatusBlock

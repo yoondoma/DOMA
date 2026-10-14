@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { FollowListScreen } from "@/components/FollowListScreen";
 import { StatusBlock } from "@/components/StatusBlock";
 import {
@@ -22,6 +22,7 @@ import {
   PROFILE_USER,
   type TitleDetail,
 } from "@/lib/profile-mock";
+import { domaStore, useDomaStore, useSession } from "@/lib/store";
 import type { UiDemo } from "@/lib/ui-demo";
 import type { DailyTitle, ScoreEvent } from "@/lib/types/gamification";
 
@@ -51,6 +52,8 @@ export function ProfileScreen({
   onRetry,
   onCompose,
 }: ProfileScreenProps) {
+  const snap = useDomaStore();
+  const { user: me } = useSession();
   const [tab, setTab] = useState<ProfileTab>("posts");
   const [viralTitle, setViralTitle] = useState<DailyTitle | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -73,6 +76,25 @@ export function ProfileScreen({
     bio: PROFILE_USER.bio,
     avatarChar: PROFILE_USER.name.slice(0, 1),
   };
+
+  const profileUser = useMemo(
+    () => snap.users.find((u) => u.handle === display.handle) ?? null,
+    [snap.users, display.handle],
+  );
+
+  const followingCount = useMemo(() => {
+    if (!profileUser) return PROFILE_USER.following;
+    return snap.follows.filter((f) => f.followerId === profileUser.id).length;
+  }, [snap.follows, profileUser]);
+
+  const followerCount = useMemo(() => {
+    if (!profileUser) return PROFILE_USER.followers;
+    return snap.follows.filter((f) => f.followeeId === profileUser.id).length;
+  }, [snap.follows, profileUser]);
+
+  const iFollow = Boolean(
+    me && profileUser && !isSelf && domaStore.isFollowing(profileUser.id),
+  );
 
   const gamer = { ...PROFILE_GAMER, username: display.name };
 
@@ -129,9 +151,7 @@ export function ProfileScreen({
               className="tabular-nums"
               aria-label="팔로잉 목록"
             >
-              <span className="font-semibold text-white">
-                {PROFILE_USER.following}
-              </span>{" "}
+              <span className="font-semibold text-white">{followingCount}</span>{" "}
               팔로잉
             </button>
             <span className="mx-2 text-neutral-800">·</span>
@@ -141,12 +161,32 @@ export function ProfileScreen({
               className="tabular-nums"
               aria-label="팔로워 목록"
             >
-              <span className="font-semibold text-white">
-                {PROFILE_USER.followers}
-              </span>{" "}
+              <span className="font-semibold text-white">{followerCount}</span>{" "}
               팔로워
             </button>
           </p>
+
+          {!isSelf && me && profileUser ? (
+            <button
+              type="button"
+              onClick={() => {
+                try {
+                  const r = domaStore.toggleFollow(profileUser.id);
+                  showToast(r.following ? "팔로우했습니다" : "언팔로우했습니다");
+                } catch {
+                  showToast("로그인이 필요합니다");
+                }
+              }}
+              className={`mt-4 border px-4 py-2 text-[12px] tracking-[0.1em] ${
+                iFollow
+                  ? "border-neutral-600 text-neutral-200"
+                  : "border-white bg-white text-black"
+              }`}
+              aria-pressed={iFollow}
+            >
+              {iFollow ? "팔로잉" : "팔로우"}
+            </button>
+          ) : null}
 
           <div className="mt-5 border-t border-neutral-800 pt-4">
             <UserProfileCard
@@ -311,6 +351,7 @@ export function ProfileScreen({
       <FollowListScreen
         open={followMode != null}
         mode={followMode ?? "followers"}
+        profileHandle={display.handle}
         users={
           followMode === "following" ? PROFILE_FOLLOWING : PROFILE_FOLLOWERS
         }

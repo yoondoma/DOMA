@@ -327,10 +327,18 @@ class MemoryStore {
     return next.session;
   }
 
+  isFollowing(followeeId: string): boolean {
+    const sid = this.snap.session?.userId;
+    if (!sid) return false;
+    const id = makeFollowId(sid, followeeId);
+    return this.snap.follows.some((f) => f.id === id);
+  }
+
   addFollow(followeeId: string): Follow {
     const next = clone(this.snap);
     if (!next.session) throw new Error("SESSION_REQUIRED");
     const followerId = next.session.userId;
+    if (followerId === followeeId) throw new Error("CANNOT_FOLLOW_SELF");
     const id = makeFollowId(followerId, followeeId);
     if (next.follows.some((f) => f.id === id)) {
       return next.follows.find((f) => f.id === id)!;
@@ -344,6 +352,34 @@ class MemoryStore {
     next.follows = [...next.follows, row];
     this.commit(next);
     return row;
+  }
+
+  removeFollow(followeeId: string): boolean {
+    const next = clone(this.snap);
+    if (!next.session) throw new Error("SESSION_REQUIRED");
+    const id = makeFollowId(next.session.userId, followeeId);
+    const before = next.follows.length;
+    next.follows = next.follows.filter((f) => f.id !== id);
+    if (next.follows.length === before) return false;
+    this.commit(next);
+    return true;
+  }
+
+  /** 팔로우 토글 → following 여부 */
+  toggleFollow(followeeId: string): { following: boolean } {
+    if (this.isFollowing(followeeId)) {
+      this.removeFollow(followeeId);
+      return { following: false };
+    }
+    this.addFollow(followeeId);
+    return { following: true };
+  }
+
+  hasLiked(targetKind: Like["targetKind"], targetId: string): boolean {
+    const sid = this.snap.session?.userId;
+    if (!sid) return false;
+    const id = makeLikeId(sid, targetKind, targetId);
+    return this.snap.likes.some((l) => l.id === id);
   }
 
   addLike(targetKind: Like["targetKind"], targetId: string): Like {
@@ -370,14 +406,47 @@ class MemoryStore {
     return row;
   }
 
+  removeLike(targetKind: Like["targetKind"], targetId: string): boolean {
+    const next = clone(this.snap);
+    if (!next.session) throw new Error("SESSION_REQUIRED");
+    const id = makeLikeId(next.session.userId, targetKind, targetId);
+    const before = next.likes.length;
+    next.likes = next.likes.filter((l) => l.id !== id);
+    if (next.likes.length === before) return false;
+    if (targetKind === "opinion") {
+      next.opinions = next.opinions.map((o) =>
+        o.id === targetId
+          ? { ...o, likeCount: Math.max(0, o.likeCount - 1) }
+          : o,
+      );
+    }
+    this.commit(next);
+    return true;
+  }
+
+  /** 좋아요 토글 → liked 여부 */
+  toggleLike(
+    targetKind: Like["targetKind"],
+    targetId: string,
+  ): { liked: boolean } {
+    if (this.hasLiked(targetKind, targetId)) {
+      this.removeLike(targetKind, targetId);
+      return { liked: false };
+    }
+    this.addLike(targetKind, targetId);
+    return { liked: true };
+  }
+
   addReply(opinionId: string, body: string): Reply {
     const next = clone(this.snap);
     if (!next.session) throw new Error("SESSION_REQUIRED");
+    const trimmed = body.trim();
+    if (!trimmed) throw new Error("EMPTY_REPLY");
     const row: Reply = {
       id: makeReplyId(opinionId),
       opinionId,
       authorId: next.session.userId,
-      body: body.slice(0, 280),
+      body: trimmed.slice(0, 280),
       likeCount: 0,
       createdAtUtc: new Date().toISOString(),
     };
@@ -387,6 +456,39 @@ class MemoryStore {
     );
     this.commit(next);
     return row;
+  }
+
+  /** 본인 글만 삭제 (선택) */
+  deleteOpinion(opinionId: string): boolean {
+    const next = clone(this.snap);
+    if (!next.session) throw new Error("SESSION_REQUIRED");
+    const op = next.opinions.find((o) => o.id === opinionId);
+    if (!op || op.authorId !== next.session.userId) return false;
+    next.opinions = next.opinions.filter((o) => o.id !== opinionId);
+    next.replies = next.replies.filter((r) => r.opinionId !== opinionId);
+    next.likes = next.likes.filter(
+      (l) => !(l.targetKind === "opinion" && l.targetId === opinionId),
+    );
+    this.commit(next);
+    return true;
+  }
+
+  listFollowingUsers(userId?: string): User[] {
+    const uid = userId ?? this.snap.session?.userId;
+    if (!uid) return [];
+    const ids = new Set(
+      this.snap.follows.filter((f) => f.followerId === uid).map((f) => f.followeeId),
+    );
+    return this.snap.users.filter((u) => ids.has(u.id));
+  }
+
+  listFollowerUsers(userId?: string): User[] {
+    const uid = userId ?? this.snap.session?.userId;
+    if (!uid) return [];
+    const ids = new Set(
+      this.snap.follows.filter((f) => f.followeeId === uid).map((f) => f.followerId),
+    );
+    return this.snap.users.filter((u) => ids.has(u.id));
   }
 
   /** 목: 지지율 소폭 흔들림 */
