@@ -635,16 +635,16 @@ export function DomaHome() {
           className="pointer-events-none absolute inset-x-0 z-[55] flex justify-center px-4"
           style={{
             bottom: campSupportOpen
-              ? "calc(32px + 3.5rem + env(safe-area-inset-bottom) + 8px)"
+              ? "calc(56px + 3.5rem + env(safe-area-inset-bottom) + 8px)"
               : "calc(3.5rem + env(safe-area-inset-bottom) + 8px)",
           }}
           role="status"
         >
           <div
-            className={`max-w-[560px] border px-3 py-2 text-center text-[12px] font-medium tracking-wide ${
+            className={`r-md max-w-[560px] border px-3 py-2 text-center text-[12px] font-medium tracking-wide ${
               lightShell
-                ? "border-black/20 bg-white text-black"
-                : "border-white/30 bg-black text-white"
+                ? "border-ink/20 bg-paper text-ink"
+                : "border-paper/30 bg-ink text-paper"
             }`}
           >
             {toast}

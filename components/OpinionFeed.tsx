@@ -14,8 +14,8 @@ type OpinionFeedProps = {
 function HeartMark() {
   return (
     <svg
-      width="12"
-      height="12"
+      width="16"
+      height="16"
       viewBox="0 0 16 16"
       fill="none"
       className="shrink-0 text-muted"
@@ -34,42 +34,40 @@ function HeartMark() {
 function OpinionRow({ op, index }: { op: Opinion; index: number }) {
   return (
     <li
-      className={`feed-item border-b border-white/10 px-4 py-2.5 ${
-        op.isTopMinority ? "border-l-2 border-l-white bg-white/[0.03]" : ""
+      className={`feed-item feed-post ${
+        op.isTopMinority ? "bg-paper/[0.03]" : ""
       }`}
       style={{ animationDelay: `${index * 30}ms` }}
     >
-      <div className="mb-0.5 flex items-center gap-2">
+      <div className="flex gap-3">
         <div
-          className="flex size-7 shrink-0 items-center justify-center border border-white/30 text-[10px] font-bold text-muted"
+          className="r-md flex size-9 shrink-0 items-center justify-center border border-edge text-[11px] font-bold text-muted"
           aria-hidden
         >
           {op.author.slice(0, 1).toUpperCase()}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <span className="truncate text-[13px] font-semibold text-white">
+          <div className="feed-meta flex flex-wrap items-center gap-1.5">
+            <span className="truncate font-semibold text-paper">
               @{op.author}
             </span>
             <SideBadge side={op.side} />
             {op.createdAtUtc ? (
               <time
-                className="text-[11px] tabular-nums text-muted"
+                className="text-[12px] tabular-nums text-muted"
                 dateTime={op.createdAtUtc}
               >
                 {formatPostTimeKst(op.createdAtUtc)}
               </time>
             ) : null}
+            <span className="ml-auto inline-flex shrink-0 items-center gap-1.5 text-[13px] tabular-nums text-muted">
+              <HeartMark />
+              {op.likes}
+            </span>
           </div>
+          <p className="feed-body mt-1 line-clamp-4 text-paper/95">{op.text}</p>
         </div>
-        <span className="inline-flex shrink-0 items-center gap-1 text-[11px] tabular-nums text-muted">
-          <HeartMark />
-          {op.likes}
-        </span>
       </div>
-      <p className="line-clamp-2 pl-9 text-[13px] leading-[1.4] text-white/95">
-        {op.text}
-      </p>
     </li>
   );
 }
@@ -89,15 +87,12 @@ export function OpinionFeed({ opinions: opinionsProp }: OpinionFeedProps) {
 
   return (
     <section
-      className="mx-auto max-w-[560px] border-t border-white/12 bg-black text-white"
+      className="mx-auto max-w-[560px] border-t border-edge bg-ink text-paper"
       aria-label="의견 피드"
     >
-      <div className="border-b border-white/12 px-4 py-2.5">
+      <div className="border-b border-edge px-4 py-2.5">
         <p className="text-[10px] font-bold tracking-[0.18em] text-muted">
           현재 올라오는 의견
-        </p>
-        <p className="mt-0.5 text-[11px] text-white/45">
-          주제 아래 · 실시간 대화
         </p>
       </div>
       <ul aria-label="실시간 의견">
@@ -112,7 +107,7 @@ export function OpinionFeed({ opinions: opinionsProp }: OpinionFeedProps) {
         )}
       </ul>
 
-      <div className="border-y border-white/12 px-4 py-2">
+      <div className="border-y border-edge px-4 py-2">
         <p className="text-[10px] font-bold tracking-[0.18em] text-muted">
           HOT 글
         </p>

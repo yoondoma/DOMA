@@ -32,8 +32,8 @@ function HeartMark({
 }) {
   return (
     <svg
-      width="14"
-      height="14"
+      width="16"
+      height="16"
       viewBox="0 0 16 16"
       fill={filled ? "currentColor" : "none"}
       className={`shrink-0 ${className ?? ""}`}
@@ -52,8 +52,8 @@ function HeartMark({
 function ReplyMark({ className }: { className?: string }) {
   return (
     <svg
-      width="14"
-      height="14"
+      width="16"
+      height="16"
       viewBox="0 0 24 24"
       fill="none"
       className={`shrink-0 ${className ?? ""}`}
@@ -72,8 +72,8 @@ function ReplyMark({ className }: { className?: string }) {
 function ShareMark({ className }: { className?: string }) {
   return (
     <svg
-      width="14"
-      height="14"
+      width="16"
+      height="16"
       viewBox="0 0 24 24"
       fill="none"
       className={`shrink-0 ${className ?? ""}`}
@@ -99,8 +99,8 @@ function ScrapMark({
 }) {
   return (
     <svg
-      width="14"
-      height="14"
+      width="16"
+      height="16"
       viewBox="0 0 24 24"
       fill={filled ? "currentColor" : "none"}
       className={`shrink-0 ${className ?? ""}`}
@@ -244,7 +244,7 @@ export function OpinionSocial({
     if (!targetId || parentKind !== "opinion") return;
     try {
       const { supported, campMoved } = domaStore.toggleSupport(targetId);
-      /** 지지·진영전환 SFX 없음 (수한 · sense-brand) */
+      /** 지지·진영전환 SFX 없음 (정책 · sense-brand) */
       if (campMoved) {
         onToast?.("지지 · 진영이 이동했습니다");
         onCampMoved?.();
@@ -388,84 +388,77 @@ export function OpinionSocial({
   };
 
   return (
-    <div className={`mt-2 ${indent ? "pl-10" : ""}`}>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+    <div className={indent ? "pl-11" : undefined}>
+      <div className="feed-actions">
         <button
           type="button"
           onClick={onLike}
-          className={`inline-flex items-center gap-1 text-[12px] tabular-nums ${
+          className={`inline-flex items-center gap-1.5 text-[13px] tabular-nums ${
             likedByMe ? active : muted
           }`}
           aria-pressed={Boolean(likedByMe)}
           aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
-          title="호응 · 승패 무관"
+          title="호응"
         >
           <HeartMark filled={likedByMe} className={likedByMe ? active : muted} />
-          <span className="tracking-[0.02em]">좋아요</span>
           {likes}
         </button>
         {parentKind === "opinion" ? (
           <button
             type="button"
             onClick={onSupport}
-            className={`inline-flex items-center gap-1 text-[12px] font-semibold tabular-nums ${
+            className={`inline-flex items-center gap-1 text-[13px] font-semibold tabular-nums ${
               supportedByMe ? active : muted
             }`}
             aria-pressed={Boolean(supportedByMe)}
             aria-label={supportedByMe ? "지지 해제" : "지지"}
-            title="판결 지지 · 이 진영으로 이동"
+            title="판결 지지"
           >
-            <span className="tracking-[0.04em]">지지</span>
-            {supports}
+            지지 {supports}
           </button>
         ) : null}
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className={`inline-flex items-center gap-1 text-[12px] tabular-nums ${
+          className={`inline-flex items-center gap-1.5 text-[13px] tabular-nums ${
             open ? active : muted
           }`}
           aria-expanded={open}
           aria-label={
             open
               ? `댓글 접기 ${replyCount}`
-              : `댓글 ${replyCount} · 탭하여 펼치기`
+              : `댓글 ${replyCount}`
           }
-          title={open ? "댓글 접기" : "탭하여 댓글 펼치기"}
+          title={open ? "댓글 접기" : "댓글"}
           data-comment-toggle
         >
           <ReplyMark className={open ? active : muted} />
-          <span className="tracking-[0.02em]">댓글</span>
           {replyCount}
         </button>
         <button
           type="button"
           onClick={onShare}
-          className={`inline-flex items-center gap-1 text-[12px] ${muted}`}
+          className={`inline-flex items-center gap-1.5 text-[13px] ${muted}`}
           aria-label="공유"
         >
           <ShareMark className={muted} />
-          공유
         </button>
         <button
           type="button"
           onClick={onScrap}
-          className={`inline-flex items-center gap-1 text-[12px] ${
+          className={`inline-flex items-center gap-1.5 text-[13px] ${
             scraped ? active : muted
           }`}
           aria-pressed={scraped}
           aria-label={scraped ? "스크랩 해제" : "스크랩"}
         >
           <ScrapMark filled={scraped} className={scraped ? active : muted} />
-          스크랩
         </button>
       </div>
 
       {open ? (
         <div
-          className={`mt-2 border-t pt-2 ${
-            light ? "border-black/10" : "border-white/10"
-          }`}
+          className="mt-2.5 border-t border-edge pt-2.5"
           aria-label="댓글 스레드"
         >
           {thread.length === 0 ? (

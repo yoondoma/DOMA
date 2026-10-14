@@ -1,19 +1,29 @@
 @import "tailwindcss";
 
 :root {
-  /* Pure B&W 아레나 — 순백(#fff) 금지 · 매트 블랙 · 웜그레이 */
-  --ink: #0a0a0a;
+  /* 글로벌 7원칙 + 정밀 컬러 */
+  --ink: #050505;
+  --card: #111111;
   --paper: #e8e4dc;
   --background: var(--ink);
   --foreground: #f3f0ea;
-  --muted: #9c968c;
+  --muted: #888888;
+  --meta: #888888;
   --dim: #5c574f;
-  --line: rgba(243, 240, 234, 0.16);
+  --line: rgba(255, 255, 255, 0.06);
   --line-ink: rgba(10, 10, 10, 0.14);
-  --surface: #0a0a0a;
-  --surface-raised: #121212;
-  /* 박진감용 — 카운트다운 선에만 사용 */
-  --timer: #e10600;
+  /* 유리에 빛 — 카드 보더 */
+  --edge: rgba(255, 255, 255, 0.06);
+  --surface: #050505;
+  --surface-raised: #111111;
+  /* 크림슨 — Tension·승리/마감·타이머만 */
+  --crimson: #d32f2f;
+  --timer: #d32f2f;
+
+  /* 라운드 — 살짝~적당 (8–16). pill/완전원 남용 금지 */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
 
   /* 본문·UI — Pretendard (OFL) */
   --font-sans-stack:
@@ -40,8 +50,35 @@
   --color-timer: var(--timer);
   --color-ink: var(--ink);
   --color-paper: var(--paper);
+  --color-card: var(--card);
+  --color-edge: var(--edge);
+  --color-meta: var(--meta);
+  --color-crimson: var(--crimson);
   --font-sans: var(--font-sans-stack);
   --font-display: var(--font-display-stack);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+}
+
+/* 일관 라운드 유틸 */
+.r-sm {
+  border-radius: var(--radius-sm);
+}
+.r-md {
+  border-radius: var(--radius-md);
+}
+.r-lg {
+  border-radius: var(--radius-lg);
+}
+/* 하단 시트 — 위만 둥글게 */
+.r-sheet {
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+@media (min-width: 640px) {
+  .r-sheet {
+    border-radius: var(--radius-lg);
+  }
 }
 
 /* 셸 토큰 — Tailwind bg-black/bg-white 대체용 */
@@ -63,8 +100,101 @@
 .border-paper\/15 {
   border-color: rgba(232, 228, 220, 0.15);
 }
+.border-edge {
+  border-color: var(--edge);
+}
+.bg-card {
+  background-color: var(--card);
+}
+.text-meta {
+  color: var(--meta);
+}
+.text-crimson {
+  color: var(--crimson);
+}
 
-/* 타이머 — 디스플레이급 · 극도로 굵고 웅장 */
+/* 글 카드 — 유리 보더 · 호버 미세 밝기 */
+.post-card {
+  background: var(--card);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.05rem;
+  transition: filter 280ms ease, border-color 280ms ease, background-color 280ms ease;
+}
+.post-card:hover {
+  filter: brightness(1.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* gap-4 */
+  padding: 1rem;
+}
+.feed-body {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: -0.02em;
+  font-weight: 400;
+}
+.feed-meta {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--meta);
+}
+.feed-meta .feed-handle {
+  color: var(--meta);
+  font-weight: 600;
+}
+.feed-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.15rem 1.35rem;
+  margin-top: 0.7rem;
+  font-family: var(--font-sans);
+}
+.camp-pair {
+  border-radius: 12px;
+  overflow: hidden;
+  border-color: var(--edge);
+}
+
+/* 스켈레톤 */
+@keyframes skeleton-shimmer {
+  0% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0.45;
+  }
+}
+.skeleton-block {
+  background: #1a1a1a;
+  border-radius: var(--radius-sm);
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+/* Thumb Zone press */
+.thumb-press {
+  transition: transform 120ms ease-out;
+}
+.thumb-press:active {
+  transform: scale(0.96);
+}
+
+/* TENSION 게이지 */
+.tension-fill {
+  transition: flex-basis 500ms ease, width 500ms ease, background-color 500ms ease;
+}
+
+/* 타이머 — 디스플레이 세리프 · 숨쉬듯 미세 반짝 */
 .timer-display {
   font-family: var(--font-display);
   font-weight: 700;
@@ -72,6 +202,21 @@
   letter-spacing: 0.04em;
   line-height: 1;
   font-size: clamp(2.75rem, 11vw, 3.75rem);
+  color: var(--crimson);
+}
+.timer-breathe {
+  animation: timer-breathe 2.8s ease-in-out infinite;
+}
+@keyframes timer-breathe {
+  0%,
+  100% {
+    opacity: 0.82;
+    filter: brightness(0.95);
+  }
+  50% {
+    opacity: 1;
+    filter: brightness(1.12);
+  }
 }
 
 * {
@@ -162,6 +307,12 @@ body {
 
 .sheet-up {
   animation: sheet-up 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+@media (min-width: 640px) {
+  .sheet-up {
+    border-radius: var(--radius-lg);
+  }
 }
 
 /* 도전(블랙)↔방어(화이트) 셸 — 급격한 깜빡임 없이 짧은 ease */
@@ -322,9 +473,13 @@ body {
   animation-delay: 80ms;
 }
 
-/* 진영 탭 — 미세 press (버튼 자신만 transform) */
+/* 진영 탭 — 미세 press · 바깥 모서리만 라운드 */
 .camp-press {
   transition: transform 120ms ease-out, opacity 120ms ease-out;
+}
+.camp-pair {
+  border-radius: var(--radius-md);
+  overflow: hidden;
 }
 
 .camp-press:active {
@@ -479,7 +634,7 @@ body {
   }
   35% {
     transform: scale(0.985);
-    box-shadow: inset 0 0 0 2px #e10600;
+    box-shadow: inset 0 0 0 2px var(--crimson);
   }
   100% {
     transform: scale(1);
@@ -493,7 +648,7 @@ body {
   }
   35% {
     transform: scale(0.985);
-    box-shadow: inset 0 0 0 2px #0a0a0a;
+    box-shadow: inset 0 0 0 2px var(--ink);
   }
   100% {
     transform: scale(1);

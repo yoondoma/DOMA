@@ -24,6 +24,9 @@ import {
 } from "@/components/SideMarks";
 import { RulesHud } from "@/components/RulesHud";
 import { TrojanMark } from "@/components/TrojanMark";
+import { EmptyArena } from "@/components/ui/EmptyArena";
+import { FeedSkeleton } from "@/components/ui/FeedSkeleton";
+import { PostCard } from "@/components/ui/PostCard";
 import {
   formatKstTodayImmersion,
   formatPostTimeKst,
@@ -189,10 +192,8 @@ function topOpinionForSide(opinions: Opinion[], side: Side): Opinion | null {
 function SmallAvatar({ name, light }: { name: string; light?: boolean }) {
   return (
     <div
-      className={`flex size-8 shrink-0 items-center justify-center border text-[10px] font-bold ${
-        light
-          ? "border-black/25 text-neutral-600"
-          : "border-white/30 text-muted"
+      className={`r-md flex size-9 shrink-0 items-center justify-center border border-edge text-[11px] font-bold ${
+        light ? "text-ink/70" : "text-paper/70"
       }`}
       aria-hidden
     >
@@ -222,28 +223,20 @@ function OpinionRow({
 }) {
   const authorLabel = op.authorLeft ? LEFT_USER_LABEL : op.author;
   return (
-    <li
+    <PostCard
+      as="li"
       data-opinion-id={op.id}
-      className={`feed-item border-b px-4 py-2.5 ${
-        light ? "border-black/10" : "border-white/10"
-      } ${
-        focused
-          ? light
-            ? "bg-black/[0.06] ring-1 ring-inset ring-black/40"
-            : "bg-white/[0.08] ring-1 ring-inset ring-white/50"
-          : ""
-      }`}
+      focused={focused}
+      className="feed-item"
       style={{ animationDelay: `${index * 30}ms` }}
     >
-      <div className="mb-0.5 flex items-center gap-2">
+      <div className="flex gap-3">
         <SmallAvatar name={authorLabel} light={light} />
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div className="feed-meta flex flex-wrap items-center gap-1.5">
             {op.authorLeft || !onOpenAuthor ? (
               <span
-                className={`truncate text-[13px] font-semibold ${
-                  light ? "text-black" : "text-white"
-                }`}
+                className="feed-handle truncate"
                 data-author-left={op.authorLeft ? "1" : undefined}
               >
                 {op.authorLeft ? authorLabel : `@${authorLabel}`}
@@ -252,9 +245,7 @@ function OpinionRow({
               <button
                 type="button"
                 onClick={() => onOpenAuthor(op.author)}
-                className={`truncate text-[13px] font-semibold ${
-                  light ? "text-black" : "text-white"
-                }`}
+                className="feed-handle truncate"
                 aria-label={`@${authorLabel} 프로필`}
                 data-author-open
               >
@@ -265,50 +256,44 @@ function OpinionRow({
             <TrojanMark count={op.trojanCount ?? 0} light={light} />
             {op.createdAtUtc ? (
               <time
-                className={`text-[11px] tabular-nums ${
-                  light ? "text-neutral-500" : "text-muted"
-                }`}
+                className="text-[12px] tabular-nums text-meta"
                 dateTime={op.createdAtUtc}
               >
                 {formatPostTimeKst(op.createdAtUtc)}
               </time>
             ) : null}
+            {op.authorId && !op.authorLeft ? (
+              <span className="ml-auto">
+                <SafetyMenu
+                  userId={op.authorId}
+                  reportKind="opinion"
+                  reportTargetId={op.id}
+                  light={light}
+                />
+              </span>
+            ) : null}
           </div>
-        </div>
-        {op.authorId && !op.authorLeft ? (
-          <SafetyMenu
-            userId={op.authorId}
-            reportKind="opinion"
-            reportTargetId={op.id}
+          <p className="feed-body mt-1.5 line-clamp-6 text-paper/95">{op.text}</p>
+          <OpinionSocial
+            parentKind="opinion"
+            targetId={op.id}
+            likes={op.likes}
+            supports={op.supports ?? 0}
+            replies={op.replies ?? 0}
+            likedByMe={op.likedByMe}
+            supportedByMe={op.supportedByMe}
+            previewText={op.text}
+            authorHandle={op.authorLeft ? undefined : op.author}
+            authorLeft={op.authorLeft}
+            side={op.side}
             light={light}
+            onToast={onToast}
+            onOpenShareCard={onOpenShareCard}
+            shareTopic={shareTopic}
           />
-        ) : null}
+        </div>
       </div>
-      <p
-        className={`line-clamp-2 pl-10 text-[13px] leading-[1.4] ${
-          light ? "text-black/90" : "text-white/95"
-        }`}
-      >
-        {op.text}
-      </p>
-      <OpinionSocial
-        parentKind="opinion"
-        targetId={op.id}
-        likes={op.likes}
-        supports={op.supports ?? 0}
-        replies={op.replies ?? 0}
-        likedByMe={op.likedByMe}
-        supportedByMe={op.supportedByMe}
-        previewText={op.text}
-        authorHandle={op.authorLeft ? undefined : op.author}
-        authorLeft={op.authorLeft}
-        side={op.side}
-        light={light}
-        onToast={onToast}
-        onOpenShareCard={onOpenShareCard}
-        shareTopic={shareTopic}
-      />
-    </li>
+    </PostCard>
   );
 }
 
@@ -352,13 +337,12 @@ function CampFeedPage({
       .sort(byJudgmentDesc);
   }, [opinions, side, top]);
 
-  const ink = light ? "text-black" : "text-white";
-  const muted = light ? "text-neutral-500" : "text-muted";
-  const border = light ? "border-black/10" : "border-white/10";
+  const ink = light ? "text-ink" : "text-paper";
+  const muted = "text-meta";
 
   return (
     <div
-      className="camp-swipe-page h-full"
+      className="camp-swipe-page h-full bg-ink"
       style={{
         scrollSnapAlign: "start",
         scrollSnapStop: "normal",
@@ -369,9 +353,7 @@ function CampFeedPage({
       data-camp-page={side}
       aria-label={`${label} 의견 영역`}
     >
-      <div
-        className={`flex items-center justify-center gap-2 border-b px-4 py-2.5 ${border}`}
-      >
+      <div className="flex items-center justify-center gap-2 border-b border-edge px-4 py-2.5">
         <Mark size={16} className={ink} />
         <p className={`text-[10px] font-bold tracking-[0.16em] ${muted}`}>
           TOP
@@ -380,7 +362,7 @@ function CampFeedPage({
 
       <div className="px-4 py-3 text-left">
         {uiDemo === "loading" ? (
-          <StatusBlock kind="loading" message="불러오는 중" light={light} />
+          <FeedSkeleton count={1} className="px-0 py-0" />
         ) : uiDemo === "error" ? (
           <StatusBlock
             kind="error"
@@ -390,111 +372,100 @@ function CampFeedPage({
             light={light}
           />
         ) : top ? (
-          <article
+          <PostCard
             data-opinion-id={focusOpinionId === top.id ? top.id : undefined}
-            className={
-              focusOpinionId === top.id
-                ? light
-                  ? "rounded-sm bg-black/[0.06] p-2 ring-1 ring-black/40"
-                  : "rounded-sm bg-white/[0.08] p-2 ring-1 ring-white/50"
-                : undefined
-            }
+            focused={focusOpinionId === top.id}
           >
-            <div className="mb-1.5 flex flex-wrap items-center gap-2">
+            <div className="flex gap-3">
               <SmallAvatar
                 name={top.authorLeft ? LEFT_USER_LABEL : top.author}
                 light={light}
               />
-              {top.authorLeft || !onOpenAuthor ? (
-                <span
-                  className={`text-[13px] font-semibold ${ink}`}
-                  data-author-left={top.authorLeft ? "1" : undefined}
-                >
-                  {top.authorLeft ? LEFT_USER_LABEL : `@${top.author}`}
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => onOpenAuthor(top.author)}
-                  className={`text-[13px] font-semibold ${ink}`}
-                  aria-label={`@${top.author} 프로필`}
-                  data-author-open
-                >
-                  @{top.author}
-                </button>
-              )}
-              <SideBadge side={top.side} />
-              <TrojanMark count={top.trojanCount ?? 0} light={light} />
-              {top.createdAtUtc ? (
-                <time
-                  className={`text-[11px] tabular-nums ${muted}`}
-                  dateTime={top.createdAtUtc}
-                >
-                  {formatPostTimeKst(top.createdAtUtc)}
-                </time>
-              ) : null}
-              {top.authorId && !top.authorLeft ? (
-                <SafetyMenu
-                  userId={top.authorId}
-                  reportKind="opinion"
-                  reportTargetId={top.id}
+              <div className="min-w-0 flex-1">
+                <div className="feed-meta flex flex-wrap items-center gap-1.5">
+                  {top.authorLeft || !onOpenAuthor ? (
+                    <span
+                      className="feed-handle truncate"
+                      data-author-left={top.authorLeft ? "1" : undefined}
+                    >
+                      {top.authorLeft ? LEFT_USER_LABEL : `@${top.author}`}
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => onOpenAuthor(top.author)}
+                      className="feed-handle truncate"
+                      aria-label={`@${top.author} 프로필`}
+                      data-author-open
+                    >
+                      @{top.author}
+                    </button>
+                  )}
+                  <SideBadge side={top.side} />
+                  <TrojanMark count={top.trojanCount ?? 0} light={light} />
+                  {top.createdAtUtc ? (
+                    <time
+                      className={`text-[12px] tabular-nums ${muted}`}
+                      dateTime={top.createdAtUtc}
+                    >
+                      {formatPostTimeKst(top.createdAtUtc)}
+                    </time>
+                  ) : null}
+                  {top.authorId && !top.authorLeft ? (
+                    <span className="ml-auto">
+                      <SafetyMenu
+                        userId={top.authorId}
+                        reportKind="opinion"
+                        reportTargetId={top.id}
+                        light={light}
+                      />
+                    </span>
+                  ) : null}
+                </div>
+                <p className="feed-body mt-1.5 text-paper/95">{top.text}</p>
+                <OpinionSocial
+                  parentKind="opinion"
+                  targetId={top.id}
+                  likes={top.likes}
+                  supports={top.supports ?? 0}
+                  replies={top.replies ?? 0}
+                  likedByMe={top.likedByMe}
+                  supportedByMe={top.supportedByMe}
+                  previewText={top.text}
+                  authorHandle={top.authorLeft ? undefined : top.author}
+                  authorLeft={top.authorLeft}
+                  side={top.side}
+                  shareTopic={shareTopic}
                   light={light}
+                  indent={false}
+                  onToast={onToast}
+                  onOpenShareCard={onOpenShareCard}
                 />
-              ) : null}
+              </div>
             </div>
-            <p className={`text-[14px] leading-[1.5] ${ink}`}>
-              {top.text}
-            </p>
-            <div className="mt-2">
-              <OpinionSocial
-                parentKind="opinion"
-                targetId={top.id}
-                likes={top.likes}
-                supports={top.supports ?? 0}
-                replies={top.replies ?? 0}
-                likedByMe={top.likedByMe}
-                supportedByMe={top.supportedByMe}
-                previewText={top.text}
-                authorHandle={top.authorLeft ? undefined : top.author}
-                authorLeft={top.authorLeft}
-                side={top.side}
-                shareTopic={shareTopic}
-                light={light}
-                indent={false}
-                onToast={onToast}
-                onOpenShareCard={onOpenShareCard}
-              />
-            </div>
-          </article>
+          </PostCard>
         ) : (
-          <StatusBlock
-            kind="empty"
+          <EmptyArena
             message="TOP 의견이 아직 없습니다."
             actionLabel={onCompose ? "글쓰기" : undefined}
             onAction={onCompose}
-            light={light}
+            className="py-10"
           />
         )}
       </div>
 
-      <div className={`border-t px-4 py-1.5 ${border}`}>
+      <div className="border-t border-edge px-4 py-1.5">
         <p className={`text-[10px] font-bold tracking-[0.18em] ${muted}`}>
           피드
         </p>
       </div>
-      <ul aria-label={`${label} 피드`}>
-        {rising.length === 0 &&
-        uiDemo !== "loading" &&
-        uiDemo !== "error" ? (
-          <li>
-            <StatusBlock
-              kind="empty"
-              message="아직 글이 없습니다."
-              light={light}
-            />
-          </li>
-        ) : rising.length === 0 ? null : (
-          rising.map((op, i) => (
+      {uiDemo === "loading" ? (
+        <FeedSkeleton count={3} />
+      ) : rising.length === 0 && uiDemo !== "error" ? (
+        <EmptyArena message="아직 글이 없습니다." />
+      ) : rising.length === 0 ? null : (
+        <ul className="feed-list" aria-label={`${label} 피드`}>
+          {rising.map((op, i) => (
             <OpinionRow
               key={op.id}
               op={op}
@@ -506,9 +477,9 @@ function CampFeedPage({
               onOpenAuthor={onOpenAuthor}
               shareTopic={shareTopic}
             />
-          ))
-        )}
-      </ul>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -572,9 +543,10 @@ function BattlefieldIntro({
         </p>
         {timer.phase === "after" ? null : (
           <p
-            className={`mt-2 text-timer ${timerUrgencyClass(timer.stage, "hero")}`}
+            className={`timer-breathe mt-2 text-timer ${timerUrgencyClass(timer.stage, "hero")}`}
             aria-label={`${timer.phaseLabel} ${timer.remaining}`}
             data-urgency={timer.stage ?? "calm"}
+            data-timer-breathe
             data-closing={
               timer.stage === "10m" ||
               timer.stage === "5m" ||
@@ -610,10 +582,10 @@ function BattlefieldIntro({
             <button
               type="button"
               onClick={onOpenRules}
-              className={`mt-1 inline-flex size-5 shrink-0 items-center justify-center border text-[10px] font-bold tracking-[0.06em] ${
+              className={`r-sm mt-1 inline-flex size-5 shrink-0 items-center justify-center border text-[10px] font-bold tracking-[0.06em] ${
                 light
-                  ? "border-black/25 text-black/55"
-                  : "border-white/25 text-white/55"
+                  ? "border-ink/25 text-ink/55"
+                  : "border-paper/25 text-paper/55"
               }`}
               aria-label="규칙"
               title="규칙"
@@ -687,8 +659,8 @@ function BattlefieldIntro({
 
       {/* 진영 — 누르면 해당 진영 의견 칸으로 */}
       <div
-        className={`grid grid-cols-2 gap-0 border-b ${
-          light ? "border-black/15" : "border-white/15"
+        className={`camp-pair mx-3 mb-3 grid grid-cols-2 gap-0 border ${
+          light ? "border-ink/12" : "border-paper/15"
         }`}
         role="tablist"
         aria-label="진영 선택"
@@ -920,12 +892,13 @@ export function ArenaBar({
           </p>
           {timer.phase === "after" ? null : (
             <p
-              className={`mt-1 text-timer ${timerUrgencyClass(
+              className={`timer-breathe mt-1 text-timer ${timerUrgencyClass(
                 timer.stage,
                 "sticky",
               )}`}
               aria-label={`${timer.phaseLabel} ${timer.remaining}`}
               data-urgency={timer.stage ?? "calm"}
+              data-timer-breathe
               data-closing={
                 timer.stage === "10m" ||
                 timer.stage === "5m" ||
@@ -949,10 +922,10 @@ export function ArenaBar({
                 <button
                   type="button"
                   onClick={onOpenRules}
-                  className={`mt-1 inline-flex size-4 shrink-0 items-center justify-center border text-[9px] font-bold ${
+                  className={`r-sm mt-1 inline-flex size-4 shrink-0 items-center justify-center border text-[9px] font-bold ${
                     light
-                      ? "border-black/20 text-black/45"
-                      : "border-white/20 text-white/45"
+                      ? "border-ink/20 text-ink/45"
+                      : "border-paper/20 text-paper/45"
                   }`}
                   aria-label="규칙"
                   title="규칙"
@@ -1003,8 +976,8 @@ export function ArenaBar({
         </div>
 
         <div
-          className={`grid grid-cols-2 border-b ${
-            light ? "border-black/15" : "border-white/15"
+          className={`camp-pair mx-3 my-2 grid grid-cols-2 border ${
+            light ? "border-ink/12" : "border-paper/15"
           }`}
           role="tablist"
           aria-label="진영 선택"

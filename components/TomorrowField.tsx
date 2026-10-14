@@ -109,7 +109,8 @@ export function TomorrowField({
           내일의 주제 확정까지
         </p>
         <p
-          className="timer-display mt-2 text-timer"
+          className="timer-breathe timer-display mt-2 text-timer"
+          data-timer-breathe
           aria-label={`주제 확정까지 ${confirmRemaining}`}
         >
           {confirmRemaining}
@@ -195,14 +196,14 @@ export function TomorrowField({
                         type="button"
                         disabled={supportedId === c.id}
                         onClick={() => onSupport(c.id)}
-                        className="flex-1 border border-white bg-white py-2 text-[12px] font-bold tracking-[0.1em] text-black disabled:border-white/25 disabled:bg-transparent disabled:text-muted"
+                        className="r-md flex-1 border border-white bg-paper py-2 text-[12px] font-bold tracking-[0.1em] text-ink disabled:border-white/25 disabled:bg-transparent disabled:text-muted"
                       >
                         {supportedId === c.id ? "지지함" : "이 주제 지지"}
                       </button>
                       <button
                         type="button"
                         onClick={() => onSupport(c.id)}
-                        className="flex-1 border border-white/40 py-2 text-[12px] font-bold tracking-[0.1em] text-white"
+                        className="r-md flex-1 border border-white/40 py-2 text-[12px] font-bold tracking-[0.1em] text-white"
                       >
                         이끌기
                       </button>
@@ -234,7 +235,7 @@ export function TomorrowField({
             <button
               type="button"
               onClick={onPropose}
-              className="w-full border border-white/25 py-2.5 text-[12px] font-bold tracking-[0.1em] text-white"
+              className="r-md w-full border border-white/25 py-2.5 text-[12px] font-bold tracking-[0.1em] text-white"
             >
               새 주제 제안하기
             </button>
