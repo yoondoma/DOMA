@@ -11,7 +11,11 @@ import { NotificationsScreen } from "@/components/NotificationsScreen";
 import { ProfileScreen } from "@/components/ProfileScreen";
 import { PullRefresh } from "@/components/PullRefresh";
 import { SearchSheet } from "@/components/SearchSheet";
-import { SettingsSheet } from "@/components/SettingsSheet";
+import {
+  SettingsSheet,
+  type EditableProfile,
+} from "@/components/SettingsSheet";
+import { PROFILE_USER } from "@/lib/profile-mock";
 import { ShareResultCard } from "@/components/ShareResultCard";
 import { SupportBar } from "@/components/SupportBar";
 import { TomorrowCompose } from "@/components/TomorrowCompose";
@@ -59,6 +63,12 @@ export function DomaHome() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [editableProfile, setEditableProfile] = useState<EditableProfile>({
+    name: PROFILE_USER.name,
+    handle: PROFILE_USER.handle,
+    bio: PROFILE_USER.bio,
+    avatarChar: PROFILE_USER.name.slice(0, 1),
+  });
   const refreshLock = useRef(false);
 
   const lightShell =
@@ -251,6 +261,8 @@ export function DomaHome() {
         {navTab === "profile" ? (
           <ProfileScreen
             isSelf
+            profile={editableProfile}
+            onOpenSettings={() => setSettingsOpen(true)}
             onOpenShareCard={() => setShareOpen(true)}
           />
         ) : null}
@@ -306,6 +318,8 @@ export function DomaHome() {
       <SearchSheet open={searchOpen} onClose={() => setSearchOpen(false)} />
       <SettingsSheet
         open={settingsOpen}
+        profile={editableProfile}
+        onSave={setEditableProfile}
         onClose={() => setSettingsOpen(false)}
         onToast={showToast}
       />

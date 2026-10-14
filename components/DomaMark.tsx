@@ -9,8 +9,8 @@ type DomaMarkProps = {
 };
 
 /**
- * 삼각이 위 레이어.
- * 원은 삼각과 겹치는 상단 호를 패스에서 끊음 → 가려지는 구간 스트로크 0.
+ * 삼각이 위 레이어 · 원과 맞닿음(팁이 타원 안).
+ * 가려지는 상단 호만 패스에서 제거 — 간격 벌리지 않음.
  */
 export function DomaMark({
   size = 56,
@@ -21,15 +21,16 @@ export function DomaMark({
   const bg = light ? "#ffffff" : "#000000";
   const width = Math.round(size * (48 / 72));
 
+  /** 팁 (24,52)가 타원(cy=56.5,ry=12) 안 → 맞닿음/살짝 겹침 */
   const tri = "M6 23.2h36L24 52Z";
 
   /**
    * 타원 cx=24 cy=56.5 rx=20.5 ry=12
-   * 교차 ≈ (-103°, -77°)보다 넓게 끊음 — 스트로크 두께가
-   * 삼각 안으로 번지지 않게 (-125° ~ -55°).
+   * 변–타원 교차 ≈ −103° / −77°. 끝점을 교차보다 살짝 삼각 안쪽에
+   * 두어(−100°~−80°) 붙인 채 가려진 선만 제거.
    */
   const ellipseOpen =
-    "M12.24 46.64 A20.5 12 0 1 0 35.76 46.64";
+    "M20.44 44.68 A20.5 12 0 1 0 27.56 44.68";
 
   return (
     <svg
@@ -41,7 +42,7 @@ export function DomaMark({
       className={`shrink-0 ${className}`}
       aria-hidden
     >
-      {/* 원 — 상단 겹침 구간은 패스에 없음 */}
+      {/* 원 — 삼각 아래 가려진 상단만 끊김 */}
       <path
         d={ellipseOpen}
         stroke={stroke}
@@ -50,7 +51,7 @@ export function DomaMark({
         fill="none"
       />
 
-      {/* 삼각 위 레이어 */}
+      {/* 삼각 위 레이어 (배경 채움으로 잔여 원선 차단) */}
       <path d={tri} fill={bg} stroke="none" />
       <path
         d={tri}

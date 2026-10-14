@@ -6,6 +6,7 @@ import {
   UserProfileCard,
   ViralShareCard,
 } from "@/components/gamification";
+import type { EditableProfile } from "@/components/SettingsSheet";
 import {
   PROFILE_GAMER,
   PROFILE_POSTS,
@@ -20,56 +21,33 @@ type ProfileScreenProps = {
   onOpenShareCard?: () => void;
   /** 하단 탭 = 본인 프로필. 남 프로필 조회 시 false */
   isSelf?: boolean;
+  /** 본인 프로필 표시값 (설정 화면에서 동기화) */
+  profile?: EditableProfile;
+  /** 톱니·개인설정 편집 → 풀스크린 설정 */
+  onOpenSettings?: () => void;
 };
 
-type DraftProfile = {
-  name: string;
-  handle: string;
-  bio: string;
-  avatarChar: string;
-};
-
-/** Threads형 · 본인=개인설정 · 칭호 위 · 글 아래 */
+/** Threads형 · 본인=개인설정 링크 · 칭호 위 · 글 아래 */
 export function ProfileScreen({
   onOpenShareCard,
   isSelf = true,
+  profile,
+  onOpenSettings,
 }: ProfileScreenProps) {
   const [tab, setTab] = useState<ProfileTab>("posts");
   const [viralTitle, setViralTitle] = useState<DailyTitle | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState<DraftProfile>({
-    name: PROFILE_USER.name,
-    handle: PROFILE_USER.handle,
-    bio: PROFILE_USER.bio,
-    avatarChar: PROFILE_USER.name.slice(0, 1),
-  });
-  const [saved, setSaved] = useState<DraftProfile>(draft);
 
   const showToast = (message: string) => {
     setToast(message);
     window.setTimeout(() => setToast(null), 2200);
   };
 
-  const display = isSelf ? saved : {
+  const display: EditableProfile = profile ?? {
     name: PROFILE_USER.name,
     handle: PROFILE_USER.handle,
     bio: PROFILE_USER.bio,
     avatarChar: PROFILE_USER.name.slice(0, 1),
-  };
-
-  const savePersonal = () => {
-    const next = {
-      ...draft,
-      name: draft.name.trim() || saved.name,
-      handle: draft.handle.trim().replace(/^@/, "") || saved.handle,
-      bio: draft.bio.trim(),
-      avatarChar: (draft.avatarChar.trim() || draft.name).slice(0, 1),
-    };
-    setSaved(next);
-    setDraft(next);
-    setEditing(false);
-    showToast("개인설정을 저장했습니다");
   };
 
   return (
@@ -112,7 +90,6 @@ export function ProfileScreen({
             팔로워
           </p>
 
-          {/* 위 = 칭호 */}
           <div className="mt-5 border-t border-neutral-800 pt-4">
             <UserProfileCard
               user={{
@@ -123,7 +100,6 @@ export function ProfileScreen({
             />
           </div>
 
-          {/* 본인만 — 칭호와 글 탭 사이 개인설정 */}
           {isSelf ? (
             <div
               className="mt-5 border-t border-neutral-800 pt-4"
@@ -133,109 +109,21 @@ export function ProfileScreen({
                 <p className="text-[11px] font-bold tracking-[0.16em] text-neutral-200">
                   개인설정
                 </p>
-                {!editing ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDraft(saved);
-                      setEditing(true);
-                    }}
-                    className="text-[11px] tracking-[0.12em] text-neutral-200 underline underline-offset-4"
-                  >
-                    편집
-                  </button>
-                ) : (
-                  <div className="flex gap-3 text-[11px] tracking-[0.12em]">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDraft(saved);
-                        setEditing(false);
-                      }}
-                      className="text-neutral-200"
-                    >
-                      취소
-                    </button>
-                    <button
-                      type="button"
-                      onClick={savePersonal}
-                      className="text-white underline underline-offset-4"
-                    >
-                      저장
-                    </button>
-                  </div>
-                )}
+                <button
+                  type="button"
+                  onClick={onOpenSettings}
+                  className="text-[11px] tracking-[0.12em] text-neutral-200 underline underline-offset-4"
+                >
+                  편집
+                </button>
               </div>
-
-              {editing ? (
-                <div className="mt-3 space-y-3">
-                  <label className="block">
-                    <span className="text-[11px] tracking-[0.1em] text-neutral-200">
-                      이름
-                    </span>
-                    <input
-                      value={draft.name}
-                      onChange={(e) =>
-                        setDraft((d) => ({ ...d, name: e.target.value }))
-                      }
-                      className="mt-1 w-full border-b border-neutral-200 bg-transparent py-1.5 text-[14px] text-white outline-none"
-                      maxLength={24}
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="text-[11px] tracking-[0.1em] text-neutral-200">
-                      핸들
-                    </span>
-                    <input
-                      value={draft.handle}
-                      onChange={(e) =>
-                        setDraft((d) => ({ ...d, handle: e.target.value }))
-                      }
-                      className="mt-1 w-full border-b border-neutral-200 bg-transparent py-1.5 text-[14px] text-white outline-none"
-                      maxLength={24}
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="text-[11px] tracking-[0.1em] text-neutral-200">
-                      바이오
-                    </span>
-                    <textarea
-                      value={draft.bio}
-                      onChange={(e) =>
-                        setDraft((d) => ({ ...d, bio: e.target.value }))
-                      }
-                      rows={2}
-                      className="mt-1 w-full resize-none border-b border-neutral-200 bg-transparent py-1.5 text-[14px] leading-[1.45] text-white outline-none"
-                      maxLength={120}
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="text-[11px] tracking-[0.1em] text-neutral-200">
-                      아바타 이니셜
-                    </span>
-                    <input
-                      value={draft.avatarChar}
-                      onChange={(e) =>
-                        setDraft((d) => ({
-                          ...d,
-                          avatarChar: e.target.value.slice(0, 1),
-                        }))
-                      }
-                      className="mt-1 w-12 border-b border-neutral-200 bg-transparent py-1.5 text-center text-[16px] font-bold text-white outline-none"
-                      maxLength={1}
-                    />
-                  </label>
-                </div>
-              ) : (
-                <p className="mt-2 text-[13px] leading-[1.5] text-neutral-200">
-                  이름 · 바이오 · 아바타를 고칠 수 있습니다.
-                </p>
-              )}
+              <p className="mt-2 text-[13px] leading-[1.5] text-neutral-200">
+                이름 · 바이오 · 아바타를 설정 화면에서 고칩니다.
+              </p>
             </div>
           ) : null}
         </div>
 
-        {/* 아래 = 글 / 전투 기록 */}
         <div
           className="grid grid-cols-2 border-y border-neutral-800"
           role="tablist"
