@@ -309,19 +309,89 @@ body {
   will-change: scroll-position;
 }
 
-/* CLOSING_SOON — 빨간 타이머만 pulse (글로우 없음) */
-@keyframes timer-closing-pulse {
+/* 판결 타이머 압박 — 단계별 크기·pulse·빨강 (글로우 없음) */
+@keyframes timer-pulse-slow {
   0%,
   100% {
     opacity: 1;
   }
   50% {
-    opacity: 0.55;
+    opacity: 0.72;
   }
 }
 
+@keyframes timer-pulse-mid {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.58;
+  }
+}
+
+@keyframes timer-pulse-fast {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(1.03);
+  }
+}
+
+@keyframes timer-pulse-urgent {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(1.06);
+  }
+}
+
+.timer-urgency-3h {
+  color: var(--timer);
+  font-weight: 600;
+}
+
+.timer-urgency-1h {
+  color: var(--timer);
+  font-weight: 700;
+  animation: timer-pulse-slow 1.6s ease-in-out infinite;
+}
+
+.timer-urgency-30m {
+  color: var(--timer);
+  font-weight: 700;
+  animation: timer-pulse-mid 1.25s ease-in-out infinite;
+}
+
+.timer-urgency-10m {
+  color: #ff1a12;
+  font-weight: 700;
+  animation: timer-pulse-mid 1s ease-in-out infinite;
+}
+
+.timer-urgency-5m {
+  color: #ff1a12;
+  font-weight: 800;
+  animation: timer-pulse-fast 0.85s ease-in-out infinite;
+}
+
+.timer-urgency-1m {
+  color: #ff2a20;
+  font-weight: 800;
+  animation: timer-pulse-urgent 0.55s ease-in-out infinite;
+}
+
+/* 하위 호환 */
 .timer-closing-pulse {
-  animation: timer-closing-pulse 1.1s ease-in-out infinite;
+  animation: timer-pulse-mid 1.1s ease-in-out infinite;
 }
 
 @keyframes status-pulse {

@@ -1,10 +1,20 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { isShutdownState } from "@/lib/arena-gate";
 import { sharePost } from "@/lib/share-post";
 import { playDomaSound } from "@/lib/sound/doma-sound";
 import { domaStore, useDomaStore } from "@/lib/store";
 import type { LikeTargetKind, ReplyParentKind, ScrapTargetKind } from "@/lib/types/domain";
+
+/** 판결 후(LOCKED)·쿨다운 — 좋아요·지지·댓글 불가 */
+function ringClosedToast(): string {
+  const state = domaStore.getClock().state;
+  if (state === "LOCKED" || isShutdownState(state)) {
+    return "판결 후 · 좋아요·지지·댓글 불가 (스크랩·공유만)";
+  }
+  return "전장 셧다운 (23:00–08:00)";
+}
 
 function HeartMark({
   filled,
@@ -194,7 +204,7 @@ export function OpinionSocial({
       domaStore.toggleLike(likeKind, targetId);
     } catch (e) {
       if (e instanceof Error && e.message === "ARENA_SHUTDOWN") {
-        onToast?.("전장 셧다운 (23:00–08:00)");
+        onToast?.(ringClosedToast());
         return;
       }
       if (e instanceof Error && e.message === "QUOTA_LIKES") {
@@ -219,7 +229,7 @@ export function OpinionSocial({
       }
     } catch (e) {
       if (e instanceof Error && e.message === "ARENA_SHUTDOWN") {
-        onToast?.("전장 셧다운 (23:00–08:00)");
+        onToast?.(ringClosedToast());
         return;
       }
       if (e instanceof Error && e.message === "QUOTA_CAMP_MOVES") {
@@ -262,7 +272,7 @@ export function OpinionSocial({
       onToast?.("댓글을 남겼습니다");
     } catch (e) {
       if (e instanceof Error && e.message === "ARENA_SHUTDOWN") {
-        onToast?.("전장 셧다운 (23:00–08:00)");
+        onToast?.(ringClosedToast());
         return;
       }
       if (e instanceof Error && e.message === "SESSION_REQUIRED") {

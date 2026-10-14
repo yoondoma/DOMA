@@ -98,20 +98,25 @@ export const PROFILE_POSTS: ProfilePost[] = [
 /** 프로필용 최근 전투 요약 (목 — 이용자 관점 승/패) */
 export const PROFILE_RECENT_BATTLES = BATTLE_HISTORY.slice(-5)
   .reverse()
-  .map((b, i) => ({
-    id: `battle-${b.round}`,
-    date: b.date,
-    round: b.round,
-    topic: b.topic,
-    joinedAs: (i % 2 === 0 ? "NEXUS" : "AEGIS") as Side,
-    result: (b.winner === (i % 2 === 0 ? "NEXUS" : "AEGIS")
-      ? "win"
-      : "loss") as "win" | "loss",
-    winnerPercent: b.winnerPercent,
-    delta: pointDelta(
-      b.winner === (i % 2 === 0 ? "NEXUS" : "AEGIS") ? "win" : "loss",
-    ),
-  }));
+  .map((b, i) => {
+    const joinedAs = (i % 2 === 0 ? "NEXUS" : "AEGIS") as Side;
+    const result =
+      b.winner === "JOINT"
+        ? ("win" as const)
+        : b.winner === joinedAs
+          ? ("win" as const)
+          : ("loss" as const);
+    return {
+      id: `battle-${b.round}`,
+      date: b.date,
+      round: b.round,
+      topic: b.topic,
+      joinedAs,
+      result,
+      winnerPercent: b.winnerPercent,
+      delta: pointDelta(result),
+    };
+  });
 
 /** 티어 상승 기록 — 최신 순 (승 +1 / 패 -0.5) */
 export const PROFILE_SCORE_HISTORY: ScoreEvent[] = (() => {

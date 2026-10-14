@@ -51,7 +51,8 @@ export type BattleDay = {
   date: string;
   round: number;
   topic: string;
-  winner: Side;
+  /** JOINT = 지지·좋아요 모두 동점 공동 승리 */
+  winner: Side | "JOINT";
   winnerPercent: number;
   loserPercent: number;
   winnerAuthor: string;

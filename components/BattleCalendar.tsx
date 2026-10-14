@@ -33,6 +33,7 @@ function DayDetail({
   battle: BattleDay;
   onBack: () => void;
 }) {
+  const joint = battle.winner === "JOINT";
   const challengerWin = battle.winner === "NEXUS";
   const dateLabel = battle.date.split("-").join(".");
 
@@ -62,37 +63,66 @@ function DayDetail({
 
         <div
           className={`mt-5 border px-3 py-3 ${
-            challengerWin
-              ? "border-white/25 bg-black"
-              : "border-black/10 bg-white text-black"
+            joint
+              ? "border-white/30 bg-[linear-gradient(90deg,#000_50%,#fff_50%)] text-white"
+              : challengerWin
+                ? "border-white/25 bg-black"
+                : "border-black/10 bg-white text-black"
           }`}
         >
           <p
             className={`text-[10px] font-bold tracking-[0.16em] ${
-              challengerWin ? "text-muted" : "text-neutral-500"
+              joint
+                ? "text-white/70"
+                : challengerWin
+                  ? "text-muted"
+                  : "text-neutral-500"
             }`}
           >
-            승리자
+            {joint ? "공동 승리" : "승리자"}
           </p>
           <div className="mt-1.5 flex items-center gap-2">
-            {challengerWin ? <SpearMark size={18} /> : <ShieldMark size={18} />}
-            <span className="text-[15px] font-bold tracking-[0.12em]">
-              {challengerWin ? "도전자" : "방어자"}
+            {joint ? (
+              <>
+                <SpearMark size={18} />
+                <ShieldMark size={18} className="text-black" />
+              </>
+            ) : challengerWin ? (
+              <SpearMark size={18} />
+            ) : (
+              <ShieldMark size={18} />
+            )}
+            <span
+              className={`text-[15px] font-bold tracking-[0.12em] ${
+                joint ? "mix-blend-difference text-white" : ""
+              }`}
+            >
+              {joint ? "도전자 · 방어자" : challengerWin ? "도전자" : "방어자"}
             </span>
             <span
               className={`ml-auto text-[18px] font-bold tabular-nums ${
-                challengerWin ? "text-white" : "text-black"
+                joint
+                  ? "mix-blend-difference text-white"
+                  : challengerWin
+                    ? "text-white"
+                    : "text-black"
               }`}
             >
-              {battle.winnerPercent}%
+              {joint ? "50%" : `${battle.winnerPercent}%`}
             </span>
           </div>
           <p
             className={`mt-1 text-[11px] ${
-              challengerWin ? "text-muted" : "text-neutral-500"
+              joint
+                ? "text-white/70 mix-blend-difference"
+                : challengerWin
+                  ? "text-muted"
+                  : "text-neutral-500"
             }`}
           >
-            상대 {100 - battle.winnerPercent}% · @{battle.opponentAuthor}
+            {joint
+              ? "지지·좋아요 동점 · 창+방패"
+              : `상대 ${100 - battle.winnerPercent}% · @${battle.opponentAuthor}`}
           </p>
         </div>
 
@@ -210,7 +240,7 @@ export function BattleCalendar({ open, onClose }: BattleCalendarProps) {
                 {BATTLE_YEAR}년 {BATTLE_MONTH}월
               </p>
               <p className="mt-1 text-center text-[10px] tracking-[0.14em] text-muted">
-                흑=도전자 승 · 백=방어자 승 · 띠=제안자
+                흑=도전 · 백=방어 · 반반=공동 · 띠=제안자
               </p>
 
               <div className="mt-4 grid grid-cols-7 gap-px bg-white/15">
@@ -230,6 +260,7 @@ export function BattleCalendar({ open, onClose }: BattleCalendarProps) {
                   }
                   const key = `2026-10-${String(day).padStart(2, "0")}`;
                   const battle = byDate.get(key);
+                  const joint = battle?.winner === "JOINT";
                   const challengerWin = battle?.winner === "NEXUS";
 
                   return (
@@ -240,24 +271,41 @@ export function BattleCalendar({ open, onClose }: BattleCalendarProps) {
                       onClick={() => battle && setSelected(key)}
                       aria-label={
                         battle
-                          ? `${day}일, ${challengerWin ? "도전자" : "방어자"} 승리${
-                              battle.hasGirdle ? ", 제안자 허리띠" : ""
-                            }`
+                          ? `${day}일, ${
+                              joint
+                                ? "공동 승리"
+                                : challengerWin
+                                  ? "도전자 승리"
+                                  : "방어자 승리"
+                            }${battle.hasGirdle ? ", 제안자 허리띠" : ""}`
                           : `${day}일`
                       }
                       className={`aspect-square border-0 p-0 text-[12px] font-semibold tabular-nums outline-none ${
                         !battle
                           ? "bg-neutral-950 text-neutral-600"
-                          : challengerWin
-                            ? "bg-black text-white"
-                            : "bg-white text-black"
+                          : joint
+                            ? "bg-[linear-gradient(90deg,#000_50%,#fff_50%)] text-white"
+                            : challengerWin
+                              ? "bg-black text-white"
+                              : "bg-white text-black"
                       } ${battle ? "active:opacity-80" : ""}`}
                     >
                       <span className="flex h-full flex-col items-center justify-center gap-0.5">
-                        {day}
+                        <span
+                          className={
+                            joint ? "mix-blend-difference text-white" : undefined
+                          }
+                        >
+                          {day}
+                        </span>
                         {battle ? (
                           <span className="flex items-center gap-0.5 scale-90">
-                            {challengerWin ? (
+                            {joint ? (
+                              <>
+                                <SpearMark size={10} />
+                                <ShieldMark size={10} className="text-black" />
+                              </>
+                            ) : challengerWin ? (
                               <SpearMark size={10} />
                             ) : (
                               <ShieldMark size={10} />
@@ -266,7 +314,11 @@ export function BattleCalendar({ open, onClose }: BattleCalendarProps) {
                               <GirdleMark
                                 size={9}
                                 className={
-                                  challengerWin ? "text-white" : "text-black"
+                                  joint
+                                    ? "text-white mix-blend-difference"
+                                    : challengerWin
+                                      ? "text-white"
+                                      : "text-black"
                                 }
                               />
                             ) : null}
@@ -288,20 +340,41 @@ export function BattleCalendar({ open, onClose }: BattleCalendarProps) {
                         type="button"
                         onClick={() => setSelected(b.date)}
                         className={`flex w-full items-center gap-2 border px-3 py-2.5 text-left text-[12px] ${
-                          b.winner === "NEXUS"
-                            ? "border-white/20 bg-black"
-                            : "border-white/30 bg-white text-black"
+                          b.winner === "JOINT"
+                            ? "border-white/25 bg-[linear-gradient(90deg,#000_50%,#fff_50%)] text-white"
+                            : b.winner === "NEXUS"
+                              ? "border-white/20 bg-black"
+                              : "border-white/30 bg-white text-black"
                         }`}
                       >
-                        {b.winner === "NEXUS" ? (
+                        {b.winner === "JOINT" ? (
+                          <>
+                            <SpearMark size={14} />
+                            <ShieldMark size={14} className="text-black" />
+                          </>
+                        ) : b.winner === "NEXUS" ? (
                           <SpearMark size={14} />
                         ) : (
                           <ShieldMark size={14} />
                         )}
-                        <span className="min-w-0 flex-1 truncate">
+                        <span
+                          className={`min-w-0 flex-1 truncate ${
+                            b.winner === "JOINT"
+                              ? "mix-blend-difference text-white"
+                              : ""
+                          }`}
+                        >
                           {b.date.slice(5).replace("-", "/")} · {b.topic}
                         </span>
-                        <span className="tabular-nums">{b.winnerPercent}%</span>
+                        <span
+                          className={`tabular-nums ${
+                            b.winner === "JOINT"
+                              ? "mix-blend-difference text-white"
+                              : ""
+                          }`}
+                        >
+                          {b.winner === "JOINT" ? "공동" : `${b.winnerPercent}%`}
+                        </span>
                       </button>
                     </li>
                   ))}

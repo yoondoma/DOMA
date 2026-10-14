@@ -261,9 +261,10 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
     dayId: b.date,
     round: b.round,
     topicTitle: b.topic,
-    winnerCamp: campFromSide(b.winner),
-    winnerShare: b.winnerPercent,
-    loserShare: b.loserPercent,
+    winnerCamp:
+      b.winner === "JOINT" ? "challenger" : campFromSide(b.winner),
+    winnerShare: b.winner === "JOINT" ? 50 : b.winnerPercent,
+    loserShare: b.winner === "JOINT" ? 50 : b.loserPercent,
     winnerAuthorId: ensureUser(byHandle, b.winnerAuthor).id,
     winnerOpinionBody: b.winnerOpinion,
     opponentAuthorId: ensureUser(byHandle, b.opponentAuthor).id,

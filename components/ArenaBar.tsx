@@ -19,25 +19,75 @@ import {
 } from "@/components/SideMarks";
 import { RulesHud } from "@/components/RulesHud";
 import { TrojanMark } from "@/components/TrojanMark";
+import { compareByJudgmentAuthority } from "@/lib/judgment";
 import { useDomaStore } from "@/lib/store";
+import {
+  formatCountdownMs,
+  parseClosingQuery,
+  timerUrgencyClass,
+  urgencyFromRemainingMs,
+  urgencyLabel,
+  type UrgencyStage,
+} from "@/lib/timer-urgency";
 import { DAILY_TITLE_SHORT } from "@/lib/types/gamification";
 import type { UiDemo } from "@/lib/ui-demo";
 import type { ArenaState, ArenaView, Opinion, Side } from "@/lib/types";
 
-/** TOP·순위는 지지만 (좋아요 무관) */
-function bySupportDesc(a: Opinion, b: Opinion): number {
-  return (b.supports ?? 0) - (a.supports ?? 0);
+/** TOP·순위: 지지 → 동점이면 좋아요 */
+function byJudgmentDesc(a: Opinion, b: Opinion): number {
+  return compareByJudgmentAuthority(a, b);
 }
 
-/** CLOSING_SOON · 목업 `?closing=1` */
-function useClosingSoon(): boolean {
+type TimerUrgency = {
+  remaining: string;
+  stage: UrgencyStage | null;
+  label: string;
+};
+
+/**
+ * 판결까지 카운트다운 + 압박 단계.
+ * 목업: `?closing=3h|1h|30m|10m|5m|1m|1|soon` 또는 초 단위 숫자
+ */
+function useTimerUrgency(endsAt: string): TimerUrgency {
   const clock = useDomaStore().clock;
-  const [force, setForce] = useState(false);
+  const [mockMs, setMockMs] = useState<number | null>(null);
+  const [remainingMs, setRemainingMs] = useState(0);
+
   useEffect(() => {
     const q = new URLSearchParams(window.location.search).get("closing");
-    setForce(q === "1" || q === "soon");
+    const parsed = parseClosingQuery(q);
+    if (parsed) {
+      setMockMs(parsed.remainingMs);
+      return;
+    }
+    setMockMs(null);
   }, []);
-  return force || clock.state === "CLOSING_SOON" || clock.goldenHour;
+
+  useEffect(() => {
+    const tick = () => {
+      if (mockMs != null) {
+        setRemainingMs(mockMs);
+        return;
+      }
+      setRemainingMs(Math.max(0, new Date(endsAt).getTime() - Date.now()));
+    };
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, [endsAt, mockMs]);
+
+  const stage =
+    mockMs != null
+      ? urgencyFromRemainingMs(remainingMs)
+      : clock.state === "CLOSING_SOON" || clock.goldenHour
+        ? urgencyFromRemainingMs(remainingMs) ?? "10m"
+        : urgencyFromRemainingMs(remainingMs);
+
+  return {
+    remaining: formatCountdownMs(remainingMs),
+    stage,
+    label: urgencyLabel(stage),
+  };
 }
 
 /** `?top=defender|challenger` — 셸 톤 증명용 TOP 진영 강제 */
@@ -63,7 +113,7 @@ export function dayTopSide(
 ): Side | null {
   if (forced) return forced;
   if (opinions.length === 0) return null;
-  return [...opinions].sort(bySupportDesc)[0]?.side ?? null;
+  return [...opinions].sort(byJudgmentDesc)[0]?.side ?? null;
 }
 
 export function dayTopOpinion(
@@ -74,10 +124,10 @@ export function dayTopOpinion(
   if (forced) {
     const sideList = opinions
       .filter((o) => o.side === forced)
-      .sort(bySupportDesc);
-    return sideList[0] ?? [...opinions].sort(bySupportDesc)[0];
+      .sort(byJudgmentDesc);
+    return sideList[0] ?? [...opinions].sort(byJudgmentDesc)[0];
   }
-  return [...opinions].sort(bySupportDesc)[0] ?? null;
+  return [...opinions].sort(byJudgmentDesc)[0] ?? null;
 }
 
 type ArenaBarProps = {
@@ -98,29 +148,7 @@ type ArenaBarProps = {
 function topOpinionForSide(opinions: Opinion[], side: Side): Opinion | null {
   const list = opinions.filter((o) => o.side === side);
   if (list.length === 0) return null;
-  return [...list].sort(bySupportDesc)[0] ?? null;
-}
-
-function formatCountdown(ms: number): string {
-  if (ms <= 0) return "00:00:00";
-  const totalSec = Math.floor(ms / 1000);
-  const h = Math.floor(totalSec / 3600);
-  const m = Math.floor((totalSec % 3600) / 60);
-  const s = totalSec % 60;
-  return [h, m, s].map((n) => String(n).padStart(2, "0")).join(":");
-}
-
-function useCountdown(endsAt: string): string {
-  const [remaining, setRemaining] = useState("--:--:--");
-  useEffect(() => {
-    const tick = () => {
-      setRemaining(formatCountdown(new Date(endsAt).getTime() - Date.now()));
-    };
-    tick();
-    const id = window.setInterval(tick, 1000);
-    return () => window.clearInterval(id);
-  }, [endsAt]);
-  return remaining;
+  return [...list].sort(byJudgmentDesc)[0] ?? null;
 }
 
 function SmallAvatar({ name, light }: { name: string; light?: boolean }) {
@@ -244,7 +272,7 @@ function CampFeedPage({
     if (!top) return [];
     return opinions
       .filter((o) => o.side === side && o.id !== top.id)
-      .sort(bySupportDesc);
+      .sort(byJudgmentDesc);
   }, [opinions, side, top]);
 
   const ink = light ? "text-black" : "text-white";
@@ -399,8 +427,7 @@ function BattlefieldIntro({
   onOpenRules?: () => void;
   light: boolean;
 }) {
-  const remaining = useCountdown(arena.endsAt);
-  const closingSoon = useClosingSoon();
+  const timer = useTimerUrgency(arena.endsAt);
 
   const ink = light ? "text-black" : "text-white";
   const soft = light ? "text-black/55" : "text-white/55";
@@ -419,17 +446,32 @@ function BattlefieldIntro({
         <p className={`text-[11px] font-medium tracking-[0.22em] ${faint}`}>
           제 {arena.round}회 전투
         </p>
-        <p className={`mt-3 text-[11px] tracking-[0.18em] ${soft}`}>
-          {closingSoon ? "판결 임박" : "최후의 판결까지"}
+        <p
+          className={`mt-3 text-[11px] tracking-[0.18em] ${
+            timer.stage ? "text-timer" : soft
+          }`}
+          data-urgency-label={timer.stage ?? "calm"}
+        >
+          {timer.label}
         </p>
         <p
-          className={`mt-2 font-mono text-[32px] font-semibold leading-none tracking-[0.06em] text-timer tabular-nums sm:text-[36px] ${
-            closingSoon ? "timer-closing-pulse" : ""
+          className={`mt-2 font-mono leading-none tabular-nums text-timer ${timerUrgencyClass(
+            timer.stage,
+            "hero",
+          )}`}
+          aria-label={`남은 시간 ${timer.remaining}${
+            timer.stage ? ` · ${timer.label}` : ""
           }`}
-          aria-label={`남은 시간 ${remaining}`}
-          data-closing={closingSoon ? "soon" : undefined}
+          data-urgency={timer.stage ?? "calm"}
+          data-closing={
+            timer.stage === "10m" ||
+            timer.stage === "5m" ||
+            timer.stage === "1m"
+              ? "soon"
+              : undefined
+          }
         >
-          {remaining}
+          {timer.remaining}
           <span className="ml-2 align-middle text-[13px] font-medium tracking-[0.14em] text-timer/90">
             남음
           </span>
@@ -614,8 +656,7 @@ export function ArenaBar({
     () => dayTopOpinion(opinions, forcedTop),
     [opinions, forcedTop],
   );
-  const remaining = useCountdown(arena.endsAt);
-  const closingSoon = useClosingSoon();
+  const timer = useTimerUrgency(arena.endsAt);
   const scrollerRef = useRef<HTMLDivElement>(null);
   /** 버튼·포커스 등 프로그래매틱 스크롤 중 — 스크롤→view 반영 무시 */
   const programmaticScroll = useRef(false);
@@ -762,13 +803,23 @@ export function ArenaBar({
             제 {arena.round}회 전투
           </p>
           <p
-            className={`mt-1 font-mono text-[22px] font-semibold tabular-nums text-timer ${
-              closingSoon ? "timer-closing-pulse" : ""
+            className={`mt-1 font-mono tabular-nums text-timer ${timerUrgencyClass(
+              timer.stage,
+              "sticky",
+            )}`}
+            aria-label={`남은 시간 ${timer.remaining}${
+              timer.stage ? ` · ${timer.label}` : ""
             }`}
-            aria-label={`남은 시간 ${remaining}`}
-            data-closing={closingSoon ? "soon" : undefined}
+            data-urgency={timer.stage ?? "calm"}
+            data-closing={
+              timer.stage === "10m" ||
+              timer.stage === "5m" ||
+              timer.stage === "1m"
+                ? "soon"
+                : undefined
+            }
           >
-            {remaining}
+            {timer.remaining}
           </p>
           <div className="mt-2 flex items-start justify-center gap-1.5">
             <h2

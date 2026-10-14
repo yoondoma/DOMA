@@ -49,7 +49,8 @@ export function RulesSheet({ open, onClose }: RulesSheetProps) {
         </div>
 
         <p className="text-[13px] leading-[1.55] text-white/70">
-          판결·TOP·내일 확정은{" "}
+          지지 동점은 좋아요로 가리고, 둘 다 동점이면 공동 승리. 판결
+          후엔 스크랩·공유만. 타이머는 3h→1m 압박. 판결·TOP·내일 확정은{" "}
           <span className="text-white">지지</span>만. 좋아요는 호응일 뿐
           승패와 무관합니다.
         </p>

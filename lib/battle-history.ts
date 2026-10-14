@@ -36,9 +36,9 @@ export const BATTLE_HISTORY: BattleDay[] = [
     date: "2026-10-03",
     round: 403,
     topic: "기본소득은 노동 의욕을 떨어뜨리는가?",
-    winner: "NEXUS",
-    winnerPercent: 51,
-    loserPercent: 49,
+    winner: "JOINT",
+    winnerPercent: 50,
+    loserPercent: 50,
     winnerAuthor: "nova",
     winnerOpinion:
       "생존이 보장될 때 비로소 위험한 일을 고른다. 의욕은 형태만 바뀐다.",
