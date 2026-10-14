@@ -16,13 +16,18 @@ export const metadata: Metadata = {
   description:
     "오늘의 논제에 참전하고, 280자 진술로 여론을 움직이는 토론 시스템.",
   applicationName: "DOMA KR",
+  manifest: "/manifest.webmanifest",
   appleWebApp: {
     title: "DOMA KR",
     capable: true,
+    statusBarStyle: "black-translucent",
   },
   icons: {
     icon: [{ url: "/icon.png", type: "image/png", sizes: "1024x1024" }],
     apple: [{ url: "/apple-icon.png", sizes: "1024x1024", type: "image/png" }],
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
   },
 };
 

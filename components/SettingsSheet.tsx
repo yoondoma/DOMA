@@ -7,6 +7,10 @@ import {
   type AdPreviewPrefs,
 } from "@/lib/ad-preview";
 import {
+  loadOfflineSim,
+  saveOfflineSim,
+} from "@/lib/offline-verdicts";
+import {
   loadSoundPrefs,
   saveSoundPrefs,
   type SoundPrefs,
@@ -38,7 +42,8 @@ type Panel =
   | "sound"
   | "help"
   | "monetize"
-  | "leave";
+  | "leave"
+  | "offline";
 
 const SWITCHABLE = ["soohan", "mira.k", "zero.nexus", "han.aegis"] as const;
 const DM_OPTIONS: DmPolicy[] = ["everyone", "mutual", "off"];
@@ -85,6 +90,7 @@ export function SettingsSheet({
   const [adPreview, setAdPreview] = useState<AdPreviewPrefs>(() =>
     loadAdPreviewPrefs(),
   );
+  const [offlineSim, setOfflineSim] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -92,6 +98,7 @@ export function SettingsSheet({
       setPrivacyLocal(domaStore.getPrivacy());
       setSoundLocal(loadSoundPrefs());
       setAdPreview(loadAdPreviewPrefs());
+      setOfflineSim(loadOfflineSim());
     }
   }, [open, snap.privacyByUser, snap.session?.userId]);
 
@@ -160,9 +167,11 @@ export function SettingsSheet({
             ? "앱 사운드"
             : panel === "monetize"
               ? "광고·꾸미기"
-              : panel === "leave"
-                ? "탈퇴"
-                : "도움말";
+              : panel === "offline"
+                ? "오프라인·보관"
+                : panel === "leave"
+                  ? "탈퇴"
+                  : "도움말";
 
   const confirmLeave = () => {
     try {
@@ -350,6 +359,23 @@ export function SettingsSheet({
                           stroke="currentColor"
                           strokeWidth="1.5"
                           strokeLinecap="square"
+                        />
+                      </svg>
+                    ),
+                  },
+                  {
+                    id: "offline",
+                    label: "오프라인·보관",
+                    hint: offlineSim ? "시뮬레이션 켜짐" : "판결 저장 · 목업",
+                    onClick: () => setPanel("offline"),
+                    icon: (
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M12 4.5v9M8.5 10.5 12 14l3.5-3.5M5.5 17.5h13"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="square"
+                          strokeLinejoin="miter"
                         />
                       </svg>
                     ),
@@ -633,6 +659,54 @@ export function SettingsSheet({
                 스킨·상점 UI는 준비 중. 프로필·공유 카드는{" "}
                 <span className="text-white">cosmetics</span> 필드만
                 읽습니다 (기본 B&W).
+              </p>
+            </div>
+          ) : null}
+
+          {panel === "offline" ? (
+            <div className="px-2" data-offline-settings>
+              <p className="px-1 py-3 text-[13px] leading-relaxed text-neutral-200">
+                이미 연 화면은 브라우저 메모리·캐시로 잠깐 유지됩니다.
+                지난 판결은 달력 상세에서 「오프라인 저장」할 수 있습니다.
+              </p>
+              <div className="flex items-center justify-between gap-3 border-b border-neutral-800 py-3.5">
+                <div className="min-w-0">
+                  <p className="text-[14px] text-white">오프라인 시뮬레이션</p>
+                  <p className="mt-0.5 text-[12px] text-neutral-200">
+                    켜면 저장한 판결만 상세 열림
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={offlineSim}
+                  aria-label="오프라인 시뮬레이션"
+                  onClick={() => {
+                    const next = saveOfflineSim(!offlineSim);
+                    setOfflineSim(next);
+                    onToast?.(
+                      next
+                        ? "오프라인 시뮬레이션을 켰습니다"
+                        : "오프라인 시뮬레이션을 껐습니다",
+                    );
+                  }}
+                  className={`relative h-7 w-12 shrink-0 border transition-colors ${
+                    offlineSim
+                      ? "border-white bg-white"
+                      : "border-neutral-600 bg-neutral-900"
+                  }`}
+                  data-offline-sim-toggle
+                >
+                  <span
+                    className={`absolute top-0.5 size-5 border border-neutral-800 bg-black transition-[left] ${
+                      offlineSim ? "left-[1.35rem]" : "left-0.5"
+                    }`}
+                  />
+                </button>
+              </div>
+              <p className="mt-4 px-1 text-[12px] leading-relaxed text-neutral-200">
+                PWA는 웹 우선 · 홈화면 추가용 manifest만. 스토어 앱 코드는
+                없습니다.
               </p>
             </div>
           ) : null}

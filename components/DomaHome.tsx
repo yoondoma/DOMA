@@ -659,6 +659,7 @@ export function DomaHome() {
       <BattleCalendar
         open={calendarOpen}
         onClose={() => setCalendarOpen(false)}
+        onToast={showToast}
       />
       <SearchSheet
         open={searchOpen}
