@@ -124,12 +124,15 @@ export function DomaWordmark({
         }
       }
 
-      /** 유튜브식 완전 밀착 대신 2~6px 여유 — 게이트·헤더 동일 */
-      const gap = size === "lg" ? 6 : 5;
+      /**
+       * 가로: A 박스 우측(+광학 ink) 중 더 오른쪽 기준으로 3~5px 여유.
+       * 세로: 캡 꼭지 위첨자 유지.
+       */
+      const gap = size === "lg" ? 5 : 4;
+      const rightEdge = Math.max(inkRight, a.right) - parent.left;
       setPos({
-        // 캡 꼭지에 더 붙게 1px 상향 (광학)
         top: Math.max(0, inkTop - parent.top - 1),
-        left: inkRight - parent.left + gap,
+        left: rightEdge + gap,
       });
     };
 
