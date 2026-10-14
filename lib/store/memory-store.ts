@@ -66,7 +66,7 @@ class MemoryStore {
     this.snap = buildSeedSnapshot();
   }
 
-  /** 브라우저에서 로컬 복원 후 시드 보정 */
+  /** 브라우저에서 로컬 복원 후 시드 보정 · 세션 없으면 시드 유저 자동 로그인 */
   init() {
     if (this.ready) return;
     this.ready = true;
@@ -76,9 +76,46 @@ class MemoryStore {
       this.snap.clock = resolveTimelineClock();
     } else {
       this.snap = buildSeedSnapshot();
+    }
+    if (!this.snap.session) {
+      this.autoLoginDefault();
+    } else {
+      // dayId가 바뀌었으면 세션 dayId만 맞춤 (userId 유지)
+      const dayId = this.snap.clock.dayId;
+      if (this.snap.session.dayId !== dayId) {
+        this.snap.session = {
+          ...this.snap.session,
+          id: makeSessionId(dayId, this.snap.session.userId),
+          dayId,
+        };
+      }
       persist(this.snap);
     }
     this.emit();
+  }
+
+  private defaultUserId(): string | undefined {
+    return (
+      this.snap.users.find((u) => u.handle === "soohan")?.id ??
+      this.snap.users[0]?.id
+    );
+  }
+
+  private autoLoginDefault() {
+    const userId = this.defaultUserId();
+    if (!userId) {
+      persist(this.snap);
+      return;
+    }
+    const dayId = this.snap.clock.dayId;
+    this.snap.session = {
+      id: makeSessionId(dayId, userId),
+      userId,
+      dayId,
+      joinedCamp: null,
+      createdAtUtc: new Date().toISOString(),
+    };
+    persist(this.snap);
   }
 
   subscribe(fn: Listener): () => void {
@@ -127,8 +164,54 @@ class MemoryStore {
     return this.snap.session;
   }
 
+  /** 세션이 가리키는 현재 유저 (로그아웃 시 null) */
+  getCurrentUser(): User | null {
+    const sid = this.snap.session?.userId;
+    if (!sid) return null;
+    return this.snap.users.find((u) => u.id === sid) ?? null;
+  }
+
+  requireSession(): Session {
+    const s = this.snap.session;
+    if (!s) throw new Error("SESSION_REQUIRED");
+    return s;
+  }
+
   getArenaMeta(): ArenaMeta {
     return this.snap.arenaMeta;
+  }
+
+  /** 목 로그인 — handle 또는 userId */
+  login(userIdOrHandle: string): Session {
+    const next = clone(this.snap);
+    const key = userIdOrHandle.replace(/^@/, "");
+    const user =
+      next.users.find((u) => u.id === key) ??
+      next.users.find((u) => u.handle === key.toLowerCase());
+    if (!user) throw new Error("USER_NOT_FOUND");
+    const dayId = next.clock.dayId;
+    const prevCamp =
+      next.session?.userId === user.id ? next.session.joinedCamp : null;
+    next.session = {
+      id: makeSessionId(dayId, user.id),
+      userId: user.id,
+      dayId,
+      joinedCamp: prevCamp,
+      createdAtUtc: new Date().toISOString(),
+    };
+    this.commit(next);
+    return next.session;
+  }
+
+  logout() {
+    const next = clone(this.snap);
+    next.session = null;
+    this.commit(next);
+  }
+
+  /** 다른 시드 유저로 전환 (목) */
+  switchUser(userIdOrHandle: string): Session {
+    return this.login(userIdOrHandle);
   }
 
   listOpinions(dayId?: DayId): Opinion[] {
@@ -168,20 +251,16 @@ class MemoryStore {
 
   setJoinedCamp(camp: Camp | null) {
     const next = clone(this.snap);
-    if (!next.session) return;
+    if (!next.session) throw new Error("SESSION_REQUIRED");
     next.session.joinedCamp = camp;
     this.commit(next);
   }
 
   createOpinion(input: CreateOpinionInput): Opinion {
     const next = clone(this.snap);
+    if (!next.session) throw new Error("SESSION_REQUIRED");
     const dayId = next.clock.dayId;
-    const authorId =
-      input.authorId ??
-      next.session?.userId ??
-      next.users.find((u) => u.handle === "soohan")?.id ??
-      next.users[0]?.id;
-    if (!authorId) throw new Error("no author");
+    const authorId = next.session.userId;
 
     const op: Opinion = {
       id: makeOpinionId(dayId),
@@ -202,13 +281,9 @@ class MemoryStore {
     title: string;
     body?: string;
     targetDayId: DayId;
-    proposerId?: string;
   }): TopicCandidate {
     const next = clone(this.snap);
-    const proposerId =
-      input.proposerId ??
-      next.session?.userId ??
-      next.users.find((u) => u.handle === "soohan")?.id!;
+    if (!next.session) throw new Error("SESSION_REQUIRED");
     const tc: TopicCandidate = {
       id: makeTopicCandidateId(input.targetDayId),
       targetDayId: input.targetDayId,
@@ -216,7 +291,7 @@ class MemoryStore {
       body: input.body ?? "",
       supportCount: 1,
       stewardCount: 1,
-      proposerId,
+      proposerId: next.session.userId,
       createdAtUtc: new Date().toISOString(),
     };
     next.topicCandidates = [tc, ...next.topicCandidates];
@@ -252,8 +327,10 @@ class MemoryStore {
     return next.session;
   }
 
-  addFollow(followerId: string, followeeId: string): Follow {
+  addFollow(followeeId: string): Follow {
     const next = clone(this.snap);
+    if (!next.session) throw new Error("SESSION_REQUIRED");
+    const followerId = next.session.userId;
     const id = makeFollowId(followerId, followeeId);
     if (next.follows.some((f) => f.id === id)) {
       return next.follows.find((f) => f.id === id)!;
@@ -269,12 +346,10 @@ class MemoryStore {
     return row;
   }
 
-  addLike(
-    userId: string,
-    targetKind: Like["targetKind"],
-    targetId: string,
-  ): Like {
+  addLike(targetKind: Like["targetKind"], targetId: string): Like {
     const next = clone(this.snap);
+    if (!next.session) throw new Error("SESSION_REQUIRED");
+    const userId = next.session.userId;
     const id = makeLikeId(userId, targetKind, targetId);
     const existing = next.likes.find((l) => l.id === id);
     if (existing) return existing;
@@ -295,12 +370,13 @@ class MemoryStore {
     return row;
   }
 
-  addReply(opinionId: string, authorId: string, body: string): Reply {
+  addReply(opinionId: string, body: string): Reply {
     const next = clone(this.snap);
+    if (!next.session) throw new Error("SESSION_REQUIRED");
     const row: Reply = {
       id: makeReplyId(opinionId),
       opinionId,
-      authorId,
+      authorId: next.session.userId,
       body: body.slice(0, 280),
       likeCount: 0,
       createdAtUtc: new Date().toISOString(),

@@ -10,4 +10,8 @@ export type {
   CreateOpinionInput,
   StoreSnapshot,
 } from "@/lib/store/types";
-export { useDomaStore, useUiOpinions } from "@/lib/store/use-doma-store";
+export {
+  useDomaStore,
+  useSession,
+  useUiOpinions,
+} from "@/lib/store/use-doma-store";

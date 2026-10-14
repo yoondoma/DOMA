@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ArenaBar } from "@/components/ArenaBar";
 import { BattleCalendar } from "@/components/BattleCalendar";
 import { BottomNav, type NavTab } from "@/components/BottomNav";
@@ -29,14 +29,14 @@ import {
   type NotificationTarget,
   type SocialProfile,
 } from "@/lib/social-mock";
-import { campFromSide } from "@/lib/types/ids";
+import { campFromSide, sideFromCamp } from "@/lib/types/ids";
 import {
   INITIAL_TOMORROW_TOPICS,
   type TomorrowCandidate,
 } from "@/lib/tomorrow-topics";
 import type { ArenaView, Side } from "@/lib/types";
 import { useUiDemo } from "@/lib/use-ui-demo";
-import { domaStore, useUiOpinions } from "@/lib/store";
+import { domaStore, useSession, useUiOpinions } from "@/lib/store";
 
 function bumpPercents(
   nexus: number,
@@ -49,6 +49,7 @@ function bumpPercents(
 
 export function DomaHome() {
   const { demo: uiDemo, retry: onRetry } = useUiDemo();
+  const { session, user: currentUser } = useSession();
   const storeOpinions = useUiOpinions();
   const [nexusPercent, setNexusPercent] = useState(INITIAL_ARENA.nexusPercent);
   const [aegisPercent, setAegisPercent] = useState(INITIAL_ARENA.aegisPercent);
@@ -90,14 +91,37 @@ export function DomaHome() {
 
   const feedOpinions = uiDemo === "empty" ? [] : storeOpinions;
 
-  const openCompose = useCallback(() => {
-    setChoiceOpen(true);
-  }, []);
+  /** 세션 → 참전 진영·프로필 표시 동기화 */
+  useEffect(() => {
+    if (!session) {
+      setJoined(null);
+      return;
+    }
+    setJoined(session.joinedCamp ? sideFromCamp(session.joinedCamp) : null);
+  }, [session?.userId, session?.joinedCamp]);
+
+  useEffect(() => {
+    if (!currentUser) return;
+    setEditableProfile({
+      name: currentUser.displayName,
+      handle: currentUser.handle,
+      bio: currentUser.bio,
+      avatarChar: currentUser.displayName.slice(0, 1),
+    });
+  }, [currentUser]);
 
   const showToast = useCallback((message: string) => {
     setToast(message);
     window.setTimeout(() => setToast(null), 2200);
   }, []);
+
+  const openCompose = useCallback(() => {
+    if (!domaStore.getSession()) {
+      showToast("로그인이 필요합니다");
+      return;
+    }
+    setChoiceOpen(true);
+  }, [showToast]);
 
   const handleRefresh = useCallback(() => {
     if (refreshLock.current) return;
@@ -116,10 +140,19 @@ export function DomaHome() {
   }, [nexusPercent, showToast]);
 
   const handleJoin = (side: Side) => {
+    if (!domaStore.getSession()) {
+      showToast("로그인이 필요합니다");
+      return;
+    }
     if (joined === side) return;
 
+    try {
+      domaStore.setJoinedCamp(campFromSide(side));
+    } catch {
+      showToast("로그인이 필요합니다");
+      return;
+    }
     setJoined(side);
-    domaStore.setJoinedCamp(campFromSide(side));
     setNexusPercent((prev) => {
       const next =
         side === "NEXUS"
@@ -134,14 +167,22 @@ export function DomaHome() {
   };
 
   const handleSubmitToday = (text: string, imageName?: string) => {
+    if (!domaStore.getSession()) {
+      showToast("로그인이 필요합니다");
+      return;
+    }
     const side: Side =
       joined ?? (arenaView === "AEGIS" ? "AEGIS" : "NEXUS");
     const body = imageName ? `${text} · [이미지]` : text;
-    domaStore.createOpinion({
-      body,
-      camp: campFromSide(side),
-      authorId: domaStore.getUserByHandle("you")?.id,
-    });
+    try {
+      domaStore.createOpinion({
+        body,
+        camp: campFromSide(side),
+      });
+    } catch {
+      showToast("로그인이 필요합니다");
+      return;
+    }
     setNavTab("home");
     setArenaView("intro");
     showToast(
@@ -196,6 +237,10 @@ export function DomaHome() {
 
   const handleNavChange = (tab: NavTab) => {
     if (tab === "compose") {
+      if (!domaStore.getSession()) {
+        showToast("로그인이 필요합니다");
+        return;
+      }
       setChoiceOpen(true);
       return;
     }

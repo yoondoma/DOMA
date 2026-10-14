@@ -38,5 +38,4 @@ export type StoreSnapshot = {
 export type CreateOpinionInput = {
   body: string;
   camp: Camp;
-  authorId?: string;
 };

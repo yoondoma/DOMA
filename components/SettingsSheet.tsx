@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { domaStore, useSession } from "@/lib/store";
 
 export type EditableProfile = {
   name: string;
@@ -17,8 +18,10 @@ type SettingsSheetProps = {
   onToast?: (message: string) => void;
 };
 
+/** 목 전환용 시드 핸들 */
+const SWITCHABLE = ["soohan", "mira.k", "zero.nexus", "han.aegis"] as const;
+
 const ROWS: { id: string; label: string; hint?: string }[] = [
-  { id: "account", label: "계정", hint: "로그인·연동" },
   { id: "notify", label: "알림", hint: "전투·멘션" },
   { id: "privacy", label: "공개 범위", hint: "프로필·글" },
   { id: "blocked", label: "차단 목록" },
@@ -36,6 +39,7 @@ export function SettingsSheet({
   onSave,
   onToast,
 }: SettingsSheetProps) {
+  const { user: sessionUser } = useSession();
   const [draft, setDraft] = useState<EditableProfile>(profile);
 
   useEffect(() => {
@@ -57,6 +61,48 @@ export function SettingsSheet({
     onSave(next);
     onToast?.("설정을 저장했습니다");
     onClose();
+  };
+
+  const switchTo = (handle: string) => {
+    try {
+      const s = domaStore.switchUser(handle);
+      const u = domaStore.getCurrentUser();
+      if (u) {
+        onSave({
+          name: u.displayName,
+          handle: u.handle,
+          bio: u.bio,
+          avatarChar: u.displayName.slice(0, 1),
+        });
+      }
+      onToast?.(`@${u?.handle ?? handle}로 전환 · ${s.userId.slice(0, 12)}…`);
+    } catch {
+      onToast?.("전환할 수 없는 유저입니다");
+    }
+  };
+
+  const logout = () => {
+    domaStore.logout();
+    onToast?.("로그아웃했습니다");
+    onClose();
+  };
+
+  const loginDefault = () => {
+    try {
+      domaStore.login("soohan");
+      const u = domaStore.getCurrentUser();
+      if (u) {
+        onSave({
+          name: u.displayName,
+          handle: u.handle,
+          bio: u.bio,
+          avatarChar: u.displayName.slice(0, 1),
+        });
+      }
+      onToast?.("수한으로 로그인했습니다");
+    } catch {
+      onToast?.("로그인에 실패했습니다");
+    }
   };
 
   return (
@@ -171,6 +217,60 @@ export function SettingsSheet({
 
           <div className="mt-10 border-t border-neutral-800 pt-2">
             <p className="py-3 text-[11px] font-bold tracking-[0.16em] text-neutral-200">
+              세션
+            </p>
+            <p className="pb-2 text-[13px] text-neutral-200">
+              {sessionUser
+                ? `로그인 · @${sessionUser.handle}`
+                : "로그아웃 상태"}
+            </p>
+            <ul aria-label="계정 전환">
+              {SWITCHABLE.map((handle) => {
+                const active = sessionUser?.handle === handle;
+                return (
+                  <li key={handle} className="border-b border-neutral-800">
+                    <button
+                      type="button"
+                      disabled={active}
+                      onClick={() => switchTo(handle)}
+                      className="flex w-full items-baseline justify-between gap-3 py-3.5 text-left disabled:opacity-40"
+                    >
+                      <span className="text-[14px] text-white">@{handle}</span>
+                      <span className="text-[12px] text-neutral-200">
+                        {active ? "현재" : "전환"}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+            <ul className="mt-2">
+              {sessionUser ? (
+                <li className="border-b border-neutral-800">
+                  <button
+                    type="button"
+                    className="w-full py-3.5 text-left text-[14px] text-neutral-200"
+                    onClick={logout}
+                  >
+                    로그아웃
+                  </button>
+                </li>
+              ) : (
+                <li className="border-b border-neutral-800">
+                  <button
+                    type="button"
+                    className="w-full py-3.5 text-left text-[14px] text-white"
+                    onClick={loginDefault}
+                  >
+                    수한으로 로그인
+                  </button>
+                </li>
+              )}
+            </ul>
+          </div>
+
+          <div className="mt-8 border-t border-neutral-800 pt-2">
+            <p className="py-3 text-[11px] font-bold tracking-[0.16em] text-neutral-200">
               일반
             </p>
             <ul>
@@ -190,15 +290,6 @@ export function SettingsSheet({
                   </button>
                 </li>
               ))}
-              <li className="border-b border-neutral-800">
-                <button
-                  type="button"
-                  className="w-full py-3.5 text-left text-[14px] text-neutral-200"
-                  onClick={() => onToast?.("로그아웃은 목업입니다")}
-                >
-                  로그아웃
-                </button>
-              </li>
             </ul>
           </div>
         </div>
