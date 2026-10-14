@@ -91,6 +91,13 @@ export function TomorrowCompose({
         </div>
 
         <form onSubmit={handleSubmit}>
+          <p
+            className="mb-2 border border-white/15 bg-white/[0.04] px-2.5 py-1.5 text-[11px] leading-snug tracking-[0.02em] text-white/70"
+            role="note"
+            aria-label="작성 규칙 팁"
+          >
+            내일 주제 제안도 하루 1개
+          </p>
           <p className="mb-2 text-[11px] text-muted">
             내일 아레나 후보로 올릴 질문형 주제
           </p>

@@ -89,6 +89,13 @@ export function WieldBar({ open, side, onClose, onSubmit }: WieldBarProps) {
         </div>
 
         <form onSubmit={handleSubmit}>
+          <p
+            className="mb-2 border border-white/15 bg-white/[0.04] px-2.5 py-1.5 text-[11px] leading-snug tracking-[0.02em] text-white/70"
+            role="note"
+            aria-label="작성 규칙 팁"
+          >
+            오늘 의견은 하루 1개
+          </p>
           <div className="mb-2 flex items-center justify-between text-[11px] text-muted">
             <span>
               {side ? `${side}로 진술` : "미참전 시 NEXUS로 제출"}

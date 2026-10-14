@@ -13,6 +13,7 @@ import type {
   TopicCandidate,
   User,
 } from "@/lib/types/domain";
+import type { SessionQuota } from "@/lib/types/quota";
 
 export type ArenaMeta = {
   round: number;
@@ -41,6 +42,8 @@ export type StoreSnapshot = {
   scraps: Scrap[];
   battleDays: BattleDay[];
   arenaMeta: ArenaMeta;
+  /** 세션 유저 일일 한도 (좋아요·진영이동·글) */
+  quota: SessionQuota;
 };
 
 export type CreateOpinionInput = {

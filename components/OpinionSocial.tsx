@@ -183,7 +183,11 @@ export function OpinionSocial({
     if (!targetId) return;
     try {
       domaStore.toggleLike(likeKind, targetId);
-    } catch {
+    } catch (e) {
+      if (e instanceof Error && e.message === "QUOTA_LIKES") {
+        onToast?.("오늘의 좋아요를 모두 썼습니다 (5/5)");
+        return;
+      }
       onNeedLogin?.();
     }
   };

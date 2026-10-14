@@ -18,6 +18,7 @@ import { MessagesScreen } from "@/components/MessagesScreen";
 import { NotificationsScreen } from "@/components/NotificationsScreen";
 import { ProfileScreen } from "@/components/ProfileScreen";
 import { PullRefresh } from "@/components/PullRefresh";
+import { RulesSheet } from "@/components/RulesSheet";
 import { SearchSheet } from "@/components/SearchSheet";
 import {
   SettingsSheet,
@@ -94,6 +95,7 @@ export function DomaHome() {
   const [focusOpinionId, setFocusOpinionId] = useState<string | null>(null);
   const [alertCategory, setAlertCategory] = useState<AlertCategory>("all");
   const [newMessageOpen, setNewMessageOpen] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
   const refreshLock = useRef(false);
 
   const feedOpinions = uiDemo === "empty" ? [] : storeOpinions;
@@ -173,7 +175,11 @@ export function DomaHome() {
 
     try {
       domaStore.setJoinedCamp(campFromSide(side));
-    } catch {
+    } catch (e) {
+      if (e instanceof Error && e.message === "QUOTA_CAMP_MOVES") {
+        showToast("진영 이동 한도를 모두 썼습니다 (3회)");
+        return;
+      }
       showToast("로그인이 필요합니다");
       return;
     }
@@ -204,7 +210,11 @@ export function DomaHome() {
         body,
         camp: campFromSide(side),
       });
-    } catch {
+    } catch (e) {
+      if (e instanceof Error && e.message === "QUOTA_POSTS") {
+        showToast("오늘 의견은 하루 1개입니다");
+        return;
+      }
       showToast("로그인이 필요합니다");
       return;
     }
@@ -417,6 +427,7 @@ export function DomaHome() {
               uiDemo={uiDemo}
               onRetry={onRetry}
               onCompose={openCompose}
+              onOpenRules={() => setRulesOpen(true)}
             />
           </PullRefresh>
         ) : null}
@@ -559,6 +570,7 @@ export function DomaHome() {
         onClose={() => setShareOpen(false)}
         onToast={showToast}
       />
+      <RulesSheet open={rulesOpen} onClose={() => setRulesOpen(false)} />
       <BottomNav active={navTab} onChange={handleNavChange} />
     </div>
   );

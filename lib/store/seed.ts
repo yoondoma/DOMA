@@ -26,6 +26,7 @@ import {
   userIdFromHandle,
 } from "@/lib/types/ids";
 import type { StoreSnapshot } from "@/lib/store/types";
+import type { SessionQuota } from "@/lib/types/quota";
 
 const SEED_HANDLES = [
   { handle: "soohan", displayName: "수한", bio: "판결을 겨루는 사람. 증거 없으면 말하지 않는다." },
@@ -216,6 +217,14 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
     resolvedAtUtc: `${b.date}T14:00:00.000Z`,
   }));
 
+  /** 데모 HUD — 일부 소모된 남은 횟수 */
+  const quota: SessionQuota = {
+    likesUsed: 2,
+    campMovesUsed: 1,
+    postsUsed: 0,
+    proposalsUsed: 0,
+  };
+
   return {
     version: 1,
     clock,
@@ -230,6 +239,7 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
     blocks: [],
     reports: [],
     battleDays,
+    quota,
     /** 홈 아레나 표시용 메타 (UI ArenaState와 병행) */
     arenaMeta: {
       round: 412,

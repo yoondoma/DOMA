@@ -36,8 +36,9 @@ import type {
   CreateOpinionInput,
   StoreSnapshot,
 } from "@/lib/store/types";
+import { emptyQuota, QUOTA_LIMITS } from "@/lib/types/quota";
 
-const STORAGE_KEY = "doma.store.v2";
+const STORAGE_KEY = "doma.store.v3";
 
 type Listener = () => void;
 
@@ -81,6 +82,7 @@ function normalizeSnap(parsed: StoreSnapshot): StoreSnapshot {
     ),
     scraps: parsed.scraps ?? [],
     follows: parsed.follows ?? [],
+    quota: parsed.quota ?? emptyQuota(),
   };
 }
 
@@ -315,9 +317,23 @@ class MemoryStore {
     this.commit(next);
   }
 
+  getQuota() {
+    return this.snap.quota;
+  }
+
   setJoinedCamp(camp: Camp | null) {
     const next = clone(this.snap);
     if (!next.session) throw new Error("SESSION_REQUIRED");
+    const prev = next.session.joinedCamp;
+    if (prev && camp && prev !== camp) {
+      if (next.quota.campMovesUsed >= QUOTA_LIMITS.campMoves) {
+        throw new Error("QUOTA_CAMP_MOVES");
+      }
+      next.quota = {
+        ...next.quota,
+        campMovesUsed: next.quota.campMovesUsed + 1,
+      };
+    }
     next.session.joinedCamp = camp;
     this.commit(next);
   }
@@ -325,6 +341,9 @@ class MemoryStore {
   createOpinion(input: CreateOpinionInput): Opinion {
     const next = clone(this.snap);
     if (!next.session) throw new Error("SESSION_REQUIRED");
+    if (next.quota.postsUsed >= QUOTA_LIMITS.posts) {
+      throw new Error("QUOTA_POSTS");
+    }
     const dayId = next.clock.dayId;
     const authorId = next.session.userId;
 
@@ -339,6 +358,7 @@ class MemoryStore {
       createdAtUtc: new Date().toISOString(),
     };
     next.opinions = [...next.opinions, op];
+    next.quota = { ...next.quota, postsUsed: next.quota.postsUsed + 1 };
     this.commit(next);
     return op;
   }
@@ -350,6 +370,9 @@ class MemoryStore {
   }): TopicCandidate {
     const next = clone(this.snap);
     if (!next.session) throw new Error("SESSION_REQUIRED");
+    if (next.quota.proposalsUsed >= QUOTA_LIMITS.proposals) {
+      throw new Error("QUOTA_PROPOSALS");
+    }
     const tc: TopicCandidate = {
       id: makeTopicCandidateId(input.targetDayId),
       targetDayId: input.targetDayId,
@@ -361,6 +384,10 @@ class MemoryStore {
       createdAtUtc: new Date().toISOString(),
     };
     next.topicCandidates = [tc, ...next.topicCandidates];
+    next.quota = {
+      ...next.quota,
+      proposalsUsed: next.quota.proposalsUsed + 1,
+    };
     this.commit(next);
     return tc;
   }
@@ -451,6 +478,9 @@ class MemoryStore {
   addLike(targetKind: Like["targetKind"], targetId: string): Like {
     const next = clone(this.snap);
     if (!next.session) throw new Error("SESSION_REQUIRED");
+    if (next.quota.likesUsed >= QUOTA_LIMITS.likes) {
+      throw new Error("QUOTA_LIKES");
+    }
     const userId = next.session.userId;
     const id = makeLikeId(userId, targetKind, targetId);
     const existing = next.likes.find((l) => l.id === id);
@@ -463,6 +493,7 @@ class MemoryStore {
       createdAtUtc: new Date().toISOString(),
     };
     next.likes = [...next.likes, row];
+    next.quota = { ...next.quota, likesUsed: next.quota.likesUsed + 1 };
     if (targetKind === "opinion") {
       next.opinions = next.opinions.map((o) =>
         o.id === targetId ? { ...o, likeCount: o.likeCount + 1 } : o,
@@ -483,6 +514,10 @@ class MemoryStore {
     const before = next.likes.length;
     next.likes = next.likes.filter((l) => l.id !== id);
     if (next.likes.length === before) return false;
+    next.quota = {
+      ...next.quota,
+      likesUsed: Math.max(0, next.quota.likesUsed - 1),
+    };
     if (targetKind === "opinion") {
       next.opinions = next.opinions.map((o) =>
         o.id === targetId

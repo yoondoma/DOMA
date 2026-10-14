@@ -17,6 +17,7 @@ import {
   SideBadge,
   SpearMark,
 } from "@/components/SideMarks";
+import { RulesHud } from "@/components/RulesHud";
 import { useDomaStore } from "@/lib/store";
 import { DAILY_TITLE_SHORT } from "@/lib/types/gamification";
 import type { UiDemo } from "@/lib/ui-demo";
@@ -84,6 +85,7 @@ type ArenaBarProps = {
   uiDemo?: UiDemo;
   onRetry?: () => void;
   onCompose?: () => void;
+  onOpenRules?: () => void;
 };
 
 function topOpinionForSide(opinions: Opinion[], side: Side): Opinion | null {
@@ -365,6 +367,7 @@ function BattlefieldIntro({
   uiDemo,
   onRetry,
   onCompose,
+  onOpenRules,
   light,
 }: {
   arena: ArenaState;
@@ -373,6 +376,7 @@ function BattlefieldIntro({
   uiDemo: UiDemo;
   onRetry?: () => void;
   onCompose?: () => void;
+  onOpenRules?: () => void;
   light: boolean;
 }) {
   const remaining = useCountdown(arena.endsAt);
@@ -410,6 +414,7 @@ function BattlefieldIntro({
             남음
           </span>
         </p>
+        <RulesHud light={light} className="mt-4" />
       </div>
 
       {/* 오늘의 전장 — 여유 패딩·타이포로 주제가 숨 쉬게 */}
@@ -417,13 +422,30 @@ function BattlefieldIntro({
         className="battlefield-rise battlefield-rise-delay px-6 pb-10 pt-10 text-center sm:px-8 sm:pb-12 sm:pt-12"
         aria-label="오늘 주제 영역"
       >
-        <p
-          className={`text-[12px] font-bold tracking-[0.22em] ${
-            light ? "text-black/50" : "text-white/50"
-          }`}
-        >
-          오늘의 전장
-        </p>
+        <div className="flex items-center justify-center gap-1.5">
+          <p
+            className={`text-[12px] font-bold tracking-[0.22em] ${
+              light ? "text-black/50" : "text-white/50"
+            }`}
+          >
+            오늘의 전장
+          </p>
+          {onOpenRules ? (
+            <button
+              type="button"
+              onClick={onOpenRules}
+              className={`inline-flex size-5 items-center justify-center border text-[10px] font-bold tracking-[0.06em] ${
+                light
+                  ? "border-black/25 text-black/55"
+                  : "border-white/25 text-white/55"
+              }`}
+              aria-label="전투 규칙"
+              title="규칙"
+            >
+              ?
+            </button>
+          ) : null}
+        </div>
         <h2
           className={`mx-auto mt-5 max-w-[18em] font-[family-name:var(--font-display)] text-[26px] font-bold leading-[1.4] tracking-[-0.01em] sm:mt-6 sm:text-[30px] sm:leading-[1.38] ${ink}`}
         >
@@ -569,6 +591,7 @@ export function ArenaBar({
   uiDemo = "normal",
   onRetry,
   onCompose,
+  onOpenRules,
 }: ArenaBarProps) {
   const forcedTop = useForcedTopSide();
   const champion = useMemo(
@@ -697,6 +720,7 @@ export function ArenaBar({
             uiDemo={uiDemo}
             onRetry={onRetry}
             onCompose={onCompose}
+            onOpenRules={onOpenRules}
             light={light}
           />
         </div>
@@ -730,16 +754,34 @@ export function ArenaBar({
           >
             {remaining}
           </p>
-          <h2
-            className={`mt-2 font-[family-name:var(--font-syne)] text-[18px] font-bold leading-[1.4] tracking-[-0.01em] sm:text-[19px] ${ink}`}
-          >
-            {arena.topic}
-          </h2>
+          <div className="mt-2 flex items-start justify-center gap-1.5">
+            <h2
+              className={`font-[family-name:var(--font-syne)] text-[18px] font-bold leading-[1.4] tracking-[-0.01em] sm:text-[19px] ${ink}`}
+            >
+              {arena.topic}
+            </h2>
+            {onOpenRules ? (
+              <button
+                type="button"
+                onClick={onOpenRules}
+                className={`mt-0.5 inline-flex size-5 shrink-0 items-center justify-center border text-[10px] font-bold ${
+                  light
+                    ? "border-black/25 text-black/55"
+                    : "border-white/25 text-white/55"
+                }`}
+                aria-label="전투 규칙"
+                title="규칙"
+              >
+                ?
+              </button>
+            ) : null}
+          </div>
           <p
             className={`mx-auto mt-2 max-w-[36em] line-clamp-2 text-[12px] leading-[1.55] ${soft}`}
           >
             {arena.description}
           </p>
+          <RulesHud light={light} className="mt-2.5" />
         </div>
 
         <div
