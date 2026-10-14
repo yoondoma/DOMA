@@ -511,33 +511,10 @@ function BattlefieldIntro({
     >
       <div
         className={`battlefield-rise border-b px-5 pb-4 pt-5 text-center ${border}`}
+        data-arena-timer-block
       >
-        <div
-          className="flex items-center justify-between gap-6"
-          data-date-battle-row
-        >
-          <p
-            className={`min-w-0 truncate text-left text-[10px] tracking-[0.08em] ${faint}`}
-            data-kst-today
-            aria-label="오늘 날짜"
-          >
-            <span className={light ? "text-black/35" : "text-white/35"}>
-              오늘
-            </span>
-            <span className={`mx-1.5 ${light ? "text-black/20" : "text-white/20"}`} aria-hidden>
-              ·
-            </span>
-            <span className={soft}>{formatKstTodayImmersion()}</span>
-          </p>
-          <p
-            className={`shrink-0 text-right text-[12px] font-bold tracking-[0.14em] ${ink}`}
-            aria-label={`제 ${arena.round}회 전투`}
-          >
-            제 {arena.round}회 전투
-          </p>
-        </div>
         <p
-          className={`mt-3 text-[11px] tracking-[0.18em] ${
+          className={`text-[11px] tracking-[0.18em] ${
             timer.stage ? "text-timer" : soft
           }`}
           data-urgency-label={timer.stage ?? "calm"}
@@ -566,15 +543,30 @@ function BattlefieldIntro({
             남음
           </span>
         </p>
+        {/* 날짜 — 타이머 아래 · 빨간 액센트 · 「오늘」문구 없음 */}
+        <p
+          className="mt-2.5 text-[12px] font-medium tracking-[0.08em] text-timer"
+          data-kst-today
+          aria-label="날짜"
+        >
+          {formatKstTodayImmersion()}
+        </p>
         {/* 좋아요/진영이동 HUD — 접힌 첫 화면에서는 숨김 · 진영 펼침(sticky)에서만 */}
       </div>
 
-      {/* 오늘의 전장 — 접힌 intro: 주제 직후 최고글이 보이도록 패딩 절제 */}
+      {/* 오늘의 전장 — 제 N회를 주제(최후의 판결) 바로 위 */}
       <div
         className="battlefield-rise battlefield-rise-delay px-6 pb-6 pt-7 text-center sm:px-8 sm:pb-7 sm:pt-8"
         aria-label="오늘 주제 영역"
       >
-        <div className="flex items-center justify-center gap-1.5">
+        <p
+          className={`text-[12px] font-bold tracking-[0.14em] ${ink}`}
+          aria-label={`제 ${arena.round}회 전투`}
+          data-battle-round
+        >
+          제 {arena.round}회 전투
+        </p>
+        <div className="mt-3 flex items-center justify-center gap-1.5">
           <p
             className={`text-[12px] font-bold tracking-[0.22em] ${
               light ? "text-black/50" : "text-white/50"
