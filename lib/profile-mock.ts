@@ -15,6 +15,8 @@ export type ProfilePost = {
   side: Side;
   likes: number;
   timeLabel: string;
+  /** 전장 의견 id (있으면 탭 시 이동) */
+  opinionId?: string;
 };
 
 export type AffinityStats = {
@@ -34,8 +36,8 @@ export type FollowUser = {
 };
 
 export const PROFILE_USER = {
-  name: "수한",
-  handle: "soohan",
+  name: "게스트",
+  handle: "doma.guest",
   bio: "판결을 겨루는 사람. 증거 없으면 말하지 않는다.",
   joinedLabel: "2026년 3월부터",
   following: 128,
@@ -47,7 +49,7 @@ export const PROFILE_USER = {
  * 시즌 승수 → 사다리 (ARCHITECT→I–IV→BRONZE) · 패 0
  */
 export const PROFILE_GAMER: UserProfileType = withResolvedTier({
-  id: "user-soohan",
+  id: "user-doma-guest",
   username: PROFILE_USER.name,
   /** 이번 시즌 승수 → II */
   score: 48,
@@ -99,6 +101,7 @@ export const PROFILE_POSTS: ProfilePost[] = [
     text: "지성의 핵심이 패턴 인식이라면, ‘완전히’의 기준을 감정으로 낮추지 말자.",
     likes: 42,
     timeLabel: "2시간",
+    opinionId: "op-guest-1",
   },
   {
     id: "pp-2",
@@ -184,14 +187,14 @@ export const PROFILE_SCORE_HISTORY: ScoreEvent[] = (() => {
 })();
 
 const FOLLOW_NAMES = [
-  ["김도마", "doma_kim", "판결문만 남긴다."],
-  ["이창", "spear_lee", "흑으로 증명."],
-  ["박방패", "aegis_park", "백의 자리."],
-  ["최증거", "evidence_c", "각주가 곧 주장."],
-  ["정논객", "jung_debate", "한 줄로 끝내기."],
-  ["한결", "hangyeol", "매일 한 판."],
-  ["윤침묵", "silent_y", "말하지 않을 자유."],
-  ["서판결", "seo_verdict", "24시간 안에."],
+  ["아레나", "arena.one", "판결문만 남긴다."],
+  ["창끝", "spear.tip", "흑으로 증명."],
+  ["방패선", "aegis.line", "백의 자리."],
+  ["각주", "evidence.note", "각주가 곧 주장."],
+  ["한줄", "one.line", "한 줄로 끝내기."],
+  ["데일리", "daily.round", "매일 한 판."],
+  ["침묵", "silent.pulse", "말하지 않을 자유."],
+  ["판결", "verdict.now", "24시간 안에."],
 ];
 
 export const PROFILE_FOLLOWING: FollowUser[] = FOLLOW_NAMES.map((n, i) => ({
@@ -210,14 +213,14 @@ export const PROFILE_FOLLOWERS: FollowUser[] = [
   })),
   {
     id: "fr-x",
-    name: "오독자",
-    handle: "reader_oh",
+    name: "관전",
+    handle: "watcher.one",
     bio: "지켜보는 사람.",
   },
   {
     id: "fr-y",
-    name: "유증인",
-    handle: "witness_yoo",
+    name: "증인",
+    handle: "witness.arc",
     bio: "기록만 한다.",
   },
 ];

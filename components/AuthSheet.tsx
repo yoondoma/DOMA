@@ -199,10 +199,10 @@ export function AuthSheet({
                 </p>
                 <button
                   type="button"
-                  onClick={() => loginSeed("soohan")}
+                  onClick={() => loginSeed("doma.guest")}
                   className="mt-3 w-full border border-neutral-700 py-3 text-[13px] text-white"
                 >
-                  @soohan으로 로그인
+                  @doma.guest로 로그인
                 </button>
               </div>
             </>

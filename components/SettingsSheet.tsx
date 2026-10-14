@@ -31,6 +31,10 @@ type SettingsSheetProps = {
   onProfileSync?: (next: EditableProfile) => void;
   /** 탈퇴 완료 — 가입 루트로 */
   onLeftAccount?: (socialId: string | null) => void;
+  /** 스크랩 → 프로필 스크랩 탭 */
+  onOpenScraps?: () => void;
+  /** 전투 규칙 시트 */
+  onOpenRules?: () => void;
   onClose: () => void;
   onToast?: (message: string) => void;
 };
@@ -44,9 +48,12 @@ type Panel =
   | "help"
   | "monetize"
   | "leave"
-  | "offline";
+  | "offline"
+  | "content"
+  | "blocks"
+  | "report";
 
-const SWITCHABLE = ["soohan", "mira.k", "zero.nexus", "han.aegis"] as const;
+const SWITCHABLE = ["doma.guest", "mira.k", "zero.nexus", "han.aegis"] as const;
 const DM_OPTIONS: DmPolicy[] = ["everyone", "mutual", "off"];
 
 const NOTIFY_KEY = "doma.notifyPrefs.v1";
@@ -112,6 +119,8 @@ export function SettingsSheet({
   open,
   onProfileSync,
   onLeftAccount,
+  onOpenScraps,
+  onOpenRules,
   onClose,
   onToast,
 }: SettingsSheetProps) {
@@ -185,9 +194,9 @@ export function SettingsSheet({
 
   const loginDefault = () => {
     try {
-      domaStore.login("soohan");
+      domaStore.login("doma.guest");
       syncUser();
-      onToast?.("수한으로 로그인했습니다");
+      onToast?.("@doma.guest로 로그인했습니다");
     } catch {
       onToast?.("로그인에 실패했습니다");
     }
@@ -210,7 +219,17 @@ export function SettingsSheet({
                   ? "오프라인·보관"
                   : panel === "leave"
                     ? "탈퇴"
-                    : "도움말";
+                    : panel === "content"
+                      ? "콘텐츠 한도"
+                      : panel === "blocks"
+                        ? "차단 목록"
+                        : panel === "report"
+                          ? "신고·제재"
+                          : "도움말";
+
+  const myBlocks = (snap.blocks ?? []).filter(
+    (b) => b.blockerId === sessionUser?.id,
+  );
 
   const confirmLeave = () => {
     try {
@@ -272,8 +291,10 @@ export function SettingsSheet({
                         id: "scrap",
                         label: "스크랩",
                         hint: "본인만 봄 · 프로필 스크랩 탭",
-                        onClick: () =>
-                          onToast?.("프로필 → 스크랩 탭에서 확인하세요"),
+                        onClick: () => {
+                          onClose();
+                          onOpenScraps?.();
+                        },
                       },
                     ],
                   },
@@ -309,10 +330,7 @@ export function SettingsSheet({
                         id: "content",
                         label: "콘텐츠 한도",
                         hint: "제안·의견 500 · 댓글 280 · 쿨다운 3분",
-                        onClick: () =>
-                          onToast?.(
-                            "제안 500 · 의견 500 · 댓글 280 · 작성 쿨다운 3분",
-                          ),
+                        onClick: () => setPanel("content"),
                       },
                     ],
                   },
@@ -397,7 +415,7 @@ export function SettingsSheet({
                     className="flex w-full items-center gap-3 py-3.5 text-left active:opacity-70"
                   >
                     <span className="text-[15px] text-white">
-                      {sessionUser ? "로그아웃" : "수한으로 로그인 (목업)"}
+                      {sessionUser ? "로그아웃" : "@doma.guest로 로그인 (목업)"}
                     </span>
                   </button>
                 </li>
@@ -413,8 +431,8 @@ export function SettingsSheet({
                   : "로그아웃 상태"}
               </p>
               <p className="px-1 pb-3 text-center text-[12px] leading-relaxed text-neutral-200">
-                가입은 만 14세 이상. 카카오 연동은 준비 중 · 지금은 목업
-                계정 전환만 됩니다.
+                가입은 만 14세 이상. 카카오는 목업 · 아래 계정 전환으로
+                입장합니다.
               </p>
               <SectionLabel>계정 전환 (목업)</SectionLabel>
               <ul aria-label="계정 전환">
@@ -595,16 +613,13 @@ export function SettingsSheet({
               <button
                 type="button"
                 className="flex w-full items-center justify-between border-b border-neutral-800 py-3.5 text-left"
-                onClick={() =>
-                  onToast?.(
-                    `차단 ${snap.blocks?.length ?? 0}명 · 목록 UI는 목업`,
-                  )
-                }
+                onClick={() => setPanel("blocks")}
+                data-blocks-entry
               >
                 <div className="min-w-0">
                   <p className="text-[14px] text-white">차단 목록</p>
                   <p className="mt-0.5 text-[12px] text-neutral-200">
-                    DM·알림·검색 숨김 · 전투·제안은 보임
+                    {myBlocks.length}명 · DM·알림·검색 숨김
                   </p>
                 </div>
                 <span className="text-neutral-200">
@@ -614,16 +629,13 @@ export function SettingsSheet({
               <button
                 type="button"
                 className="flex w-full items-center justify-between border-b border-neutral-800 py-3.5 text-left"
-                onClick={() =>
-                  onToast?.(
-                    "신고는 글·프로필 ··· 메뉴에서 · 정지 1→3→7→30→90→영구",
-                  )
-                }
+                onClick={() => setPanel("report")}
+                data-report-entry
               >
                 <div className="min-w-0">
                   <p className="text-[14px] text-white">신고·제재 안내</p>
                   <p className="mt-0.5 text-[12px] text-neutral-200">
-                    피드·프로필 Safety 메뉴로 진입
+                    피드·프로필 ··· 메뉴 · 정지 단계
                   </p>
                 </div>
                 <span className="text-neutral-200">
@@ -719,9 +731,145 @@ export function SettingsSheet({
                 </button>
               </div>
               <p className="mt-4 px-1 text-[12px] leading-relaxed text-neutral-200">
-                스킨·상점 UI는 준비 중. 프로필·공유 카드는{" "}
-                <span className="text-white">cosmetics</span> 필드만
-                읽습니다 (기본 B&W).
+                꾸미기(목) — 결제·상점 없음. 프로필 프레임만 로컬 적용.
+              </p>
+              <ul className="mt-2" aria-label="프레임 선택" data-cosmetics-mock>
+                {(
+                  [
+                    { id: "bw", label: "기본 B&W" },
+                    { id: "thin", label: "얇은 링" },
+                    { id: "stamp", label: "도장" },
+                  ] as const
+                ).map((opt) => {
+                  const cur =
+                    (sessionUser?.cosmetics?.frame as string | null) ?? "bw";
+                  const active = (cur || "bw") === opt.id;
+                  return (
+                    <li key={opt.id} className="border-b border-neutral-800">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          try {
+                            domaStore.patchMyCosmetics({
+                              frame: opt.id === "bw" ? null : opt.id,
+                            });
+                            onToast?.(`프레임 · ${opt.label}`);
+                          } catch {
+                            onToast?.("로그인이 필요합니다");
+                          }
+                        }}
+                        className="flex w-full items-center justify-between py-3.5 text-left"
+                        aria-pressed={active}
+                      >
+                        <span className="text-[14px] text-white">
+                          {opt.label}
+                        </span>
+                        <span className="text-[12px] text-neutral-200">
+                          {active ? "적용" : "선택"}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : null}
+
+          {panel === "content" ? (
+            <div className="space-y-3 px-3 py-3 text-[13px]" data-content-limits>
+              <p className="leading-relaxed text-neutral-200">
+                하루·글 단위 한도 (목 · 로컬 쿼터).
+              </p>
+              <ul className="border-y border-neutral-800">
+                {[
+                  ["주제 제안", "500자"],
+                  ["오늘 의견", "500자"],
+                  ["댓글", "280자"],
+                  ["작성 쿨다운", "3분"],
+                  ["글 좋아요", "하루 5 · 의견만"],
+                  ["진영 이동", "하루 3회"],
+                  ["의견 지지", "활성 1개"],
+                ].map(([k, v]) => (
+                  <li
+                    key={k}
+                    className="flex items-baseline justify-between gap-3 border-b border-neutral-800 py-3 last:border-b-0"
+                  >
+                    <span className="text-white">{k}</span>
+                    <span className="tabular-nums text-neutral-200">{v}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {panel === "blocks" ? (
+            <div className="px-2" data-blocks-panel>
+              <p className="px-1 py-3 text-[12px] leading-relaxed text-neutral-200">
+                차단하면 DM·알림·검색에서 숨깁니다. 전투·제안 글은 보입니다.
+              </p>
+              {myBlocks.length === 0 ? (
+                <p className="px-1 py-6 text-center text-[13px] text-neutral-200">
+                  차단한 사람이 없습니다.
+                  <br />
+                  글·프로필 ··· 메뉴에서 차단할 수 있습니다.
+                </p>
+              ) : (
+                <ul aria-label="차단 목록">
+                  {myBlocks.map((b) => {
+                    const u = snap.users.find((x) => x.id === b.blockedId);
+                    const handle = u?.handle ?? b.blockedId.slice(0, 8);
+                    return (
+                      <li
+                        key={b.id}
+                        className="flex items-center justify-between gap-3 border-b border-neutral-800 py-3.5"
+                      >
+                        <span className="text-[14px] text-white">@{handle}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            try {
+                              domaStore.unblockUser(b.blockedId);
+                              onToast?.(`@${handle} 차단 해제`);
+                            } catch {
+                              onToast?.("해제에 실패했습니다");
+                            }
+                          }}
+                          className="border border-neutral-600 px-2.5 py-1 text-[11px] tracking-[0.08em] text-neutral-200"
+                        >
+                          해제
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          ) : null}
+
+          {panel === "report" ? (
+            <div
+              className="space-y-3 px-3 py-3 text-[13px] leading-relaxed text-neutral-200"
+              data-report-panel
+            >
+              <p>
+                신고는 글·프로필의{" "}
+                <span className="text-white">···</span> 메뉴에서 접수합니다.
+                (목 · 로컬 저장)
+              </p>
+              <p className="text-white">정지 단계</p>
+              <ul className="border-y border-neutral-800">
+                {["1일", "3일", "7일", "30일", "90일", "영구"].map((d, i) => (
+                  <li
+                    key={d}
+                    className="flex justify-between border-b border-neutral-800 py-2.5 last:border-b-0"
+                  >
+                    <span>{i + 1}차</span>
+                    <span className="text-white">{d}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-[12px]">
+                허위 신고는 동일 단계로 제재될 수 있습니다.
               </p>
             </div>
           ) : null}
@@ -803,7 +951,11 @@ export function SettingsSheet({
               <button
                 type="button"
                 className="text-white underline underline-offset-4"
-                onClick={() => onToast?.("전투 규칙은 아레나 ? 에서")}
+                onClick={() => {
+                  onClose();
+                  onOpenRules?.();
+                }}
+                data-open-rules-from-settings
               >
                 전투 규칙 안내
               </button>
