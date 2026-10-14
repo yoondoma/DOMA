@@ -23,7 +23,7 @@ const sizeClass = {
 
 /**
  * DOMA + 위첨자 KR (점 없음).
- * letter-spacing 꼬리 여백을 상쇄해 YouTube KR처럼 어깨에 딱 붙임.
+ * left-full + 2px — YouTube KR처럼 어깨에 딱 붙임.
  */
 export function DomaWordmark({
   size = "md",
@@ -33,22 +33,17 @@ export function DomaWordmark({
   const s = sizeClass[size];
   return (
     <span
-      className={`inline-flex items-start font-[family-name:var(--font-brand)] font-semibold leading-none ${className}`}
+      className={`relative inline-block font-[family-name:var(--font-brand)] font-semibold leading-none tracking-[0.28em] ${s.brand} ${
+        light ? "text-black/80" : "text-white"
+      } ${className}`}
     >
-      <span
-        className={`${s.brand} tracking-[0.28em] ${
-          light ? "text-black/80" : "text-white"
-        }`}
-        /* tracking 꼬리 여백 상쇄 — KR은 어깨에 2~4px만 띄움 */
-        style={{ marginRight: "-0.2em" }}
-      >
-        DOMA
-      </span>
+      DOMA
       <span
         aria-hidden
-        className={`${s.kr} ml-[0.28em] mt-[0.05em] ${
+        className={`absolute left-full top-0 ml-[2px] font-[family-name:var(--font-brand)] font-semibold leading-none ${s.kr} ${
           light ? "text-black/45" : "text-white/55"
         }`}
+        style={{ letterSpacing: "0.04em" }}
       >
         KR
       </span>
