@@ -18,7 +18,7 @@ type WieldBarProps = {
   onSubmit: (text: string, media?: ComposeMedia) => void;
 };
 
-/** 오늘의 글(진술) 작성 — 잠정 500자 · 이미지≤3 · 링크 스텁 */
+/** 오늘의 글(진술) 작성 — 확정 500자 · 이미지≤3 · 링크 스텁 */
 export function WieldBar({ open, side, onClose, onSubmit }: WieldBarProps) {
   const [text, setText] = useState("");
   const [previews, setPreviews] = useState<ImagePreview[]>([]);

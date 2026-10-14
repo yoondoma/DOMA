@@ -14,7 +14,7 @@ const notoSerifKr = Noto_Serif_KR({
 export const metadata: Metadata = {
   title: "DOMA KR — 토론 아레나",
   description:
-    "오늘의 논제에 참전하고, 280자 진술로 여론을 움직이는 토론 시스템.",
+    "오늘의 논제에 참전하고, 진술로 여론을 움직이는 토론 시스템.",
   applicationName: "DOMA KR",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
