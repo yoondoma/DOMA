@@ -153,12 +153,12 @@ export function ArenaBar({
           위: 주제·설명 — sticky로 자리 고정 (헤더 아래).
           아래: 진영·펼침·피드가 그 아래 영역을 씀.
         */}
-        {/* 초기: 주제가 주인공 · 펼침 후엔 압축 sticky */}
+        {/* 초기: 읽는 필드 · 주제 우선 · 펼침 후엔 압축 sticky */}
         <div
           className={`${
             selected
               ? "sticky top-[5.75rem] z-30 border-b px-5 pb-3 pt-3"
-              : "flex min-h-[42dvh] flex-col justify-center px-5 pb-8 pt-10"
+              : "flex min-h-[42dvh] flex-col justify-center px-6 pb-10 pt-12"
           } ${
             light
               ? "border-black/12 bg-white/96 backdrop-blur-md"
@@ -168,45 +168,59 @@ export function ArenaBar({
           }`}
           aria-label="오늘 주제 영역"
         >
-          <p
-            className={`text-[11px] tracking-[0.18em] ${
-              light ? "text-neutral-500" : "text-muted"
-            }`}
+          <div
+            className={
+              selected ? "w-full" : "mx-auto w-full max-w-[22.5rem] sm:max-w-[26rem]"
+            }
           >
-            제 {arena.round} 도마
-          </p>
-          <h2
-            className={`mt-3 font-[family-name:var(--font-syne)] font-bold tracking-tight ${
-              selected
-                ? "text-[18px] leading-[1.35] sm:text-[19px]"
-                : "text-[26px] leading-[1.28] sm:text-[28px]"
-            } ${light ? "text-black" : "text-white"}`}
-          >
-            {arena.topic}
-          </h2>
-          {!selected ? (
             <p
-              className={`mt-4 max-w-[36em] text-[15px] leading-[1.7] ${
-                light ? "text-black/72" : "text-white/78"
+              className={`text-[11px] font-medium tracking-[0.2em] ${
+                light ? "text-neutral-500" : "text-white/45"
               }`}
             >
-              {arena.description}
+              제 {arena.round} 도마
             </p>
-          ) : (
-            <p
-              className={`mt-1.5 line-clamp-2 text-[12px] leading-[1.45] ${
-                light ? "text-black/55" : "text-white/55"
-              }`}
+            <h2
+              className={`mt-4 font-[family-name:var(--font-syne)] font-bold tracking-[-0.01em] ${
+                selected
+                  ? "text-[18px] leading-[1.4] sm:text-[19px]"
+                  : "text-[25px] leading-[1.4] sm:text-[27px]"
+              } ${light ? "text-black" : "text-white"}`}
             >
-              {arena.description}
-            </p>
-          )}
+              {arena.topic}
+            </h2>
+            {!selected ? (
+              <>
+                <div
+                  className={`mt-5 h-px w-8 ${
+                    light ? "bg-black/20" : "bg-white/25"
+                  }`}
+                  aria-hidden
+                />
+                <p
+                  className={`mt-5 text-[15px] leading-[1.85] ${
+                    light ? "text-black/75" : "text-white/82"
+                  }`}
+                >
+                  {arena.description}
+                </p>
+              </>
+            ) : (
+              <p
+                className={`mt-2 line-clamp-2 text-[12px] leading-[1.55] ${
+                  light ? "text-black/55" : "text-white/55"
+                }`}
+              >
+                {arena.description}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* 다음 액션: 진영 선택 → 펼치면 그 진영 의견을 하나하나 */}
         <div aria-label="진영과 의견 영역">
           {!selected ? (
-            <p className="px-5 pb-3 text-center text-[11px] tracking-[0.16em] text-muted">
+            <p className="border-t border-white/10 px-5 py-3.5 text-center text-[11px] tracking-[0.16em] text-muted">
               다음 · 진영을 골라 의견을 살펴보세요
             </p>
           ) : null}
