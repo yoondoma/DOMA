@@ -10,6 +10,7 @@ import {
 } from "react";
 import { DiscoverStrip } from "@/components/DiscoverStrip";
 import { OpinionSocial } from "@/components/OpinionSocial";
+import { TierBadge } from "@/components/gamification/TierBadge";
 import { LEFT_USER_LABEL } from "@/lib/account-display";
 import type { ContextualSharePayload } from "@/lib/contextual-share";
 import type { DiscoverItem } from "@/lib/discover-mock";
@@ -28,6 +29,7 @@ import {
   formatPostTimeKst,
 } from "@/lib/format-time";
 import { compareByJudgmentAuthority } from "@/lib/judgment";
+import { PROFILE_GAMER } from "@/lib/profile-mock";
 import { useDomaStore } from "@/lib/store";
 import {
   formatCountdownMs,
@@ -153,6 +155,10 @@ type ArenaBarProps = {
   onToast?: (message: string) => void;
   /** 주제·창·방패 맥락 공유 카드 */
   onOpenShareCard?: (payload: ContextualSharePayload) => void;
+  /** LOCKED 판결 → 결과 증명 카드 */
+  onOpenVerdictShare?: () => void;
+  /** 진영 피드 하단 SupportBar 독 여부 (높이 보정) */
+  campSupportDock?: boolean;
   /** 발견 스트립 탭 → 홈 표면 전환 등 */
   onDiscoverSelect?: (item: DiscoverItem) => void;
 };
@@ -465,15 +471,21 @@ function BattlefieldIntro({
   onPickSide,
   onOpenRules,
   onOpenShareCard,
+  onOpenVerdictShare,
   onDiscoverSelect,
   light,
+  locked,
+  verdictSide,
 }: {
   arena: ArenaState;
   onPickSide: (side: Side) => void;
   onOpenRules?: () => void;
   onOpenShareCard?: (payload: ContextualSharePayload) => void;
+  onOpenVerdictShare?: () => void;
   onDiscoverSelect?: (item: DiscoverItem) => void;
   light: boolean;
+  locked?: boolean;
+  verdictSide?: Side | null;
 }) {
   const timer = useTimerUrgency(arena.endsAt);
 
@@ -615,6 +627,36 @@ function BattlefieldIntro({
             주제 공유
           </button>
         ) : null}
+        {locked ? (
+          <div
+            className={`mx-auto mt-5 flex max-w-[28em] flex-wrap items-center justify-center gap-2 border px-3 py-2.5 ${
+              light ? "border-black/20" : "border-white/25"
+            }`}
+            data-verdict-strip
+            aria-label="판결 확정"
+          >
+            <p
+              className={`text-[12px] font-bold tracking-[0.12em] ${ink}`}
+            >
+              판결 확정
+              {verdictSide
+                ? ` · ${verdictSide === "NEXUS" ? "도전자" : "방어자"}`
+                : ""}
+            </p>
+            <TierBadge tier={PROFILE_GAMER.currentTier.code} />
+            {onOpenVerdictShare ? (
+              <button
+                type="button"
+                onClick={onOpenVerdictShare}
+                className={`text-[12px] font-medium tracking-[0.08em] underline underline-offset-4 ${soft}`}
+                aria-label="결과 증명 카드"
+                data-verdict-share
+              >
+                결과 보기
+              </button>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       {/* 진영 — 누르면 해당 진영 의견 칸으로 */}
@@ -674,14 +716,19 @@ export function ArenaBar({
   onOpenRules,
   onToast,
   onOpenShareCard,
+  onOpenVerdictShare,
+  campSupportDock = false,
   onDiscoverSelect,
 }: ArenaBarProps) {
+  const clock = useDomaStore().clock;
   const forcedTop = useForcedTopSide();
   const champion = useMemo(
     () => dayTopOpinion(opinions, forcedTop),
     [opinions, forcedTop],
   );
   const timer = useTimerUrgency(arena.endsAt);
+  const locked = clock.state === "LOCKED";
+  const verdictSide = dayTopSide(opinions, forcedTop);
   const scrollerRef = useRef<HTMLDivElement>(null);
   /** 버튼·포커스 등 프로그래매틱 스크롤 중 — 스크롤→view 반영 무시 */
   const programmaticScroll = useRef(false);
@@ -800,8 +847,11 @@ export function ArenaBar({
             onPickSide={(side) => onChangeView(side)}
             onOpenRules={onOpenRules}
             onOpenShareCard={onOpenShareCard}
+            onOpenVerdictShare={onOpenVerdictShare}
             onDiscoverSelect={onDiscoverSelect}
             light={light}
+            locked={locked}
+            verdictSide={verdictSide}
           />
         </div>
       </section>
@@ -871,6 +921,40 @@ export function ArenaBar({
             {arena.description}
           </p>
           <RulesHud light={light} className="mt-2.5" />
+          {locked ? (
+            <div
+              className={`mt-2.5 flex flex-wrap items-center justify-center gap-2 border px-2.5 py-2 ${
+                light ? "border-black/20 bg-black/[0.04]" : "border-white/25 bg-white/[0.06]"
+              }`}
+              data-verdict-strip
+              aria-label="판결 확정"
+            >
+              <p
+                className={`text-[11px] font-bold tracking-[0.12em] ${
+                  light ? "text-black" : "text-white"
+                }`}
+              >
+                판결 확정
+                {verdictSide
+                  ? ` · ${verdictSide === "NEXUS" ? "도전자" : "방어자"}`
+                  : ""}
+              </p>
+              <TierBadge tier={PROFILE_GAMER.currentTier.code} />
+              {onOpenVerdictShare ? (
+                <button
+                  type="button"
+                  onClick={onOpenVerdictShare}
+                  className={`text-[11px] font-medium tracking-[0.08em] underline underline-offset-4 ${
+                    light ? "text-black/70" : "text-white/75"
+                  }`}
+                  aria-label="결과 증명 카드"
+                  data-verdict-share
+                >
+                  결과 보기
+                </button>
+              ) : null}
+            </div>
+          ) : null}
         </div>
 
         <div
@@ -942,9 +1026,10 @@ export function ArenaBar({
             scrollBehavior: "auto",
             WebkitOverflowScrolling: "touch",
             touchAction: "pan-x pan-y",
-            /* 헤더·sticky 주제·하단네비 밖 남은 높이 (현황판 독 없음) */
-            height:
-              "calc(100dvh - 3.5rem - 7.5rem - 3.5rem - env(safe-area-inset-bottom, 0px))",
+            /* 헤더·sticky 주제·하단네비(+진영 SupportBar) 밖 남은 높이 */
+            height: campSupportDock
+              ? "calc(100dvh - 3.5rem - 7.5rem - 3.5rem - 84px - env(safe-area-inset-bottom, 0px))"
+              : "calc(100dvh - 3.5rem - 7.5rem - 3.5rem - env(safe-area-inset-bottom, 0px))",
             maxHeight: "50dvh",
           }}
           onScroll={onScroll}

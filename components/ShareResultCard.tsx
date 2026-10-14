@@ -3,6 +3,7 @@
 import html2canvas from "html2canvas";
 import { useRef, useState } from "react";
 import { DomaWordmark } from "@/components/DomaWordmark";
+import { TierBadge } from "@/components/gamification/TierBadge";
 import { PROFILE_GAMER } from "@/lib/profile-mock";
 import type { ShareResult } from "@/lib/share-result-mock";
 import { resolveCosmetics } from "@/lib/types/cosmetics";
@@ -163,13 +164,16 @@ export function ShareResultCard({
                   light={sideTone === "white"}
                 />
               </p>
-              <p
-                className={`font-mono text-[11px] tabular-nums tracking-[0.08em] ${
-                  sideTone === "black" ? "text-white/50" : "text-black/45"
-                }`}
-              >
-                #{result.round}
-              </p>
+              <div className="flex items-center gap-2">
+                <TierBadge tier={PROFILE_GAMER.currentTier.code} />
+                <p
+                  className={`font-mono text-[11px] tabular-nums tracking-[0.08em] ${
+                    sideTone === "black" ? "text-white/50" : "text-black/45"
+                  }`}
+                >
+                  #{result.round}
+                </p>
+              </div>
             </div>
 
             <p
