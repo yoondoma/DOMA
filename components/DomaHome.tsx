@@ -5,7 +5,11 @@ import { ArenaBar } from "@/components/ArenaBar";
 import { BattleCalendar } from "@/components/BattleCalendar";
 import { BottomNav, type NavTab } from "@/components/BottomNav";
 import { ComposeChoice } from "@/components/ComposeChoice";
-import { Header, type HomeSurface } from "@/components/Header";
+import {
+  Header,
+  type AlertCategory,
+  type HomeSurface,
+} from "@/components/Header";
 import { MessagesScreen } from "@/components/MessagesScreen";
 import { NotificationsScreen } from "@/components/NotificationsScreen";
 import { ProfileScreen } from "@/components/ProfileScreen";
@@ -84,10 +88,9 @@ export function DomaHome() {
   const [returnTab, setReturnTab] = useState<NavTab | null>(null);
   /** 알림 → 해당 글 하이라이트 */
   const [focusOpinionId, setFocusOpinionId] = useState<string | null>(null);
+  const [alertCategory, setAlertCategory] = useState<AlertCategory>("all");
+  const [newMessageOpen, setNewMessageOpen] = useState(false);
   const refreshLock = useRef(false);
-
-  const lightShell =
-    navTab === "home" && homeSurface === "today" && arenaView === "AEGIS";
 
   const feedOpinions = uiDemo === "empty" ? [] : storeOpinions;
 
@@ -109,6 +112,10 @@ export function DomaHome() {
       avatarChar: currentUser.displayName.slice(0, 1),
     });
   }, [currentUser]);
+
+  useEffect(() => {
+    if (navTab !== "messages") setNewMessageOpen(false);
+  }, [navTab]);
 
   const showToast = useCallback((message: string) => {
     setToast(message);
@@ -304,25 +311,20 @@ export function DomaHome() {
   }
 
   return (
-    <div
-      className={`min-h-full ${lightShell ? "bg-white text-black" : "bg-black text-white"}`}
-    >
+    <div className="min-h-full bg-black text-white">
       {/* 스크롤 본문만 페이드 — fixed 하단바/시트는 밖에 둬 containing block 유지 */}
-      <div
-        className={`arena-enter mx-auto min-h-full max-w-[560px] border-x ${
-          lightShell
-            ? "border-black/10 bg-white"
-            : "border-white/10 bg-black"
-        }`}
-      >
+      <div className="arena-enter mx-auto min-h-full max-w-[560px] border-x border-white/10 bg-black">
         <Header
           endsAt={INITIAL_ARENA.endsAt}
-          tone={lightShell ? "light" : "dark"}
+          tone="dark"
           refreshing={refreshing}
           onRefresh={handleRefresh}
           onOpenHistory={() => setCalendarOpen(true)}
           onOpenSearch={() => setSearchOpen(true)}
           onOpenSettings={() => setSettingsOpen(true)}
+          onNewMessage={
+            navTab === "messages" ? () => setNewMessageOpen(true) : undefined
+          }
           tab={
             navTab === "compose"
               ? "home"
@@ -341,6 +343,10 @@ export function DomaHome() {
                   if (s === "today") setArenaView("intro");
                 }
               : undefined
+          }
+          alertCategory={alertCategory}
+          onAlertCategoryChange={
+            navTab === "alerts" ? setAlertCategory : undefined
           }
         />
 
@@ -364,15 +370,11 @@ export function DomaHome() {
         ) : null}
 
         {!guestProfile && navTab === "home" && homeSurface === "today" ? (
-          <PullRefresh
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            light={lightShell}
-          >
+          <PullRefresh refreshing={refreshing} onRefresh={handleRefresh}>
             <ArenaBar
               arena={INITIAL_ARENA}
               opinions={feedOpinions}
-              view={arenaView}
+              view={arenaView === "intro" ? "NEXUS" : arenaView}
               onChangeView={(v) => {
                 setArenaView(v);
                 if (v === "intro") setFocusOpinionId(null);
@@ -401,6 +403,8 @@ export function DomaHome() {
             onOpenProfile={(p) => openGuestProfile(p, "messages")}
             uiDemo={uiDemo}
             onRetry={onRetry}
+            composeOpen={newMessageOpen}
+            onComposeClose={() => setNewMessageOpen(false)}
           />
         ) : null}
 
@@ -412,6 +416,7 @@ export function DomaHome() {
             }}
             uiDemo={uiDemo}
             onRetry={onRetry}
+            category={alertCategory}
           />
         ) : null}
 
@@ -448,13 +453,7 @@ export function DomaHome() {
           }}
           role="status"
         >
-          <div
-            className={`max-w-[560px] border px-3 py-2 text-center text-[12px] font-medium tracking-wide ${
-              lightShell
-                ? "border-black/20 bg-white text-black"
-                : "border-white/30 bg-black text-white"
-            }`}
-          >
+          <div className="max-w-[560px] border border-white/30 bg-black px-3 py-2 text-center text-[12px] font-medium tracking-wide text-white">
             {toast}
           </div>
         </div>

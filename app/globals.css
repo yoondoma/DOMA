@@ -229,6 +229,16 @@ body {
   transform: scale(0.985);
 }
 
+/* 진영 가로 스와이프 — 스크롤바 숨김 */
+.camp-swipe {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.camp-swipe::-webkit-scrollbar {
+  display: none;
+}
+
 /* CLOSING_SOON — 빨간 타이머만 pulse (글로우 없음) */
 @keyframes timer-closing-pulse {
   0%,

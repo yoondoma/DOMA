@@ -8,25 +8,35 @@ export type HomeSurface = "today" | "tomorrow";
 /** 하단 탭에 대응하는 헤더 슬롯 모드 (+ 제외) */
 export type HeaderTab = "home" | "messages" | "alerts" | "profile";
 
+export type AlertCategory = "all" | "follow" | "conversation" | "mention";
+
 type HeaderProps = {
   /** @deprecated 헤더 타이머 제거 — 호환용 유지 */
   endsAt?: string;
-  /** 방어자 탭일 때 흰 톤 (홈만) */
   tone?: "dark" | "light";
   refreshing?: boolean;
   onRefresh?: () => void;
   onOpenHistory?: () => void;
   onOpenSearch?: () => void;
   onOpenSettings?: () => void;
-  /** @deprecated tab으로 대체 */
+  /** 메시지 탭 — 새 메시지 */
+  onNewMessage?: () => void;
   trailing?: "search" | "settings";
   surface?: HomeSurface;
   onSurfaceChange?: (surface: HomeSurface) => void;
-  /** 하단 탭 — 슬롯 내용만 교체 */
   tab?: HeaderTab;
-  /** 프로필 탭 중앙 라벨 (핸들 우선) */
   profileLabel?: string;
+  /** 알림 카테고리 */
+  alertCategory?: AlertCategory;
+  onAlertCategoryChange?: (c: AlertCategory) => void;
 };
+
+const ALERT_TABS: { id: AlertCategory; label: string }[] = [
+  { id: "all", label: "모든 알림" },
+  { id: "follow", label: "팔로우" },
+  { id: "conversation", label: "대화" },
+  { id: "mention", label: "멘션" },
+];
 
 function CalendarIcon() {
   return (
@@ -89,7 +99,26 @@ function SettingsIcon() {
   );
 }
 
-/** 좌·우 슬롯 폭 고정 (비어 있어도 size-10) */
+/** 연필 · 새 메시지 (B&W, DOMA 스트로크) */
+function ComposePenIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M4.5 19.5 5.2 15.8 16.4 4.6a1.8 1.8 0 0 1 2.55 0l.45.45a1.8 1.8 0 0 1 0 2.55L8.2 18.8 4.5 19.5Z"
+        stroke="currentColor"
+        strokeWidth="1.55"
+        strokeLinejoin="miter"
+      />
+      <path
+        d="M14.8 6.2 17.8 9.2"
+        stroke="currentColor"
+        strokeWidth="1.55"
+        strokeLinecap="square"
+      />
+    </svg>
+  );
+}
+
 function Slot({
   children,
   className = "",
@@ -108,9 +137,10 @@ function Slot({
 
 /**
  * 탭별 상단 헤더 슬롯
- * 홈: 달력 · DOMA KR · 검색 (+ 오늘|내일)
- * 메시지/알림: — · 타이틀 · —
- * 프로필: — · 핸들 · 설정
+ * 홈: 달력 · DOMA KR · 검색
+ * 메시지: 메시지(좌) · — · 새 메시지
+ * 알림: 알림(좌) · — · — (+ 카테고리)
+ * 프로필: — · @handle · 설정
  */
 export function Header({
   tone = "dark",
@@ -119,37 +149,20 @@ export function Header({
   onOpenHistory,
   onOpenSearch,
   onOpenSettings,
+  onNewMessage,
   surface = "today",
   onSurfaceChange,
   tab = "home",
   profileLabel,
+  alertCategory = "all",
+  onAlertCategoryChange,
 }: HeaderProps) {
   const home = tab === "home";
   const light = home && tone === "light";
   const ink = light ? "text-black" : "text-white";
   const muted = light ? "text-neutral-500" : "text-muted";
-
-  const centerKey =
-    tab === "home"
-      ? "logo"
-      : tab === "profile"
-        ? `profile:${profileLabel ?? ""}`
-        : tab;
-
-  const centerTitle =
-    tab === "messages"
-      ? "메시지"
-      : tab === "alerts"
-        ? "알림"
-        : tab === "profile"
-          ? profileLabel
-            ? profileLabel.startsWith("@")
-              ? profileLabel
-              : `@${profileLabel}`
-            : "프로필"
-          : null;
-
   const showSurface = home && Boolean(onSurfaceChange);
+  const showAlertCats = tab === "alerts" && Boolean(onAlertCategoryChange);
 
   return (
     <header
@@ -160,76 +173,114 @@ export function Header({
       }`}
     >
       <div className="relative mx-auto flex h-14 max-w-[560px] items-center px-3">
-        {/* LEFT */}
-        <Slot>
-          {home ? (
-            <button
-              type="button"
-              onClick={onOpenHistory}
-              className={`flex size-10 items-center justify-center ${ink}`}
-              aria-label="전투 기록"
+        {tab === "messages" ? (
+          <>
+            <h1
+              className={`header-slot-fade min-w-0 flex-1 truncate font-[family-name:var(--font-syne)] text-[17px] font-bold tracking-tight ${ink}`}
             >
-              <CalendarIcon />
-            </button>
-          ) : null}
-        </Slot>
-
-        {/* CENTER */}
-        <div className="flex min-w-0 flex-1 flex-col items-center justify-center">
-          <div key={centerKey} className="header-slot-fade">
-            {home ? (
+              메시지
+            </h1>
+            <Slot>
               <button
                 type="button"
-                onClick={onRefresh}
-                disabled={refreshing}
-                aria-label="새로고침"
-                aria-busy={refreshing || undefined}
-                className={refreshing ? "logo-refresh" : undefined}
+                onClick={onNewMessage}
+                className={`flex size-10 items-center justify-center ${ink}`}
+                aria-label="새 메시지"
               >
-                <h1 className="leading-none">
-                  <DomaWordmark size="md" light={light} />
-                </h1>
+                <ComposePenIcon />
               </button>
-            ) : (
-              <h1
-                className={`truncate px-2 font-[family-name:var(--font-syne)] text-[17px] font-bold tracking-tight ${ink}`}
-              >
-                {centerTitle}
-              </h1>
-            )}
-          </div>
-          {home && refreshing ? (
-            <span className={`mt-0.5 text-[10px] tracking-[0.14em] ${muted}`}>
-              업데이트 중
-            </span>
-          ) : null}
-        </div>
+            </Slot>
+          </>
+        ) : tab === "alerts" ? (
+          <>
+            <h1
+              className={`header-slot-fade min-w-0 flex-1 truncate font-[family-name:var(--font-syne)] text-[17px] font-bold tracking-tight ${ink}`}
+            >
+              알림
+            </h1>
+            <Slot />
+          </>
+        ) : (
+          <>
+            <Slot>
+              {home ? (
+                <button
+                  type="button"
+                  onClick={onOpenHistory}
+                  className={`flex size-10 items-center justify-center ${ink}`}
+                  aria-label="전투 기록"
+                >
+                  <CalendarIcon />
+                </button>
+              ) : null}
+            </Slot>
 
-        {/* RIGHT */}
-        <Slot>
-          {home ? (
-            <button
-              type="button"
-              onClick={onOpenSearch}
-              className={`flex size-10 items-center justify-center ${ink}`}
-              aria-label="검색"
-            >
-              <SearchIcon />
-            </button>
-          ) : tab === "profile" ? (
-            <button
-              type="button"
-              onClick={onOpenSettings}
-              className={`flex size-10 items-center justify-center ${ink}`}
-              aria-label="설정"
-            >
-              <SettingsIcon />
-            </button>
-          ) : null}
-        </Slot>
+            <div className="flex min-w-0 flex-1 flex-col items-center justify-center">
+              <div
+                key={
+                  tab === "profile"
+                    ? `profile:${profileLabel ?? ""}`
+                    : "logo"
+                }
+                className="header-slot-fade"
+              >
+                {home ? (
+                  <button
+                    type="button"
+                    onClick={onRefresh}
+                    disabled={refreshing}
+                    aria-label="새로고침"
+                    aria-busy={refreshing || undefined}
+                    className={refreshing ? "logo-refresh" : undefined}
+                  >
+                    <h1 className="leading-none">
+                      <DomaWordmark size="md" light={light} />
+                    </h1>
+                  </button>
+                ) : (
+                  <h1
+                    className={`truncate px-2 font-[family-name:var(--font-syne)] text-[17px] font-bold tracking-tight ${ink}`}
+                  >
+                    {profileLabel
+                      ? profileLabel.startsWith("@")
+                        ? profileLabel
+                        : `@${profileLabel}`
+                      : "프로필"}
+                  </h1>
+                )}
+              </div>
+              {home && refreshing ? (
+                <span className={`mt-0.5 text-[10px] tracking-[0.14em] ${muted}`}>
+                  업데이트 중
+                </span>
+              ) : null}
+            </div>
+
+            <Slot>
+              {home ? (
+                <button
+                  type="button"
+                  onClick={onOpenSearch}
+                  className={`flex size-10 items-center justify-center ${ink}`}
+                  aria-label="검색"
+                >
+                  <SearchIcon />
+                </button>
+              ) : tab === "profile" ? (
+                <button
+                  type="button"
+                  onClick={onOpenSettings}
+                  className={`flex size-10 items-center justify-center ${ink}`}
+                  aria-label="설정"
+                >
+                  <SettingsIcon />
+                </button>
+              ) : null}
+            </Slot>
+          </>
+        )}
       </div>
 
-      {/* 오늘|내일 — 홈 전용 */}
       {showSurface ? (
         <div
           className={`mx-auto grid h-10 max-w-[560px] grid-cols-2 border-t ${
@@ -248,7 +299,9 @@ export function Header({
                 ? light
                   ? "border-b-2 border-black text-black"
                   : "border-b-2 border-white text-white"
-                : "text-muted"
+                : light
+                  ? "text-neutral-500"
+                  : "text-muted"
             }`}
           >
             오늘
@@ -263,11 +316,41 @@ export function Header({
                 ? light
                   ? "border-b-2 border-black text-black"
                   : "border-b-2 border-white text-white"
-                : "text-muted"
+                : light
+                  ? "text-neutral-500"
+                  : "text-muted"
             }`}
           >
             내일
           </button>
+        </div>
+      ) : null}
+
+      {showAlertCats ? (
+        <div
+          className="mx-auto flex max-w-[560px] gap-0 overflow-x-auto border-t border-white/10"
+          role="tablist"
+          aria-label="알림 카테고리"
+        >
+          {ALERT_TABS.map((t) => {
+            const active = alertCategory === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => onAlertCategoryChange?.(t.id)}
+                className={`shrink-0 px-3 py-2.5 text-[12px] font-bold tracking-[0.08em] ${
+                  active
+                    ? "border-b-2 border-white text-white"
+                    : "text-muted"
+                }`}
+              >
+                {t.label}
+              </button>
+            );
+          })}
         </div>
       ) : null}
     </header>
