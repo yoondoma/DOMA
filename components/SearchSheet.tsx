@@ -46,7 +46,7 @@ export function SearchSheet({
       <button
         type="button"
         className="absolute inset-0 cursor-default"
-        aria-label="닫기"
+        aria-label="검색 닫기"
         onClick={onClose}
       />
       <div className="sheet-up relative z-10 flex max-h-[92dvh] w-full max-w-[560px] flex-col overflow-hidden border border-white/15 bg-black text-white sm:max-h-[85dvh]">
@@ -55,7 +55,7 @@ export function SearchSheet({
           <button
             type="button"
             onClick={onClose}
-            className="ml-auto text-[13px] text-muted"
+            className="relative z-20 ml-auto px-1 text-[13px] text-muted"
             aria-label="닫기"
           >
             닫기
