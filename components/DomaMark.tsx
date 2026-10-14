@@ -24,19 +24,18 @@ export function DomaMark({
 
   const seamY = 23;
   const ellipseTop = 44.5;
-  /** tip이 원 안으로 진입 (ellipseTop 44.5 → tip 50) */
-  const tipY = 50;
+  /** tip을 원에 미묘하게만 더 넣음 (과겹침 금지) */
+  const tipY = 50.8;
 
   /** 삼각 닫힘: 윗변(seam) 한 줄 + 빗변. 사각 밑변은 그리지 않음 */
   const tri = `M6 ${seamY}H42L24 ${tipY}Z`;
   /** 열린 ㄷ: 좌·우·윗변만 — 끝점이 seam에 butt로 닿아 이중 밑변 없음 */
   const rect = `M15.75 ${seamY}V1H32.25V${seamY}`;
   /**
-   * tipY=50 빗변·원 교차 ≈ (20.45,44.68)-(27.55,44.68)
-   * 끝점을 교차보다 살짝 안쪽 → tip 밑 원 호 미작성, 어깨 갭 최소
+   * tipY=50.8 교차 ≈ (20.07,44.72)-(27.93,44.72)
+   * 끝점 살짝 안쪽 → tip 밑 호 미작성, 삼각이 원 위 레이어
    */
-  /** tip 가림만 비운 단일 large-arc (sweep=0 → 하단 경유, 노치 없음) */
-  const ellipseOpen = "M20.7 44.75A20.5 12 0 1 0 27.3 44.75";
+  const ellipseOpen = "M20.35 44.75A20.5 12 0 1 0 27.65 44.75";
 
   return (
     <svg
