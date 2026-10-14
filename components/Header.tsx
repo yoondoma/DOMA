@@ -13,6 +13,10 @@ type HeaderProps = {
   onRefresh?: () => void;
   onOpenHistory?: () => void;
   onOpenSearch?: () => void;
+  /** 본인 프로필 탭 — 검색 대신 설정 */
+  onOpenSettings?: () => void;
+  /** 우측 액션: 기본 검색 · 프로필=설정 */
+  trailing?: "search" | "settings";
   /** 오늘 아레나 | 내일 필드 — 1급 전환 */
   surface?: HomeSurface;
   onSurfaceChange?: (surface: HomeSurface) => void;
@@ -68,6 +72,20 @@ function SearchIcon() {
   );
 }
 
+function SettingsIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="12" r="3.1" stroke="currentColor" strokeWidth="1.6" />
+      <path
+        d="M12 3.6v2.1M12 18.3v2.1M3.6 12h2.1M18.3 12h2.1M6.1 6.1l1.5 1.5M16.4 16.4l1.5 1.5M17.9 6.1l-1.5 1.5M7.6 16.4l-1.5 1.5"
+        stroke="currentColor"
+        strokeWidth="1.55"
+        strokeLinecap="square"
+      />
+    </svg>
+  );
+}
+
 /** 메인: 마크 없음 · 오늘/내일 1급 전환 · DOMA 절제 · 탭/pull 새로고침 */
 export function Header({
   endsAt,
@@ -76,6 +94,8 @@ export function Header({
   onRefresh,
   onOpenHistory,
   onOpenSearch,
+  onOpenSettings,
+  trailing = "search",
   surface = "today",
   onSurfaceChange,
 }: HeaderProps) {
@@ -143,16 +163,29 @@ export function Header({
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={onOpenSearch}
-          className={`flex size-10 shrink-0 items-center justify-center ${
-            light ? "text-black" : "text-white"
-          }`}
-          aria-label="검색"
-        >
-          <SearchIcon />
-        </button>
+        {trailing === "settings" ? (
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className={`flex size-10 shrink-0 items-center justify-center ${
+              light ? "text-black" : "text-white"
+            }`}
+            aria-label="설정"
+          >
+            <SettingsIcon />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onOpenSearch}
+            className={`flex size-10 shrink-0 items-center justify-center ${
+              light ? "text-black" : "text-white"
+            }`}
+            aria-label="검색"
+          >
+            <SearchIcon />
+          </button>
+        )}
       </div>
 
       {/* 오늘 | 내일 — 나란한 1급 서피스 */}

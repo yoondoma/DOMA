@@ -11,6 +11,7 @@ import { NotificationsScreen } from "@/components/NotificationsScreen";
 import { ProfileScreen } from "@/components/ProfileScreen";
 import { PullRefresh } from "@/components/PullRefresh";
 import { SearchSheet } from "@/components/SearchSheet";
+import { SettingsSheet } from "@/components/SettingsSheet";
 import { ShareResultCard } from "@/components/ShareResultCard";
 import { SupportBar } from "@/components/SupportBar";
 import { TomorrowCompose } from "@/components/TomorrowCompose";
@@ -56,6 +57,7 @@ export function DomaHome() {
   const [entered, setEntered] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const refreshLock = useRef(false);
 
@@ -203,6 +205,8 @@ export function DomaHome() {
           onRefresh={handleRefresh}
           onOpenHistory={() => setCalendarOpen(true)}
           onOpenSearch={() => setSearchOpen(true)}
+          onOpenSettings={() => setSettingsOpen(true)}
+          trailing={navTab === "profile" ? "settings" : "search"}
           surface={homeSurface}
           onSurfaceChange={
             navTab === "home"
@@ -245,7 +249,10 @@ export function DomaHome() {
         ) : null}
 
         {navTab === "profile" ? (
-          <ProfileScreen onOpenShareCard={() => setShareOpen(true)} />
+          <ProfileScreen
+            isSelf
+            onOpenShareCard={() => setShareOpen(true)}
+          />
         ) : null}
 
         <div
@@ -297,6 +304,11 @@ export function DomaHome() {
         onClose={() => setCalendarOpen(false)}
       />
       <SearchSheet open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <SettingsSheet
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        onToast={showToast}
+      />
 
       <ComposeChoice
         open={choiceOpen}
