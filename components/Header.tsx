@@ -178,8 +178,8 @@ export function Header({
 }: HeaderProps) {
   const home = tab === "home";
   const light = home && tone === "light";
-  const ink = light ? "text-black" : "text-white";
-  const muted = light ? "text-neutral-500" : "text-muted";
+  const ink = light ? "text-ink" : "text-paper";
+  const muted = light ? "text-ink/45" : "text-muted";
   const showSurface = home && Boolean(onSurfaceChange);
   const showAlertCats = tab === "alerts" && Boolean(onAlertCategoryChange);
 
@@ -187,8 +187,8 @@ export function Header({
     <header
       className={`shell-tone sticky top-0 z-40 border-b backdrop-blur-md ${
         light
-          ? "border-black/10 bg-white/95"
-          : "border-white/12 bg-black/92"
+          ? "border-ink/12 bg-paper/95"
+          : "border-paper/15 bg-ink/92"
       }`}
     >
       <div className="relative mx-auto flex h-14 max-w-[560px] items-center px-3">

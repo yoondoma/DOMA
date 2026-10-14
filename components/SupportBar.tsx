@@ -81,7 +81,7 @@ export function SupportBar({
           aria-label={`도전자 ${nexusPercent}% ${nexusVotes.toLocaleString("ko-KR")}명`}
           data-support-side="NEXUS"
           aria-pressed={joined === "NEXUS"}
-          className={`relative flex h-full flex-1 items-center gap-1.5 bg-black px-2.5 text-white ${
+          className={`relative flex h-full flex-1 items-center gap-1.5 bg-ink px-2.5 text-paper ${
             joined === "NEXUS" ? "opacity-100" : "opacity-90 active:opacity-100"
           } ${flash === "NEXUS" ? "support-strike-nexus" : ""}`}
           style={{ flexBasis: `${nexusPercent}%` }}
@@ -90,7 +90,7 @@ export function SupportBar({
           <span className="text-[12px] font-bold tabular-nums leading-none">
             {nexusPercent}%
           </span>
-          <span className="truncate text-[10px] tabular-nums leading-none text-white/55">
+          <span className="truncate text-[10px] tabular-nums leading-none text-paper/55">
             {nexusVotes.toLocaleString("ko-KR")}
           </span>
         </button>
@@ -100,12 +100,12 @@ export function SupportBar({
           aria-label={`방어자 ${aegisPercent}% ${aegisVotes.toLocaleString("ko-KR")}명`}
           data-support-side="AEGIS"
           aria-pressed={joined === "AEGIS"}
-          className={`relative flex h-full flex-1 items-center justify-end gap-1.5 bg-white px-2.5 text-black ${
+          className={`relative flex h-full flex-1 items-center justify-end gap-1.5 bg-paper px-2.5 text-ink ${
             joined === "AEGIS" ? "opacity-100" : "opacity-90 active:opacity-100"
           } ${flash === "AEGIS" ? "support-strike-aegis" : ""}`}
           style={{ flexBasis: `${aegisPercent}%` }}
         >
-          <span className="truncate text-[10px] tabular-nums leading-none text-black/45">
+          <span className="truncate text-[10px] tabular-nums leading-none text-ink/45">
             {aegisVotes.toLocaleString("ko-KR")}
           </span>
           <span className="text-[12px] font-bold tabular-nums leading-none">

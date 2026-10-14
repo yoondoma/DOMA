@@ -537,13 +537,13 @@ function BattlefieldIntro({
 }) {
   const timer = useTimerUrgency(arena.endsAt);
 
-  const ink = light ? "text-black" : "text-white";
-  const soft = light ? "text-black/55" : "text-white/55";
-  const border = light ? "border-black/12" : "border-white/10";
+  const ink = light ? "text-ink" : "text-paper";
+  const soft = light ? "text-ink/55" : "text-paper/55";
+  const border = light ? "border-ink/12" : "border-paper/15";
 
   return (
     <div
-      className={light ? "bg-white text-black" : "bg-black text-white"}
+      className={light ? "bg-paper text-ink" : "bg-ink text-paper"}
       aria-label="오늘 전장"
       data-shell={light ? "light" : "dark"}
       data-arena-intro
@@ -572,10 +572,7 @@ function BattlefieldIntro({
         </p>
         {timer.phase === "after" ? null : (
           <p
-            className={`mt-2 font-mono leading-none tabular-nums text-timer ${timerUrgencyClass(
-              timer.stage,
-              "hero",
-            )}`}
+            className={`mt-2 text-timer ${timerUrgencyClass(timer.stage, "hero")}`}
             aria-label={`${timer.phaseLabel} ${timer.remaining}`}
             data-urgency={timer.stage ?? "calm"}
             data-closing={
@@ -590,7 +587,7 @@ function BattlefieldIntro({
           </p>
         )}
         <p
-          className="mt-2 text-[11px] font-medium tracking-[0.08em] text-timer"
+          className="mt-2.5 text-[11px] font-medium tracking-[0.08em] text-timer"
           data-kst-today
           aria-label="날짜"
         >
@@ -598,14 +595,14 @@ function BattlefieldIntro({
         </p>
       </div>
 
-      {/* 주제 — 라벨 없이 질문만 */}
+      {/* 주제 — 라벨 없이 질문만 · 시각 최대 */}
       <div
         className="battlefield-rise battlefield-rise-delay px-6 pb-5 pt-6 text-center sm:px-8 sm:pb-6 sm:pt-7"
         aria-label="오늘 주제 영역"
       >
         <div className="flex items-start justify-center gap-1.5">
           <h2
-            className={`max-w-[18em] font-[family-name:var(--font-display)] text-[24px] font-bold leading-[1.4] tracking-[-0.01em] sm:text-[28px] sm:leading-[1.38] ${ink}`}
+            className={`max-w-[18em] font-[family-name:var(--font-display)] text-[26px] font-bold leading-[1.35] tracking-[-0.02em] sm:text-[30px] sm:leading-[1.32] ${ink}`}
           >
             {arena.topic}
           </h2>
@@ -702,7 +699,7 @@ function BattlefieldIntro({
           aria-selected={false}
           aria-label="도전자"
           onClick={() => onPickSide("NEXUS")}
-          className="camp-press flex min-h-[80px] flex-col items-center justify-center gap-1.5 border-r border-white/15 bg-black px-3 py-3.5 text-white active:bg-white/[0.04]"
+          className="camp-press flex min-h-[80px] flex-col items-center justify-center gap-1.5 border-r border-paper/15 bg-ink px-3 py-3.5 text-paper active:bg-paper/[0.04]"
         >
           <SpearMark size={24} />
           <span className="text-[13px] font-bold tracking-[0.16em]">도전자</span>
@@ -713,7 +710,7 @@ function BattlefieldIntro({
           aria-selected={false}
           aria-label="방어자"
           onClick={() => onPickSide("AEGIS")}
-          className="camp-press flex min-h-[80px] flex-col items-center justify-center gap-1.5 bg-white px-3 py-3.5 text-black active:bg-neutral-100"
+          className="camp-press flex min-h-[80px] flex-col items-center justify-center gap-1.5 bg-paper px-3 py-3.5 text-ink active:brightness-95"
         >
           <ShieldMark size={24} />
           <span className="text-[13px] font-bold tracking-[0.16em]">방어자</span>
@@ -866,11 +863,11 @@ export function ArenaBar({
     return () => el.removeEventListener("scrollend", onScrollEnd);
   }, [selected, commitSideFromScroll]);
 
-  const ink = light ? "text-black" : "text-white";
-  const soft = light ? "text-black/55" : "text-white/55";
-  const faint = light ? "text-neutral-500" : "text-white/45";
-  const border = light ? "border-black/12" : "border-white/12";
-  const shellBg = light ? "bg-white text-black" : "bg-black text-white";
+  const ink = light ? "text-ink" : "text-paper";
+  const soft = light ? "text-ink/55" : "text-paper/55";
+  const faint = light ? "text-ink/40" : "text-paper/45";
+  const border = light ? "border-ink/12" : "border-paper/15";
+  const shellBg = light ? "bg-paper text-ink" : "bg-ink text-paper";
 
   if (!selected) {
     return (
@@ -907,7 +904,7 @@ export function ArenaBar({
       <div className="mx-auto max-w-[560px]">
         <div
           className={`shell-tone sticky top-[5.75rem] z-30 border-b px-5 pb-3 pt-3 text-center backdrop-blur-md ${border} ${
-            light ? "bg-white/96" : "bg-black/96"
+            light ? "bg-paper/96" : "bg-ink/96"
           }`}
           aria-label="오늘 주제 영역"
           data-arena-detail-header
@@ -923,7 +920,7 @@ export function ArenaBar({
           </p>
           {timer.phase === "after" ? null : (
             <p
-              className={`mt-1 font-mono tabular-nums text-timer ${timerUrgencyClass(
+              className={`mt-1 text-timer ${timerUrgencyClass(
                 timer.stage,
                 "sticky",
               )}`}
@@ -1018,7 +1015,7 @@ export function ArenaBar({
             aria-selected={selected === "NEXUS"}
             aria-label="도전자"
             onClick={() => scrollToSide("NEXUS")}
-            className={`camp-press flex min-h-[56px] flex-col items-center justify-center gap-1 border-r border-white/15 bg-black text-white ${
+            className={`camp-press flex min-h-[56px] flex-col items-center justify-center gap-1 border-r border-paper/15 bg-ink text-paper ${
               selected === "NEXUS" ? "opacity-100" : "opacity-45"
             }`}
           >
@@ -1033,7 +1030,7 @@ export function ArenaBar({
             aria-selected={selected === "AEGIS"}
             aria-label="방어자"
             onClick={() => scrollToSide("AEGIS")}
-            className={`camp-press flex min-h-[56px] flex-col items-center justify-center gap-1 bg-white text-black ${
+            className={`camp-press flex min-h-[56px] flex-col items-center justify-center gap-1 bg-paper text-ink ${
               selected === "AEGIS" ? "opacity-100" : "opacity-45"
             }`}
           >

@@ -454,7 +454,7 @@ export function DomaHome() {
   return (
     <div
       className={`shell-tone relative flex h-dvh max-h-dvh flex-col overflow-hidden ${
-        lightShell ? "bg-white text-black" : "bg-black text-white"
+        lightShell ? "bg-paper text-ink" : "bg-ink text-paper"
       }`}
       data-shell={lightShell ? "light" : "dark"}
     >
@@ -462,8 +462,8 @@ export function DomaHome() {
       <div
         className={`shell-tone arena-enter mx-auto min-h-0 w-full max-w-[560px] flex-1 overflow-y-auto overscroll-y-contain border-x ${
           lightShell
-            ? "border-black/10 bg-white"
-            : "border-white/10 bg-black"
+            ? "border-ink/12 bg-paper"
+            : "border-paper/15 bg-ink"
         }`}
       >
         <Header

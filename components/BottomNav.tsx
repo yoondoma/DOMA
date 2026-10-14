@@ -178,8 +178,8 @@ export function BottomNav({ active, onChange, light = false }: BottomNavProps) {
     <nav
       className={`relative z-50 w-full shrink-0 border-t backdrop-blur-md ${
         light
-          ? "border-black/15 bg-white/95"
-          : "border-white/15 bg-black/95"
+          ? "border-ink/12 bg-paper/95"
+          : "border-paper/15 bg-ink/95"
       }`}
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-label="하단 내비게이션"

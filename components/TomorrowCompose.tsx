@@ -114,7 +114,7 @@ export function TomorrowCompose({
             aria-label="작성 규칙 팁"
             data-proposal-tip
           >
-            짧고 굵게 · 이슈 · 찬반으로 나뉠 질문. 등록 후 수정 불가.
+            등록 후 수정 불가.
           </p>
           <div className="mb-2 flex justify-end text-[11px] tabular-nums text-dim">
             <span

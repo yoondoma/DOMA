@@ -1,13 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #000000;
-  --foreground: #ffffff;
-  --muted: #a3a3a3;
-  --dim: #525252;
-  --line: #ffffff;
+  /* Pure B&W 아레나 — 순백(#fff) 금지 · 매트 블랙 · 웜그레이 */
+  --ink: #0a0a0a;
+  --paper: #e8e4dc;
+  --background: var(--ink);
+  --foreground: #f3f0ea;
+  --muted: #9c968c;
+  --dim: #5c574f;
+  --line: rgba(243, 240, 234, 0.16);
+  --line-ink: rgba(10, 10, 10, 0.14);
   --surface: #0a0a0a;
-  --surface-raised: #111111;
+  --surface-raised: #121212;
   /* 박진감용 — 카운트다운 선에만 사용 */
   --timer: #e10600;
 
@@ -15,15 +19,13 @@
   --font-sans-stack:
     "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic",
     "Noto Sans KR", sans-serif;
-  /* 큰 주제·디스플레이 — Noto Serif KR (OFL) */
+  /* 큰 주제·디스플레이 — Noto Serif KR (OFL) · 묵직 */
   --font-display-stack:
     var(--font-noto-serif-kr), "Noto Serif KR", "Apple SD Gothic Neo",
     "Malgun Gothic", serif;
   --font-sans: var(--font-sans-stack);
   --font-display: var(--font-display-stack);
-  /* 워드마크 — 디스플레이와 조화 */
   --font-brand: var(--font-display-stack);
-  /* 레거시 별칭 (기존 Syne 참조) */
   --font-syne: var(--font-display-stack);
 }
 
@@ -36,8 +38,40 @@
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
   --color-timer: var(--timer);
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
   --font-sans: var(--font-sans-stack);
   --font-display: var(--font-display-stack);
+}
+
+/* 셸 토큰 — Tailwind bg-black/bg-white 대체용 */
+.bg-ink {
+  background-color: var(--ink);
+}
+.bg-paper {
+  background-color: var(--paper);
+}
+.text-ink {
+  color: var(--ink);
+}
+.text-paper {
+  color: var(--paper);
+}
+.border-ink\/12 {
+  border-color: rgba(10, 10, 10, 0.12);
+}
+.border-paper\/15 {
+  border-color: rgba(232, 228, 220, 0.15);
+}
+
+/* 타이머 — 디스플레이급 · 극도로 굵고 웅장 */
+.timer-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  font-size: clamp(2.75rem, 11vw, 3.75rem);
 }
 
 * {
@@ -66,8 +100,8 @@ body {
 }
 
 ::selection {
-  background: #ffffff;
-  color: #000000;
+  background: var(--paper);
+  color: var(--ink);
 }
 
 @keyframes live-pulse {

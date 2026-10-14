@@ -100,41 +100,29 @@ export function TomorrowField({
 
   return (
     <section
-      className="mx-auto max-w-[560px] bg-black text-white"
+      className="mx-auto max-w-[560px] bg-ink text-paper"
       aria-label="내일의 주제 필드"
     >
       {/* 주제 확정 카운트다운 — 헤더 타이머 없음, 전장과 같은 빨간 톤 */}
       <div className="border-b border-white/10 px-5 pb-5 pt-6 text-center">
-        <p className="text-[11px] font-medium tracking-[0.22em] text-white/45">
-          다음 전투 · 필드
-        </p>
-        <p className="mt-4 text-[11px] tracking-[0.18em] text-white/55">
+        <p className="text-[11px] tracking-[0.18em] text-white/55">
           내일의 주제 확정까지
         </p>
         <p
-          className="mt-2 font-mono text-[34px] font-semibold leading-none tracking-[0.06em] text-timer tabular-nums sm:text-[38px]"
+          className="timer-display mt-2 text-timer"
           aria-label={`주제 확정까지 ${confirmRemaining}`}
         >
           {confirmRemaining}
-          <span className="ml-2 align-middle text-[13px] font-medium tracking-[0.14em] text-timer/90">
-            남음
-          </span>
-        </p>
-        <p className="mt-3 text-[10px] tracking-[0.08em] text-white/35">
-          지지 1위 → 내일의 전장
         </p>
       </div>
 
       <div
-        className="flex flex-col items-center justify-center px-5 pb-6 pt-7 text-center"
-        aria-label="내일 필드 안내"
+        className="flex flex-col items-center justify-center px-5 pb-5 pt-6 text-center"
+        aria-label="내일 필드"
       >
-        <h2 className="font-[family-name:var(--font-syne)] text-[26px] font-bold leading-[1.28] tracking-tight sm:text-[28px]">
+        <h2 className="font-[family-name:var(--font-display)] text-[26px] font-bold leading-[1.28] tracking-tight sm:text-[28px]">
           내일의 주제
         </h2>
-        <p className="mx-auto mt-3 max-w-[20em] text-[13px] leading-snug text-white/55">
-          짧고 굵게 · 찬반으로 나뉠 질문. 지지 1위가 오늘이 된다.
-        </p>
       </div>
 
       {/* 위: TOP 토픽 */}
@@ -184,7 +172,7 @@ export function TomorrowField({
                     {i + 1}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block font-[family-name:var(--font-syne)] text-[15px] font-bold leading-snug">
+                    <span className="block font-[family-name:var(--font-display)] text-[16px] font-bold leading-snug tracking-[-0.01em]">
                       {c.title}
                     </span>
                     <span className="mt-1.5 block text-[12px] tabular-nums text-muted">
