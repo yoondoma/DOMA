@@ -9,21 +9,22 @@ type DomaWordmarkProps = {
 const sizeClass = {
   lg: {
     brand: "text-[36px]",
-    kr: "text-[11px] tracking-[0.04em]",
+    kr: "text-[11px]",
   },
   md: {
     brand: "text-[15px]",
-    kr: "text-[7.5px] tracking-[0.04em]",
+    kr: "text-[7.5px]",
   },
   sm: {
     brand: "text-[13px]",
-    kr: "text-[7px] tracking-[0.04em]",
+    kr: "text-[7px]",
   },
 } as const;
 
 /**
  * DOMA + 위첨자 KR (점 없음).
- * tracking 꼬리(≈0.28em) 안으로 당겨 YouTube처럼 A 어깨에 붙임.
+ * tracking은 `DOM`에만 — 마지막 `A`에는 꼬리 여백이 없어
+ * KR이 A 글리프 오른쪽에 2~4px만 띄고 붙는다 (YouTube KR).
  */
 export function DomaWordmark({
   size = "md",
@@ -31,21 +32,23 @@ export function DomaWordmark({
   className = "",
 }: DomaWordmarkProps) {
   const s = sizeClass[size];
+  const brand = light ? "text-black/80" : "text-white";
+  const kr = light ? "text-black/45" : "text-white/55";
+
   return (
     <span
-      className={`relative inline-block font-[family-name:var(--font-brand)] font-semibold leading-none tracking-[0.28em] ${s.brand} ${
-        light ? "text-black/80" : "text-white"
-      } ${className}`}
+      className={`inline-flex items-start font-[family-name:var(--font-brand)] font-semibold leading-none ${s.brand} ${brand} ${className}`}
     >
-      DOMA
-      <span
-        aria-hidden
-        className={`absolute left-full top-0 font-[family-name:var(--font-brand)] font-semibold leading-none ${s.kr} ${
-          light ? "text-black/45" : "text-white/55"
-        }`}
-        style={{ letterSpacing: "0.04em", marginLeft: "-0.22em" }}
-      >
-        KR
+      {/* D–O–M 간격만 tracking. 마지막 꼬리는 M–A 간격으로 쓰임 */}
+      <span className="tracking-[0.28em]">DOM</span>
+      <span className="relative inline-block">
+        A
+        <span
+          aria-hidden
+          className={`absolute left-full top-0 ml-[3px] font-[family-name:var(--font-brand)] font-semibold leading-none tracking-[0.04em] ${s.kr} ${kr}`}
+        >
+          KR
+        </span>
       </span>
       <span className="sr-only"> KR</span>
     </span>
