@@ -61,6 +61,8 @@ export function useUiOpinions(dayId?: string): UiOpinion[] {
       snap.users,
       snap.likes,
       sid ?? null,
+      snap.supports ?? [],
+      snap.campSwitches ?? [],
     );
   }, [snap, dayId]);
 }

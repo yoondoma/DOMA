@@ -18,10 +18,16 @@ import {
   SpearMark,
 } from "@/components/SideMarks";
 import { RulesHud } from "@/components/RulesHud";
+import { TrojanMark } from "@/components/TrojanMark";
 import { useDomaStore } from "@/lib/store";
 import { DAILY_TITLE_SHORT } from "@/lib/types/gamification";
 import type { UiDemo } from "@/lib/ui-demo";
 import type { ArenaState, ArenaView, Opinion, Side } from "@/lib/types";
+
+/** TOP·순위는 지지만 (좋아요 무관) */
+function bySupportDesc(a: Opinion, b: Opinion): number {
+  return (b.supports ?? 0) - (a.supports ?? 0);
+}
 
 /** CLOSING_SOON · 목업 `?closing=1` */
 function useClosingSoon(): boolean {
@@ -50,14 +56,14 @@ export function useForcedTopSide(): Side | null {
   return forced;
 }
 
-/** 그날 TOP 의견 진영 — 좋아요 최다 (강제 쿼리 우선) */
+/** 그날 TOP 의견 진영 — 지지 최다 (강제 쿼리 우선) */
 export function dayTopSide(
   opinions: Opinion[],
   forced: Side | null,
 ): Side | null {
   if (forced) return forced;
   if (opinions.length === 0) return null;
-  return [...opinions].sort((a, b) => b.likes - a.likes)[0]?.side ?? null;
+  return [...opinions].sort(bySupportDesc)[0]?.side ?? null;
 }
 
 export function dayTopOpinion(
@@ -68,10 +74,10 @@ export function dayTopOpinion(
   if (forced) {
     const sideList = opinions
       .filter((o) => o.side === forced)
-      .sort((a, b) => b.likes - a.likes);
-    return sideList[0] ?? [...opinions].sort((a, b) => b.likes - a.likes)[0];
+      .sort(bySupportDesc);
+    return sideList[0] ?? [...opinions].sort(bySupportDesc)[0];
   }
-  return [...opinions].sort((a, b) => b.likes - a.likes)[0] ?? null;
+  return [...opinions].sort(bySupportDesc)[0] ?? null;
 }
 
 type ArenaBarProps = {
@@ -86,12 +92,13 @@ type ArenaBarProps = {
   onRetry?: () => void;
   onCompose?: () => void;
   onOpenRules?: () => void;
+  onToast?: (message: string) => void;
 };
 
 function topOpinionForSide(opinions: Opinion[], side: Side): Opinion | null {
   const list = opinions.filter((o) => o.side === side);
   if (list.length === 0) return null;
-  return [...list].sort((a, b) => b.likes - a.likes)[0] ?? null;
+  return [...list].sort(bySupportDesc)[0] ?? null;
 }
 
 function formatCountdown(ms: number): string {
@@ -136,11 +143,13 @@ function OpinionRow({
   index,
   focused,
   light,
+  onToast,
 }: {
   op: Opinion;
   index: number;
   focused?: boolean;
   light: boolean;
+  onToast?: (message: string) => void;
 }) {
   return (
     <li
@@ -159,7 +168,7 @@ function OpinionRow({
       <div className="mb-0.5 flex items-center gap-2">
         <SmallAvatar name={op.author} light={light} />
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             <span
               className={`truncate text-[13px] font-semibold ${
                 light ? "text-black" : "text-white"
@@ -168,6 +177,7 @@ function OpinionRow({
               @{op.author}
             </span>
             <SideBadge side={op.side} />
+            <TrojanMark count={op.trojanCount ?? 0} light={light} />
           </div>
         </div>
         {op.authorId ? (
@@ -190,11 +200,14 @@ function OpinionRow({
         parentKind="opinion"
         targetId={op.id}
         likes={op.likes}
+        supports={op.supports ?? 0}
         replies={op.replies ?? 0}
         likedByMe={op.likedByMe}
+        supportedByMe={op.supportedByMe}
         previewText={op.text}
         authorHandle={op.author}
         light={light}
+        onToast={onToast}
       />
     </li>
   );
@@ -210,6 +223,7 @@ function CampFeedPage({
   onCompose,
   focusOpinionId,
   light,
+  onToast,
 }: {
   side: Side;
   label: string;
@@ -220,6 +234,7 @@ function CampFeedPage({
   onCompose?: () => void;
   focusOpinionId?: string | null;
   light: boolean;
+  onToast?: (message: string) => void;
 }) {
   const top = useMemo(
     () => topOpinionForSide(opinions, side),
@@ -229,7 +244,7 @@ function CampFeedPage({
     if (!top) return [];
     return opinions
       .filter((o) => o.side === side && o.id !== top.id)
-      .sort((a, b) => b.likes - a.likes);
+      .sort(bySupportDesc);
   }, [opinions, side, top]);
 
   const ink = light ? "text-black" : "text-white";
@@ -281,12 +296,13 @@ function CampFeedPage({
             }
           >
             <div className="mb-1.5 flex flex-col items-center gap-2">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center justify-center gap-2">
                 <SmallAvatar name={top.author} light={light} />
                 <span className={`text-[13px] font-semibold ${ink}`}>
                   @{top.author}
                 </span>
                 <SideBadge side={top.side} />
+                <TrojanMark count={top.trojanCount ?? 0} light={light} />
                 {top.authorId ? (
                   <SafetyMenu
                     userId={top.authorId}
@@ -307,12 +323,15 @@ function CampFeedPage({
                 parentKind="opinion"
                 targetId={top.id}
                 likes={top.likes}
+                supports={top.supports ?? 0}
                 replies={top.replies ?? 0}
                 likedByMe={top.likedByMe}
+                supportedByMe={top.supportedByMe}
                 previewText={top.text}
                 authorHandle={top.author}
                 light={light}
                 indent={false}
+                onToast={onToast}
               />
             </div>
           </article>
@@ -351,6 +370,7 @@ function CampFeedPage({
               index={i}
               focused={focusOpinionId === op.id}
               light={light}
+              onToast={onToast}
             />
           ))
         )}
@@ -535,22 +555,15 @@ function BattlefieldIntro({
             <div className={`mt-3 border-t pt-4 ${border}`}>
               <div className="flex flex-col items-center gap-2">
                 <SmallAvatar name={champion.author} light={light} />
-                <div className="flex items-center justify-center gap-1.5">
+                <div className="flex flex-wrap items-center justify-center gap-1.5">
                   <span className={`text-[14px] font-semibold ${ink}`}>
                     @{champion.author}
                   </span>
                   <SideBadge side={champion.side} />
-                  {champion.side === "NEXUS" ? (
-                    <SpearMark
-                      size={12}
-                      className={light ? "text-black/50" : "text-white/50"}
-                    />
-                  ) : (
-                    <ShieldMark
-                      size={12}
-                      className={light ? "text-black/50" : "text-white/50"}
-                    />
-                  )}
+                  <TrojanMark
+                    count={champion.trojanCount ?? 0}
+                    light={light}
+                  />
                 </div>
               </div>
               <p
@@ -565,7 +578,9 @@ function BattlefieldIntro({
                   light ? "text-neutral-500" : "text-muted"
                 }`}
               >
-                ♥ {champion.likes}
+                지지 {champion.supports ?? 0}
+                <span className="mx-1.5 opacity-40">·</span>
+                좋아요 {champion.likes}
               </p>
             </div>
           </div>
@@ -592,6 +607,7 @@ export function ArenaBar({
   onRetry,
   onCompose,
   onOpenRules,
+  onToast,
 }: ArenaBarProps) {
   const forcedTop = useForcedTopSide();
   const champion = useMemo(
@@ -870,6 +886,7 @@ export function ArenaBar({
             onCompose={onCompose}
             focusOpinionId={focusOpinionId}
             light={light}
+            onToast={onToast}
           />
           <CampFeedPage
             side="AEGIS"
@@ -881,6 +898,7 @@ export function ArenaBar({
             onCompose={onCompose}
             focusOpinionId={focusOpinionId}
             light={light}
+            onToast={onToast}
           />
         </div>
       </div>

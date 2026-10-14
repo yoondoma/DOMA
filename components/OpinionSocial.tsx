@@ -104,8 +104,11 @@ type OpinionSocialProps = {
   parentKind?: ReplyParentKind;
   targetId?: string;
   likes: number;
+  /** 판결 지지 (opinion만) */
+  supports?: number;
   replies: number;
   likedByMe?: boolean;
+  supportedByMe?: boolean;
   /** 공유·스크랩 미리보기 */
   previewText?: string;
   authorHandle?: string;
@@ -114,22 +117,27 @@ type OpinionSocialProps = {
   indent?: boolean;
   onNeedLogin?: () => void;
   onToast?: (message: string) => void;
+  /** 지지 후 진영 동기화 */
+  onCampMoved?: () => void;
 };
 
-/** Threads/X 톤 · 좋아요 · 댓글 · 공유 · 스크랩 */
+/** Threads/X 톤 · 좋아요(호응) · 지지(판결) · 댓글 · 공유 · 스크랩 */
 export function OpinionSocial({
   opinionId,
   parentKind: parentKindProp,
   targetId: targetIdProp,
   likes,
+  supports = 0,
   replies,
   likedByMe,
+  supportedByMe,
   previewText = "",
   authorHandle,
   light,
   indent = true,
   onNeedLogin,
   onToast,
+  onCampMoved,
 }: OpinionSocialProps) {
   const parentKind: ReplyParentKind = parentKindProp ?? "opinion";
   const targetId = targetIdProp ?? opinionId ?? "";
@@ -184,8 +192,35 @@ export function OpinionSocial({
     try {
       domaStore.toggleLike(likeKind, targetId);
     } catch (e) {
+      if (e instanceof Error && e.message === "ARENA_SHUTDOWN") {
+        onToast?.("전장 셧다운 (23:00–08:00)");
+        return;
+      }
       if (e instanceof Error && e.message === "QUOTA_LIKES") {
         onToast?.("오늘의 좋아요를 모두 썼습니다 (5/5)");
+        return;
+      }
+      onNeedLogin?.();
+    }
+  };
+
+  const onSupport = () => {
+    if (!targetId || parentKind !== "opinion") return;
+    try {
+      const { supported, campMoved } = domaStore.toggleSupport(targetId);
+      if (campMoved) {
+        onToast?.("지지 · 진영이 이동했습니다");
+        onCampMoved?.();
+      } else {
+        onToast?.(supported ? "이 의견을 지지합니다" : "지지를 해제했습니다");
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message === "ARENA_SHUTDOWN") {
+        onToast?.("전장 셧다운 (23:00–08:00)");
+        return;
+      }
+      if (e instanceof Error && e.message === "QUOTA_CAMP_MOVES") {
+        onToast?.("진영 이동 한도를 모두 썼습니다 (3회)");
         return;
       }
       onNeedLogin?.();
@@ -223,6 +258,10 @@ export function OpinionSocial({
       setDraft("");
       onToast?.("댓글을 남겼습니다");
     } catch (e) {
+      if (e instanceof Error && e.message === "ARENA_SHUTDOWN") {
+        onToast?.("전장 셧다운 (23:00–08:00)");
+        return;
+      }
       if (e instanceof Error && e.message === "SESSION_REQUIRED") {
         onNeedLogin?.();
       }
@@ -266,10 +305,27 @@ export function OpinionSocial({
           }`}
           aria-pressed={Boolean(likedByMe)}
           aria-label={likedByMe ? "좋아요 취소" : "좋아요"}
+          title="호응 · 승패 무관"
         >
           <HeartMark filled={likedByMe} className={likedByMe ? active : muted} />
+          <span className="tracking-[0.02em]">좋아요</span>
           {likes}
         </button>
+        {parentKind === "opinion" ? (
+          <button
+            type="button"
+            onClick={onSupport}
+            className={`inline-flex items-center gap-1 text-[12px] font-semibold tabular-nums ${
+              supportedByMe ? active : muted
+            }`}
+            aria-pressed={Boolean(supportedByMe)}
+            aria-label={supportedByMe ? "지지 해제" : "지지"}
+            title="판결 지지 · 이 진영으로 이동"
+          >
+            <span className="tracking-[0.04em]">지지</span>
+            {supports}
+          </button>
+        ) : null}
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}

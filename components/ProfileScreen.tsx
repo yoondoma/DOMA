@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { FollowListScreen } from "@/components/FollowListScreen";
 import { SafetyMenu } from "@/components/SafetyMenu";
 import { StatusBlock } from "@/components/StatusBlock";
+import { TrojanMark } from "@/components/TrojanMark";
 import {
   TierBadge,
   UserProfileCard,
@@ -123,6 +124,17 @@ export function ProfileScreen({
       .sort((a, b) => b.createdAtUtc.localeCompare(a.createdAtUtc));
   }, [snap.scraps, profileUser, isSelf]);
 
+  /** 작성자 합산 목마 — 타 진영에서 이 사람 의견을 지지하며 넘어온 수 */
+  const profileTrojan = useMemo(() => {
+    const uid = profileUser?.id;
+    if (!uid) return 0;
+    const myOpIds = new Set(
+      snap.opinions.filter((o) => o.authorId === uid).map((o) => o.id),
+    );
+    return (snap.campSwitches ?? []).filter((s) => myOpIds.has(s.opinionId))
+      .length;
+  }, [snap.opinions, snap.campSwitches, profileUser]);
+
   return (
     <>
       <section
@@ -155,8 +167,9 @@ export function ProfileScreen({
                   />
                 ) : null}
               </div>
-              <p className="mt-1.5 text-[14px] text-neutral-200">
-                @{display.handle}
+              <p className="mt-1.5 flex items-center gap-2 text-[14px] text-neutral-200">
+                <span>@{display.handle}</span>
+                <TrojanMark count={profileTrojan} />
               </p>
             </div>
             <div

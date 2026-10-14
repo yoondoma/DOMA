@@ -46,7 +46,10 @@ export type Opinion = {
   authorId: string;
   camp: Camp;
   body: string;
+  /** 호응 — 승패·TOP 무관 */
   likeCount: number;
+  /** 판결·TOP 유일 권위 (같은 진영만) */
+  supportCount: number;
   replyCount: number;
   createdAtUtc: string;
   isTopMinority?: boolean;
@@ -79,6 +82,30 @@ export type Like = {
   userId: string;
   targetKind: LikeTargetKind;
   targetId: string;
+  createdAtUtc: string;
+};
+
+/**
+ * 글 지지 — 판결·TOP 권위.
+ * 지지 = 그 의견 진영으로 자동 이동 (진영이 바뀔 때만 이동 횟수 차감).
+ */
+export type Support = {
+  id: string;
+  userId: string;
+  opinionId: string;
+  camp: Camp;
+  createdAtUtc: string;
+};
+
+/**
+ * 진영 전환 기록 — 트로이의 목마(다른 진영에서 넘어온 지지).
+ */
+export type CampSwitch = {
+  id: string;
+  userId: string;
+  fromCamp: Camp;
+  toCamp: Camp;
+  opinionId: string;
   createdAtUtc: string;
 };
 

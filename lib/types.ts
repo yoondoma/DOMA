@@ -13,9 +13,15 @@ export type Opinion = {
   author: string;
   authorId?: string;
   text: string;
+  /** 호응 (승패 무관) */
   likes: number;
+  /** 판결·TOP 지지 */
+  supports?: number;
+  /** 트로이 목마 — 타 진영에서 넘어온 지지 수 */
+  trojanCount?: number;
   replies?: number;
   likedByMe?: boolean;
+  supportedByMe?: boolean;
   isTopMinority?: boolean;
 };
 

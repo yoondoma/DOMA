@@ -18,6 +18,8 @@ export const ID = {
   block: "blk",
   report: "rpt",
   scrap: "scr",
+  support: "sup",
+  campSwitch: "csw",
 } as const;
 
 function stamp(): string {
@@ -68,6 +70,14 @@ export function makeScrapId(
   targetId: string,
 ): string {
   return `${ID.scrap}_${targetKind}_${targetId}_${userId}`;
+}
+
+export function makeSupportId(userId: string, opinionId: string): string {
+  return `${ID.support}_${opinionId}_${userId}`;
+}
+
+export function makeCampSwitchId(): string {
+  return `${ID.campSwitch}_${stamp()}`;
 }
 
 export function makeBlockId(blockerId: string, blockedId: string): string {

@@ -126,8 +126,8 @@ export function TomorrowField({
           내일의 주제 정하기
         </h2>
         <p className="mt-4 max-w-[36em] text-[15px] leading-[1.7] text-white/78">
-          위에서 인기 TOP 후보를 보고, 아래로 스크롤해 지금 올라오는 의견을
-          실시간으로 관찰합니다.
+          지지 1위가 자동으로 확정됩니다. 창/방패로 나뉠 수 있는 주제를
+          올리고, 아래 실시간 의견을 관찰합니다.
         </p>
       </div>
 

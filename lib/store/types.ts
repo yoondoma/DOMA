@@ -2,6 +2,7 @@ import type {
   BattleDay,
   Block,
   Camp,
+  CampSwitch,
   Follow,
   Like,
   Opinion,
@@ -9,6 +10,7 @@ import type {
   Report,
   Scrap,
   Session,
+  Support,
   TimelineClock,
   TopicCandidate,
   User,
@@ -40,6 +42,10 @@ export type StoreSnapshot = {
   blocks: Block[];
   reports: Report[];
   scraps: Scrap[];
+  /** 글 지지 (판결·TOP) */
+  supports: Support[];
+  /** 진영 전환 — 트로이 목마 */
+  campSwitches: CampSwitch[];
   battleDays: BattleDay[];
   arenaMeta: ArenaMeta;
   /** 세션 유저 일일 한도 (좋아요·진영이동·글) */

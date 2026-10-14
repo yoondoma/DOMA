@@ -9,6 +9,7 @@ import {
 } from "@/lib/kst";
 import type {
   BattleDay,
+  CampSwitch,
   Follow,
   Opinion,
   Reply,
@@ -19,6 +20,7 @@ import type {
 } from "@/lib/types/domain";
 import {
   campFromSide,
+  makeCampSwitchId,
   makeFollowId,
   makeReplyId,
   makeScrapId,
@@ -90,6 +92,21 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
     createdAtUtc: clock.serverNowUtc,
   };
 
+  /** 지지 ≠ 좋아요 증명 — TOP은 supportCount (op-4), 좋아요 최다는 op-2 */
+  const supportById: Record<string, number> = {
+    "op-you-1": 12,
+    "op-1": 96,
+    "op-2": 48,
+    "op-3": 70,
+    "op-4": 210,
+    "op-5": 22,
+    "op-6": 55,
+    "op-7": 18,
+    "op-8": 40,
+    "op-9": 15,
+    "op-10": 33,
+  };
+
   const opinions: Opinion[] = INITIAL_OPINIONS.map((op, i) => {
     const author = ensureUser(byHandle, op.author);
     return {
@@ -99,12 +116,26 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
       camp: campFromSide(op.side),
       body: op.text,
       likeCount: op.likes,
+      supportCount: supportById[op.id] ?? Math.max(1, Math.floor(op.likes / 4)),
       replyCount: 0,
       createdAtUtc: new Date(
         new Date(clock.serverNowUtc).getTime() - (INITIAL_OPINIONS.length - i) * 60_000,
       ).toISOString(),
       isTopMinority: op.isTopMinority,
     };
+  });
+
+  /** 프로필 목마 데모 — 수한 글 + 타 진영 전환 */
+  opinions.unshift({
+    id: "op-soohan-1",
+    dayId,
+    authorId: me.id,
+    camp: "challenger",
+    body: "증거 없는 ‘완전 대체’는 판결이 아니다. 기준을 먼저 박자.",
+    likeCount: 36,
+    supportCount: 88,
+    replyCount: 0,
+    createdAtUtc: clock.serverNowUtc,
   });
 
   const topicCandidates: TopicCandidate[] = INITIAL_TOMORROW_TOPICS.map(
@@ -236,6 +267,31 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
     likes: [],
     replies,
     scraps,
+    supports: [],
+    campSwitches: (() => {
+      const switches: CampSwitch[] = [];
+      const pulseOp = opinions.find((o) => o.id === "op-4");
+      const myOp = opinions.find((o) => o.id === "op-soohan-1");
+      const add = (
+        opinionId: string,
+        toCamp: "challenger" | "defender",
+        handles: string[],
+      ) => {
+        for (const handle of handles) {
+          switches.push({
+            id: makeCampSwitchId(),
+            userId: userIdFromHandle(handle),
+            fromCamp: toCamp === "challenger" ? "defender" : "challenger",
+            toCamp,
+            opinionId,
+            createdAtUtc: clock.serverNowUtc,
+          });
+        }
+      };
+      if (pulseOp) add(pulseOp.id, pulseOp.camp, ["han.aegis", "reed", "slate", "mira.k"]);
+      if (myOp) add(myOp.id, myOp.camp, ["han.aegis", "reed", "loom"]);
+      return switches;
+    })(),
     blocks: [],
     reports: [],
     battleDays,

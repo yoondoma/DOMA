@@ -8,9 +8,9 @@ type RulesSheetProps = {
 const ROWS: { act: string; limit: string }[] = [
   { act: "오늘 의견", limit: "하루 1개" },
   { act: "내일 주제 제안", limit: "하루 1개" },
-  { act: "진영 지지", limit: "한쪽에 1개" },
-  { act: "진영 이동", limit: "판결 전 최대 3회" },
-  { act: "좋아요", limit: "하루 5개" },
+  { act: "의견 지지", limit: "1개 · 그 진영으로 이동" },
+  { act: "진영 이동", limit: "타 진영 지지 시 · 최대 3회" },
+  { act: "좋아요", limit: "하루 5개 · 승패 무관" },
 ];
 
 /**
@@ -50,8 +50,9 @@ export function RulesSheet({ open, onClose }: RulesSheetProps) {
         </div>
 
         <p className="text-[13px] leading-[1.55] text-white/70">
-          판결은 좋아요가 아니라{" "}
-          <span className="text-white">지지 추천(진영)</span>으로만 정해집니다.
+          판결·TOP·내일 확정은{" "}
+          <span className="text-white">지지</span>만. 좋아요는 호응일 뿐
+          승패와 무관합니다.
         </p>
 
         <ul className="mt-4 border-t border-white/15" aria-label="일일 한도">
@@ -61,15 +62,23 @@ export function RulesSheet({ open, onClose }: RulesSheetProps) {
               className="flex items-baseline justify-between gap-3 border-b border-white/10 py-2.5 text-[13px]"
             >
               <span className="text-white/85">{r.act}</span>
-              <span className="tabular-nums tracking-[0.04em] text-white">
+              <span className="max-w-[14em] text-right tabular-nums tracking-[0.04em] text-white">
                 {r.limit}
               </span>
             </li>
           ))}
         </ul>
 
-        <p className="mt-4 text-[11px] leading-[1.5] tracking-[0.04em] text-white/45">
-          좋아요가 많은 의견이 있어도, 지지가 더 많은 진영이 이길 수 있습니다.
+        <p className="mt-4 text-[12px] leading-[1.55] text-white/70">
+          내일 주제는{" "}
+          <span className="text-white">지지 1위가 자동 확정</span>됩니다.
+          제안은{" "}
+          <span className="text-white">창/방패로 나뉠 수 있는 주제</span>
+          여야 합니다.
+        </p>
+
+        <p className="mt-3 text-[11px] leading-[1.5] tracking-[0.04em] text-white/45">
+          23:00–08:00 셧다운 · 전장 활동 불가 · DM·공유·스크랩만 가능
         </p>
       </div>
     </div>

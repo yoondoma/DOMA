@@ -1,9 +1,11 @@
 "use client";
 
+import { isShutdownState } from "@/lib/arena-gate";
 import { resolveTimelineClock } from "@/lib/kst";
 import type {
   Block,
   Camp,
+  CampSwitch,
   DayId,
   Follow,
   Like,
@@ -16,11 +18,14 @@ import type {
   Scrap,
   ScrapTargetKind,
   Session,
+  Support,
+  TimeState,
   TopicCandidate,
   User,
 } from "@/lib/types/domain";
 import {
   makeBlockId,
+  makeCampSwitchId,
   makeFollowId,
   makeLikeId,
   makeOpinionId,
@@ -28,6 +33,7 @@ import {
   makeReportId,
   makeScrapId,
   makeSessionId,
+  makeSupportId,
   makeTopicCandidateId,
 } from "@/lib/types/ids";
 import { buildSeedSnapshot } from "@/lib/store/seed";
@@ -38,7 +44,7 @@ import type {
 } from "@/lib/store/types";
 import { emptyQuota, QUOTA_LIMITS } from "@/lib/types/quota";
 
-const STORAGE_KEY = "doma.store.v3";
+const STORAGE_KEY = "doma.store.v4";
 
 type Listener = () => void;
 
@@ -81,8 +87,14 @@ function normalizeSnap(parsed: StoreSnapshot): StoreSnapshot {
       normalizeReply(r as Reply & { opinionId?: string }),
     ),
     scraps: parsed.scraps ?? [],
+    supports: parsed.supports ?? [],
+    campSwitches: parsed.campSwitches ?? [],
     follows: parsed.follows ?? [],
     quota: parsed.quota ?? emptyQuota(),
+    opinions: (parsed.opinions ?? []).map((o) => ({
+      ...o,
+      supportCount: o.supportCount ?? 0,
+    })),
   };
 }
 
@@ -112,6 +124,14 @@ class MemoryStore {
   private snap: StoreSnapshot;
   private listeners = new Set<Listener>();
   private ready = false;
+  /** 목업 `?shutdown=1` 등 — null이면 실시계 */
+  private clockForce: TimeState | null = null;
+
+  private assertArenaOpen() {
+    if (isShutdownState(this.snap.clock.state)) {
+      throw new Error("ARENA_SHUTDOWN");
+    }
+  }
 
   constructor() {
     this.snap = buildSeedSnapshot();
@@ -313,8 +333,24 @@ class MemoryStore {
 
   refreshClock(now: Date = new Date()) {
     const next = clone(this.snap);
-    next.clock = resolveTimelineClock(now);
+    const base = resolveTimelineClock(now);
+    if (this.clockForce && isShutdownState(this.clockForce)) {
+      next.clock = {
+        ...base,
+        state: this.clockForce,
+        goldenHour: false,
+        evaluating: this.clockForce === "LOCKED",
+      };
+    } else {
+      next.clock = base;
+    }
     this.commit(next);
+  }
+
+  /** 목: LOCKED/COOLDOWN 강제. null이면 해제 */
+  forceClockState(state: TimeState | null) {
+    this.clockForce = state;
+    this.refreshClock(new Date());
   }
 
   getQuota() {
@@ -322,6 +358,7 @@ class MemoryStore {
   }
 
   setJoinedCamp(camp: Camp | null) {
+    this.assertArenaOpen();
     const next = clone(this.snap);
     if (!next.session) throw new Error("SESSION_REQUIRED");
     const prev = next.session.joinedCamp;
@@ -339,6 +376,7 @@ class MemoryStore {
   }
 
   createOpinion(input: CreateOpinionInput): Opinion {
+    this.assertArenaOpen();
     const next = clone(this.snap);
     if (!next.session) throw new Error("SESSION_REQUIRED");
     if (next.quota.postsUsed >= QUOTA_LIMITS.posts) {
@@ -354,6 +392,7 @@ class MemoryStore {
       camp: input.camp,
       body: input.body.slice(0, 280),
       likeCount: 0,
+      supportCount: 0,
       replyCount: 0,
       createdAtUtc: new Date().toISOString(),
     };
@@ -368,6 +407,7 @@ class MemoryStore {
     body?: string;
     targetDayId: DayId;
   }): TopicCandidate {
+    this.assertArenaOpen();
     const next = clone(this.snap);
     if (!next.session) throw new Error("SESSION_REQUIRED");
     if (next.quota.proposalsUsed >= QUOTA_LIMITS.proposals) {
@@ -393,6 +433,7 @@ class MemoryStore {
   }
 
   supportTopic(id: string) {
+    this.assertArenaOpen();
     const next = clone(this.snap);
     next.topicCandidates = next.topicCandidates.map((t) =>
       t.id === id
@@ -404,6 +445,103 @@ class MemoryStore {
         : t,
     );
     this.commit(next);
+  }
+
+  hasSupported(opinionId: string): boolean {
+    const sid = this.snap.session?.userId;
+    if (!sid) return false;
+    return this.snap.supports.some(
+      (s) => s.userId === sid && s.opinionId === opinionId,
+    );
+  }
+
+  trojanCountFor(opinionId: string): number {
+    return this.snap.campSwitches.filter((s) => s.opinionId === opinionId)
+      .length;
+  }
+
+  /**
+   * 글 지지 — 그 의견 진영으로 자동 이동.
+   * 진영이 바뀔 때만 이동 횟수 차감. 같은 진영 내 대상 변경은 무료.
+   * 유저당 활성 지지 1개.
+   */
+  toggleSupport(opinionId: string): {
+    supported: boolean;
+    campMoved: boolean;
+  } {
+    this.assertArenaOpen();
+    const next = clone(this.snap);
+    if (!next.session) throw new Error("SESSION_REQUIRED");
+    const op = next.opinions.find((o) => o.id === opinionId);
+    if (!op) throw new Error("OPINION_NOT_FOUND");
+
+    const userId = next.session.userId;
+    const existing = next.supports.find(
+      (s) => s.userId === userId && s.opinionId === opinionId,
+    );
+    if (existing) {
+      next.supports = next.supports.filter((s) => s.id !== existing.id);
+      next.opinions = next.opinions.map((o) =>
+        o.id === opinionId
+          ? { ...o, supportCount: Math.max(0, o.supportCount - 1) }
+          : o,
+      );
+      this.commit(next);
+      return { supported: false, campMoved: false };
+    }
+
+    const prev = next.supports.find((s) => s.userId === userId);
+    if (prev) {
+      next.supports = next.supports.filter((s) => s.id !== prev.id);
+      next.opinions = next.opinions.map((o) =>
+        o.id === prev.opinionId
+          ? { ...o, supportCount: Math.max(0, o.supportCount - 1) }
+          : o,
+      );
+    }
+
+    const fromCamp = next.session.joinedCamp;
+    const toCamp = op.camp;
+    let campMoved = false;
+    if (fromCamp !== toCamp) {
+      if (
+        fromCamp &&
+        next.quota.campMovesUsed >= QUOTA_LIMITS.campMoves
+      ) {
+        throw new Error("QUOTA_CAMP_MOVES");
+      }
+      if (fromCamp) {
+        next.quota = {
+          ...next.quota,
+          campMovesUsed: next.quota.campMovesUsed + 1,
+        };
+        const sw: CampSwitch = {
+          id: makeCampSwitchId(),
+          userId,
+          fromCamp,
+          toCamp,
+          opinionId,
+          createdAtUtc: new Date().toISOString(),
+        };
+        next.campSwitches = [...next.campSwitches, sw];
+        campMoved = true;
+      }
+      next.session = { ...next.session, joinedCamp: toCamp };
+    }
+
+    const row: Support = {
+      id: makeSupportId(userId, opinionId),
+      userId,
+      opinionId,
+      camp: toCamp,
+      createdAtUtc: new Date().toISOString(),
+    };
+    next.supports = [...next.supports, row];
+    next.opinions = next.opinions.map((o) =>
+      o.id === opinionId ? { ...o, supportCount: o.supportCount + 1 } : o,
+    );
+    this.commit(next);
+    return { supported: true, campMoved };
   }
 
   ensureSession(userId: string, dayId?: DayId) {
@@ -476,6 +614,7 @@ class MemoryStore {
   }
 
   addLike(targetKind: Like["targetKind"], targetId: string): Like {
+    this.assertArenaOpen();
     const next = clone(this.snap);
     if (!next.session) throw new Error("SESSION_REQUIRED");
     if (next.quota.likesUsed >= QUOTA_LIMITS.likes) {
@@ -553,6 +692,7 @@ class MemoryStore {
     parentId: string,
     body: string,
   ): Reply {
+    this.assertArenaOpen();
     const next = clone(this.snap);
     if (!next.session) throw new Error("SESSION_REQUIRED");
     const trimmed = body.trim();

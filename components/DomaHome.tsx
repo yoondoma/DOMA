@@ -137,6 +137,19 @@ export function DomaHome() {
     if (navTab !== "messages") setNewMessageOpen(false);
   }, [navTab]);
 
+  /** 목업 `?shutdown=1` → LOCKED 강제 */
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("shutdown");
+    if (q === "1" || q === "locked") {
+      domaStore.forceClockState("LOCKED");
+    } else if (q === "cooldown") {
+      domaStore.forceClockState("COOLDOWN");
+    }
+    return () => {
+      /* 쿼리 없을 때 강제 유지하지 않음 — 새로고침·다른 진입에서 해제 */
+    };
+  }, []);
+
   const showToast = useCallback((message: string) => {
     setToast(message);
     window.setTimeout(() => setToast(null), 2200);
@@ -176,6 +189,10 @@ export function DomaHome() {
     try {
       domaStore.setJoinedCamp(campFromSide(side));
     } catch (e) {
+      if (e instanceof Error && e.message === "ARENA_SHUTDOWN") {
+        showToast("전장 셧다운 (23:00–08:00)");
+        return;
+      }
       if (e instanceof Error && e.message === "QUOTA_CAMP_MOVES") {
         showToast("진영 이동 한도를 모두 썼습니다 (3회)");
         return;
@@ -211,6 +228,10 @@ export function DomaHome() {
         camp: campFromSide(side),
       });
     } catch (e) {
+      if (e instanceof Error && e.message === "ARENA_SHUTDOWN") {
+        showToast("전장 셧다운 (23:00–08:00)");
+        return;
+      }
       if (e instanceof Error && e.message === "QUOTA_POSTS") {
         showToast("오늘 의견은 하루 1개입니다");
         return;
@@ -249,6 +270,21 @@ export function DomaHome() {
 
   const handleSupportTomorrow = (id: string) => {
     if (supportedTomorrowId === id) return;
+    try {
+      if (
+        domaStore.getSnapshot().clock.state === "LOCKED" ||
+        domaStore.getSnapshot().clock.state === "COOLDOWN"
+      ) {
+        showToast("전장 셧다운 (23:00–08:00)");
+        return;
+      }
+      domaStore.supportTopic(id);
+    } catch (e) {
+      if (e instanceof Error && e.message === "ARENA_SHUTDOWN") {
+        showToast("전장 셧다운 (23:00–08:00)");
+        return;
+      }
+    }
     setTomorrowCandidates((prev) =>
       prev.map((c) => {
         if (c.id === id) {
@@ -267,7 +303,7 @@ export function DomaHome() {
     setSupportedTomorrowId(id);
     const title = tomorrowCandidates.find((c) => c.id === id)?.title ?? "";
     const short = title.length > 18 ? `${title.slice(0, 18)}…` : title;
-    showToast(`「${short}」를 지지·이끕니다`);
+    showToast(`「${short}」를 지지합니다`);
   };
 
   const handleNavChange = (tab: NavTab) => {
@@ -428,6 +464,7 @@ export function DomaHome() {
               onRetry={onRetry}
               onCompose={openCompose}
               onOpenRules={() => setRulesOpen(true)}
+              onToast={showToast}
             />
           </PullRefresh>
         ) : null}
