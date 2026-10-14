@@ -12,7 +12,6 @@ import { OpinionSocial } from "@/components/OpinionSocial";
 import { SafetyMenu } from "@/components/SafetyMenu";
 import { StatusBlock } from "@/components/StatusBlock";
 import { ShieldMark, SideBadge, SpearMark } from "@/components/SideMarks";
-import { BATTLE_HISTORY } from "@/lib/battle-history";
 import { useDomaStore } from "@/lib/store";
 import type { UiDemo } from "@/lib/ui-demo";
 import type { ArenaState, ArenaView, Opinion, Side } from "@/lib/types";
@@ -366,17 +365,6 @@ function BattlefieldIntro({
 }) {
   const remaining = useCountdown(arena.endsAt);
   const closingSoon = useClosingSoon();
-  /** 지금까지 양쪽 승률만 — 회차 나열 없음 */
-  const winRates = useMemo(() => {
-    const total = BATTLE_HISTORY.length;
-    if (total === 0) return null;
-    const nexusWins = BATTLE_HISTORY.filter((b) => b.winner === "NEXUS").length;
-    const aegisWins = total - nexusWins;
-    return {
-      nexus: Math.round((nexusWins / total) * 100),
-      aegis: Math.round((aegisWins / total) * 100),
-    };
-  }, []);
 
   const ink = light ? "text-black" : "text-white";
   const soft = light ? "text-black/55" : "text-white/55";
@@ -390,16 +378,16 @@ function BattlefieldIntro({
       data-shell={light ? "light" : "dark"}
     >
       <div
-        className={`battlefield-rise border-b px-5 pb-5 pt-6 text-center ${border}`}
+        className={`battlefield-rise border-b px-5 pb-4 pt-5 text-center ${border}`}
       >
         <p className={`text-[11px] font-medium tracking-[0.22em] ${faint}`}>
           제 {arena.round}회 전투
         </p>
-        <p className={`mt-4 text-[11px] tracking-[0.18em] ${soft}`}>
+        <p className={`mt-3 text-[11px] tracking-[0.18em] ${soft}`}>
           {closingSoon ? "판결 임박" : "최후의 판결까지"}
         </p>
         <p
-          className={`mt-2 font-mono text-[34px] font-semibold leading-none tracking-[0.06em] text-timer tabular-nums sm:text-[38px] ${
+          className={`mt-2 font-mono text-[32px] font-semibold leading-none tracking-[0.06em] text-timer tabular-nums sm:text-[36px] ${
             closingSoon ? "timer-closing-pulse" : ""
           }`}
           aria-label={`남은 시간 ${remaining}`}
@@ -410,37 +398,28 @@ function BattlefieldIntro({
             남음
           </span>
         </p>
-        {winRates ? (
-          <p
-            className={`mt-4 text-[11px] tracking-[0.06em] ${
-              light ? "text-black/40" : "text-white/40"
-            }`}
-            aria-label="지금까지 승률"
-          >
-            창 {winRates.nexus}% · 방패 {winRates.aegis}%
-          </p>
-        ) : null}
       </div>
 
+      {/* 오늘의 전장 — 여유 패딩·타이포로 주제가 숨 쉬게 */}
       <div
-        className="battlefield-rise battlefield-rise-delay px-5 pb-6 pt-7 text-center"
+        className="battlefield-rise battlefield-rise-delay px-6 pb-10 pt-10 text-center sm:px-8 sm:pb-12 sm:pt-12"
         aria-label="오늘 주제 영역"
       >
         <p
-          className={`text-[11px] font-bold tracking-[0.2em] ${
+          className={`text-[12px] font-bold tracking-[0.22em] ${
             light ? "text-black/50" : "text-white/50"
           }`}
         >
           오늘의 전장
         </p>
         <h2
-          className={`mt-3 font-[family-name:var(--font-syne)] text-[23px] font-bold leading-[1.35] tracking-[-0.01em] sm:text-[25px] ${ink}`}
+          className={`mx-auto mt-5 max-w-[18em] font-[family-name:var(--font-display)] text-[26px] font-bold leading-[1.4] tracking-[-0.01em] sm:mt-6 sm:text-[30px] sm:leading-[1.38] ${ink}`}
         >
           {arena.topic}
         </h2>
         <p
-          className={`mx-auto mt-4 max-w-[36em] text-[14px] leading-[1.7] ${
-            light ? "text-black/70" : "text-white/70"
+          className={`mx-auto mt-6 max-w-[28em] text-[15px] leading-[1.85] sm:mt-7 sm:text-[16px] sm:leading-[1.8] ${
+            light ? "text-black/68" : "text-white/68"
           }`}
         >
           {arena.description}
@@ -461,10 +440,10 @@ function BattlefieldIntro({
           aria-selected={false}
           aria-label="도전자"
           onClick={() => onPickSide("NEXUS")}
-          className="camp-press flex min-h-[104px] flex-col items-center justify-center gap-2 border-r border-white/15 bg-black px-3 py-5 text-white active:bg-white/[0.04]"
+          className="camp-press flex min-h-[88px] flex-col items-center justify-center gap-1.5 border-r border-white/15 bg-black px-3 py-4 text-white active:bg-white/[0.04]"
         >
-          <SpearMark size={28} />
-          <span className="text-[15px] font-bold tracking-[0.16em]">도전자</span>
+          <SpearMark size={24} />
+          <span className="text-[13px] font-bold tracking-[0.16em]">도전자</span>
         </button>
         <button
           type="button"
@@ -472,10 +451,10 @@ function BattlefieldIntro({
           aria-selected={false}
           aria-label="방어자"
           onClick={() => onPickSide("AEGIS")}
-          className="camp-press flex min-h-[104px] flex-col items-center justify-center gap-2 bg-white px-3 py-5 text-black active:bg-neutral-100"
+          className="camp-press flex min-h-[88px] flex-col items-center justify-center gap-1.5 bg-white px-3 py-4 text-black active:bg-neutral-100"
         >
-          <ShieldMark size={28} />
-          <span className="text-[15px] font-bold tracking-[0.16em]">방어자</span>
+          <ShieldMark size={24} />
+          <span className="text-[13px] font-bold tracking-[0.16em]">방어자</span>
         </button>
       </div>
 
