@@ -2,9 +2,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
   <rect width="1024" height="1024" fill="#000000"/>
   <g transform="translate(512 512) scale(9.2) translate(-24 -36)">
-    <path d="M22.55 44.51 A20.5 12 0 1 0 25.45 44.51" fill="none" stroke="#ffffff" stroke-width="1.45" stroke-linecap="butt"/>
-    <path d="M6 23h36L24 45.6Z" fill="#000000" stroke="none"/>
-    <path d="M6 23h36L24 45.6Z" fill="none" stroke="#ffffff" stroke-width="1.45" stroke-linejoin="miter"/>
+    <ellipse cx="24" cy="56.5" rx="20.5" ry="12" fill="none" stroke="#ffffff" stroke-width="1.45"/>
+    <path d="M6 23h36L24 47.2Z" fill="#000000" stroke="none"/>
+    <path d="M6 23h36L24 47.2Z" fill="none" stroke="#ffffff" stroke-width="1.45" stroke-linejoin="miter"/>
     <path d="M15.75 23V1h16.5V23" fill="none" stroke="#ffffff" stroke-width="1.45" stroke-linejoin="miter" stroke-linecap="square"/>
   </g>
 </svg>

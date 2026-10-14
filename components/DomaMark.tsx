@@ -10,8 +10,8 @@ type DomaMarkProps = {
 
 /**
  * 사각 + 삼각 + 원 = 하나의 마크.
- * - 사각 밑변 ↔ 삼각 윗변: 같은 seamY에서 맞닿아 합체 (사각은 아래 선 없음)
- * - 삼각 tip ↔ 원 상단: 살짝 겹침, 가려진 원 선만 끊음
+ * - 사각·삼각: seamY에서 맞닿아 합체 (사각 밑변 없음 → 삼각 윗변이 공유 선)
+ * - 삼각 tip·원: tip이 원 상단을 살짝 침범. 원은 전체 스트로크, 삼각 fill이 가림.
  */
 export function DomaMark({
   size = 56,
@@ -22,20 +22,13 @@ export function DomaMark({
   const bg = light ? "#ffffff" : "#000000";
   const width = Math.round(size * (48 / 72));
 
-  /** 사각·삼각 공유 접합선 */
   const seamY = 23;
-  /** 타원 상단 44.5 · tip 45.6 → overlap 1.1 (gap=0) */
+  /** 원 상단 44.5 · tip이 더 아래(침범) → 시각적 gap=0 */
   const ellipseTop = 44.5;
-  const tipY = 45.6;
+  const tipY = 47.2;
 
   const tri = `M6 ${seamY}h36L24 ${tipY}Z`;
-  /** 사각: 좌·상·우만 — 밑변은 삼각 윗변이 담당 */
   const rectOpen = `M15.75 ${seamY}V1h16.5V${seamY}`;
-  /**
-   * 원: tip 아래 가려진 상단만 절단 (−94°~−86° 근처)
-   * 끝점은 삼각 안쪽 → 붙인 채 가려진 선만 제거
-   */
-  const ellipseOpen = "M22.55 44.51 A20.5 12 0 1 0 25.45 44.51";
 
   return (
     <svg
@@ -51,15 +44,17 @@ export function DomaMark({
       data-mark-ellipse-top={ellipseTop}
       data-mark-overlap={+(tipY - ellipseTop).toFixed(2)}
     >
-      <path
-        d={ellipseOpen}
+      <ellipse
+        cx="24"
+        cy="56.5"
+        rx="20.5"
+        ry="12"
         stroke={stroke}
         strokeWidth="1.45"
-        strokeLinecap="butt"
         fill="none"
       />
 
-      {/* 삼각 — 윗변이 사각과의 합체 선 */}
+      {/* tip이 원 상단을 덮음 → 겹친 원 선 제거 */}
       <path d={tri} fill={bg} stroke="none" />
       <path
         d={tri}
@@ -69,7 +64,6 @@ export function DomaMark({
         strokeLinejoin="miter"
       />
 
-      {/* 사각 — 열린 아래, seam에서 삼각과 합체 */}
       <path
         d={rectOpen}
         fill="none"
