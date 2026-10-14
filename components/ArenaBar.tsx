@@ -24,6 +24,7 @@ import {
 } from "@/components/SideMarks";
 import { RulesHud } from "@/components/RulesHud";
 import { TrojanMark } from "@/components/TrojanMark";
+import { FeedbackInvite } from "@/components/FeedbackCraft";
 import { EmptyArena } from "@/components/ui/EmptyArena";
 import { FeedSkeleton } from "@/components/ui/FeedSkeleton";
 import { PostCard } from "@/components/ui/PostCard";
@@ -500,6 +501,7 @@ function BattlefieldIntro({
   onOpenShareCard,
   onOpenVerdictShare,
   onDiscoverSelect,
+  onToast,
   light,
   locked,
   verdictSide,
@@ -510,6 +512,7 @@ function BattlefieldIntro({
   onOpenShareCard?: (payload: ContextualSharePayload) => void;
   onOpenVerdictShare?: () => void;
   onDiscoverSelect?: (item: DiscoverItem) => void;
+  onToast?: (message: string) => void;
   light: boolean;
   locked?: boolean;
   verdictSide?: Side | null;
@@ -695,12 +698,9 @@ function BattlefieldIntro({
       {/* 발견 v0 — 홈 한 줄 · 진영 아래 · 하단 탭 아님 */}
       <DiscoverStrip light={false} onSelect={onDiscoverSelect} />
 
-      <p
-        className="px-5 py-2 text-center text-[10px] tracking-[0.04em] text-white/35"
-        data-beta-feedback
-      >
-        feedback@doma.kr
-      </p>
+      <div className="flex justify-center px-5 pb-3 pt-1">
+        <FeedbackInvite tone="arena" onToast={onToast} />
+      </div>
     </div>
   );
 }
@@ -858,6 +858,7 @@ export function ArenaBar({
             onOpenShareCard={onOpenShareCard}
             onOpenVerdictShare={onOpenVerdictShare}
             onDiscoverSelect={onDiscoverSelect}
+            onToast={onToast}
             light={light}
             locked={locked}
             verdictSide={verdictSide}

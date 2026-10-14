@@ -22,6 +22,7 @@ import {
   type PrivacyPrefs,
 } from "@/lib/types/privacy";
 import type { EditableProfile } from "@/components/ProfileEditSheet";
+import { FeedbackSheet } from "@/components/FeedbackCraft";
 
 export type { EditableProfile };
 
@@ -127,6 +128,7 @@ export function SettingsSheet({
   const { user: sessionUser } = useSession();
   const snap = useDomaStore();
   const [panel, setPanel] = useState<Panel>("menu");
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [privacy, setPrivacyLocal] = useState<PrivacyPrefs>(() =>
     domaStore.getPrivacy(),
   );
@@ -360,13 +362,9 @@ export function SettingsSheet({
                       },
                       {
                         id: "beta-feedback",
-                        label: "의견 보내기",
-                        hint: "feedback@doma.kr",
-                        onClick: () => {
-                          window.location.href =
-                            "mailto:feedback@doma.kr?subject=DOMA%20베타%20피드백";
-                          onToast?.("feedback@doma.kr");
-                        },
+                        label: "의견",
+                        hint: "한 줄 · 터치하여 증명",
+                        onClick: () => setFeedbackOpen(true),
                       },
                     ],
                   },
@@ -909,7 +907,7 @@ export function SettingsSheet({
               </p>
               <button
                 type="button"
-                className="w-full border border-white/25 py-3 text-center text-white"
+                className="r-md w-full border border-white/25 py-3 text-center text-white"
                 onClick={() => {
                   onClose();
                   onOpenRules?.();
@@ -918,21 +916,23 @@ export function SettingsSheet({
               >
                 규칙 보기
               </button>
-              <p
-                className="text-center text-[12px]"
+              <button
+                type="button"
+                onClick={() => setFeedbackOpen(true)}
+                className="thumb-press mx-auto flex items-center gap-2 text-[12px] text-meta"
                 data-beta-feedback
               >
-                <a
-                  href="mailto:feedback@doma.kr?subject=DOMA%20베타%20피드백"
-                  className="text-white underline underline-offset-4"
-                >
-                  feedback@doma.kr
-                </a>
-              </p>
+                의견 · 터치하여 증명
+              </button>
             </div>
           ) : null}
         </div>
       </div>
+      <FeedbackSheet
+        open={feedbackOpen}
+        onClose={() => setFeedbackOpen(false)}
+        onToast={onToast}
+      />
     </div>
   );
 }

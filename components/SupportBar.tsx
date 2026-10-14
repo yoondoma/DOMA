@@ -17,7 +17,7 @@ type SupportBarProps = {
 export const SUPPORT_BAR_HEIGHT_PX = 44;
 
 /**
- * sticky 흑/백 지지 — 창·방패 심볼 + %만 (한글 라벨 없음)
+ * sticky Thumb Zone — 창·방패 + % + 명수. UI 한글 라벨 없음.
  */
 export function SupportBar({
   nexusPercent,
@@ -38,9 +38,10 @@ export function SupportBar({
   return (
     <div
       className="relative z-[45] w-full shrink-0 border-t border-edge bg-ink"
-      aria-label="진영 지지"
+      aria-label="진영 지지율"
       data-support-bar
       data-thumb-zone
+      data-intro-bar
       data-slim="true"
       data-hud-symbols
     >
@@ -66,10 +67,10 @@ export function SupportBar({
         <button
           type="button"
           onClick={() => strike("NEXUS")}
-          aria-label={`흑 지지 ${nexusPercent}% ${nexusVotes.toLocaleString("ko-KR")}명`}
+          aria-label={`도전자 ${nexusPercent}% ${nexusVotes.toLocaleString("ko-KR")}명`}
           data-support-side="NEXUS"
           aria-pressed={joined === "NEXUS"}
-          className={`thumb-press relative flex h-full flex-1 items-center justify-center gap-1.5 bg-ink px-2 text-paper ${
+          className={`thumb-press relative flex h-full flex-1 items-center justify-center gap-2 bg-ink px-2 text-paper ${
             joined === "NEXUS" ? "opacity-100" : "opacity-88"
           } ${flash === "NEXUS" ? "support-strike-nexus" : ""}`}
           style={{
@@ -77,21 +78,21 @@ export function SupportBar({
             transition: "flex-basis 500ms ease, opacity 150ms ease",
           }}
         >
-          <SpearMark size={14} />
-          <span className="text-[12px] font-bold tabular-nums leading-none">
+          <SpearMark size={15} />
+          <span className="text-[13px] font-bold tabular-nums leading-none">
             {nexusPercent}%
           </span>
-          <span className="text-[10px] tabular-nums leading-none text-paper/55">
+          <span className="text-[11px] tabular-nums leading-none text-paper/55">
             {nexusVotes.toLocaleString("ko-KR")}
           </span>
         </button>
         <button
           type="button"
           onClick={() => strike("AEGIS")}
-          aria-label={`백 지지 ${aegisPercent}% ${aegisVotes.toLocaleString("ko-KR")}명`}
+          aria-label={`방어자 ${aegisPercent}% ${aegisVotes.toLocaleString("ko-KR")}명`}
           data-support-side="AEGIS"
           aria-pressed={joined === "AEGIS"}
-          className={`thumb-press relative flex h-full flex-1 items-center justify-center gap-1.5 bg-defend px-2 text-ink ${
+          className={`thumb-press relative flex h-full flex-1 items-center justify-center gap-2 bg-defend px-2 text-ink ${
             joined === "AEGIS" ? "opacity-100" : "opacity-88"
           } ${flash === "AEGIS" ? "support-strike-aegis" : ""}`}
           style={{
@@ -99,13 +100,13 @@ export function SupportBar({
             transition: "flex-basis 500ms ease, opacity 150ms ease",
           }}
         >
-          <span className="text-[10px] tabular-nums leading-none text-ink/50">
+          <span className="text-[11px] tabular-nums leading-none text-ink/50">
             {aegisVotes.toLocaleString("ko-KR")}
           </span>
-          <span className="text-[12px] font-bold tabular-nums leading-none">
+          <span className="text-[13px] font-bold tabular-nums leading-none">
             {aegisPercent}%
           </span>
-          <ShieldMark size={14} />
+          <ShieldMark size={15} />
         </button>
       </div>
     </div>
