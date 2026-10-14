@@ -25,21 +25,35 @@ function NavIcon({ id, active }: { id: NavTab; active: boolean }) {
   switch (id) {
     case "home": {
       /**
-       * 아레나 = 바른 정육각형 세로 이등분
-       * 왼: 채움(흑) / 오른: 비움(백·외곽) — 빗금·왜곡 없음
+       * 아레나 = 바른 정육각형 · 세로 반분
+       * 왼(흑 진영): 솔리드 실루엣 — 검정 내비 대비용 밝은 fill
+       * 오른(흰 진영): 외곽만 · 빗금 없음
        */
-      // 중심(12,12) 반지름 8.2 — 메시지·알림·프로필(22)과 시각 크기 맞춤
+      // 중심(12,12) r=8.2 · 22px 박스 — 다른 탭과 동일
       const hex =
-        "M12 3.8 19.1 7.9v8.2L12 20.2 4.9 16.1V7.9Z";
-      const leftHalf = "M12 3.8 4.9 7.9v8.2L12 20.2Z";
+        "M12 3.8L19.1 7.9L19.1 16.1L12 20.2L4.9 16.1L4.9 7.9Z";
+      const leftHalf =
+        "M12 3.8L4.9 7.9L4.9 16.1L12 20.2Z";
+      // 흑 진영 무게감: 활성=순백 채움, 비활성=회색 채움 (검정 배경에서 반드시 보임)
+      const solid = active ? "#ffffff" : "#a3a3a3";
       return (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <path d={leftHalf} fill={stroke} />
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
+          {/* 왼 솔리드 — svg fill=none 상속을 피해 명시적 fill */}
+          <path d={leftHalf} fill={solid} stroke="none" />
+          {/* 전체 외곽 + 가운데 세로선으로 흑|백 반분 강조 */}
           <path
             d={hex}
+            fill="none"
             stroke={stroke}
             strokeWidth="1.75"
             strokeLinejoin="miter"
+          />
+          <path
+            d="M12 3.8V20.2"
+            fill="none"
+            stroke={stroke}
+            strokeWidth="1.5"
+            strokeLinecap="square"
           />
         </svg>
       );
