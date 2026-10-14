@@ -55,13 +55,48 @@ export function DomaWordmark({
       const a = range.getBoundingClientRect();
       const parent = wrap.getBoundingClientRect();
       const fs = parseFloat(getComputedStyle(aEl).fontSize) || 16;
-      // 세리프 A 우측 사이드베어링 ≈ 0.14em — 무시하고 잉크에 붙임
-      const sideBearing = fs * 0.14;
+      /**
+       * A는 아래 세리프가 glyph.right. 위첨자 밴드(상단 ~30%)의
+       * 오른쪽 대각 잉크에 붙이려면 박스 right가 아니라 그 높이의
+       * 실측 가장자리로 당겨야 함.
+       */
+      const band = Math.min(a.height * 0.28, fs * 0.32);
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      let inkRight = a.right - fs * 0.3; // fallback tuck
+      if (ctx) {
+        const w = Math.ceil(a.width) + 4;
+        const h = Math.ceil(a.height) + 4;
+        canvas.width = w;
+        canvas.height = h;
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = "#fff";
+        const computed = getComputedStyle(aEl);
+        ctx.font = `${computed.fontWeight} ${fs}px ${computed.fontFamily}`;
+        ctx.textBaseline = "top";
+        ctx.fillText("A", 2, 2);
+        const sampleTop = 2;
+        const sampleBot = Math.max(sampleTop + 1, Math.floor(2 + band));
+        const data = ctx.getImageData(0, sampleTop, w, sampleBot - sampleTop).data;
+        let maxX = 0;
+        for (let y = 0; y < sampleBot - sampleTop; y++) {
+          for (let x = w - 1; x >= 0; x--) {
+            if (data[(y * w + x) * 4 + 3] > 20) {
+              if (x > maxX) maxX = x;
+              break;
+            }
+          }
+        }
+        if (maxX > 0) {
+          // canvas 로컬 → 화면: a.left - 2 + maxX
+          inkRight = a.left - 2 + maxX;
+        }
+      }
       const gap = 3; // 시각 2~4px
       setPos({
-        // 글리프 박스 상단 ≈ 캡하이트 (위첨자)
+        // 글리프 박스 상단 = 캡하이트 위첨자
         top: a.top - parent.top,
-        left: a.right - parent.left - sideBearing + gap,
+        left: inkRight - parent.left + gap,
       });
     };
 
