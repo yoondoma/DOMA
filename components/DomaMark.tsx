@@ -12,6 +12,7 @@ type DomaMarkProps = {
  * preferred 한 심볼:
  * - 사각 밑변 없음 + 삼각 윗변(seam) 한 줄
  * - tip이 원 안쪽으로 진입, 원 호는 삼각 빗변 교차점에서만 시작 (tip 밑 통과 금지)
+ * - 원을 살짝 키워 존재감, tip은 과겹침 없이 한 단계 더 밀착
  */
 export function DomaMark({
   size = 56,
@@ -23,19 +24,18 @@ export function DomaMark({
   const width = Math.round(size * (48 / 72));
 
   const seamY = 23;
-  const ellipseTop = 44.5;
-  /** tip을 원에 미묘하게만 더 넣음 (과겹침 금지) */
-  const tipY = 50.8;
+  /** 타원: rx 22 · ry 13.2 · cy 56.8 → top ≈ 43.6 */
+  const ellipseTop = 43.6;
+  /** tip을 원에 한 단계 더 넣음 */
+  const tipY = 51.8;
 
-  /** 삼각 닫힘: 윗변(seam) 한 줄 + 빗변. 사각 밑변은 그리지 않음 */
   const tri = `M6 ${seamY}H42L24 ${tipY}Z`;
-  /** 열린 ㄷ: 좌·우·윗변만 — 끝점이 seam에 butt로 닿아 이중 밑변 없음 */
   const rect = `M15.75 ${seamY}V1H32.25V${seamY}`;
   /**
-   * tipY=50.8 교차 ≈ (20.07,44.72)-(27.93,44.72)
-   * 끝점 살짝 안쪽 → tip 밑 호 미작성, 삼각이 원 위 레이어
+   * tipY=51.8 · 교차 ≈ (19.38,43.93)-(28.62,43.93)
+   * 끝점 살짝 안쪽 → tip 밑 호 미작성
    */
-  const ellipseOpen = "M20.35 44.75A20.5 12 0 1 0 27.65 44.75";
+  const ellipseOpen = "M19.7 44A22 13.2 0 1 0 28.3 44";
 
   return (
     <svg
