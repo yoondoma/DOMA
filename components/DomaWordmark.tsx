@@ -43,9 +43,11 @@ export function DomaWordmark({
       <span className="tracking-[0.28em]">DOM</span>
       <span className="relative inline-block">
         A
+        {/* 세리프 A 사이드베어링을 상쇄해 잉크 가장자리에서 2~4px */}
         <span
           aria-hidden
-          className={`absolute left-full top-0 ml-[3px] font-[family-name:var(--font-brand)] font-semibold leading-none tracking-[0.04em] ${s.kr} ${kr}`}
+          className={`absolute top-0 font-[family-name:var(--font-brand)] font-semibold leading-none tracking-[0.04em] ${s.kr} ${kr}`}
+          style={{ left: "100%", marginLeft: "calc(3px - 0.18em)" }}
         >
           KR
         </span>
