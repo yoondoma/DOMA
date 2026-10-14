@@ -2,27 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { ShieldMark, SpearMark } from "@/components/SideMarks";
-import { TomorrowTopic } from "@/components/TomorrowTopic";
 import {
   BATTLE_HISTORY,
   BATTLE_MONTH,
   BATTLE_YEAR,
   battleByDate,
 } from "@/lib/battle-history";
-import type { TomorrowCandidate } from "@/lib/tomorrow-topics";
 import type { BattleDay } from "@/lib/types";
-
-export type CalendarPanel = "history" | "tomorrow";
 
 type BattleCalendarProps = {
   open: boolean;
   onClose: () => void;
-  /** 과거=전투 기록 · 미래=내일의 주제 */
-  initialPanel?: CalendarPanel;
-  onVotedTomorrow?: (title: string) => void;
-  tomorrowCandidates?: TomorrowCandidate[];
-  onSupportTomorrow?: (id: string) => void;
-  supportedTomorrowId?: string | null;
 };
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
@@ -137,25 +127,13 @@ function DayDetail({
   );
 }
 
-/** 시간 축 시트: 과거=전투 기록 · 미래=내일의 주제 */
-export function BattleCalendar({
-  open,
-  onClose,
-  initialPanel = "history",
-  onVotedTomorrow,
-  tomorrowCandidates,
-  onSupportTomorrow,
-  supportedTomorrowId = null,
-}: BattleCalendarProps) {
-  const [panel, setPanel] = useState<CalendarPanel>(initialPanel);
+/** 전투 기록 달력 — 과거 흑/백 전적만 (내일은 홈 서피스) */
+export function BattleCalendar({ open, onClose }: BattleCalendarProps) {
   const [selected, setSelected] = useState<string | null>(null);
 
   useEffect(() => {
-    if (open) {
-      setPanel(initialPanel);
-      setSelected(null);
-    }
-  }, [open, initialPanel]);
+    if (open) setSelected(null);
+  }, [open]);
 
   const byDate = useMemo(() => {
     const map = new Map<string, BattleDay>();
@@ -179,7 +157,7 @@ export function BattleCalendar({
       className="fixed inset-0 z-[60] flex items-end justify-center bg-black/70 sm:items-center"
       role="dialog"
       aria-modal
-      aria-label="시간 축 — 전투 기록과 내일의 주제"
+      aria-label="전투 기록"
     >
       <button
         type="button"
@@ -189,7 +167,7 @@ export function BattleCalendar({
       />
       <div className="sheet-up relative z-10 flex max-h-[92dvh] w-full max-w-[560px] flex-col overflow-hidden border border-white/15 bg-black text-white sm:max-h-[85dvh]">
         <div className="flex items-center justify-between border-b border-white/15 px-4 py-3">
-          <p className="text-[12px] font-bold tracking-[0.18em]">시간 축</p>
+          <p className="text-[12px] font-bold tracking-[0.18em]">전투 기록</p>
           <button
             type="button"
             onClick={onClose}
@@ -200,67 +178,19 @@ export function BattleCalendar({
           </button>
         </div>
 
-        {/* 과거 | 미래 */}
-        <div
-          className="grid grid-cols-2 border-b border-white/15"
-          role="tablist"
-          aria-label="시간 축 전환"
-        >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={panel === "history"}
-            onClick={() => {
-              setPanel("history");
-              setSelected(null);
-            }}
-            className={`py-2.5 text-[12px] font-bold tracking-[0.12em] ${
-              panel === "history"
-                ? "border-b-2 border-white text-white"
-                : "text-muted"
-            }`}
-          >
-            전투 기록
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={panel === "tomorrow"}
-            onClick={() => {
-              setPanel("tomorrow");
-              setSelected(null);
-            }}
-            className={`py-2.5 text-[12px] font-bold tracking-[0.12em] ${
-              panel === "tomorrow"
-                ? "border-b-2 border-white text-white"
-                : "text-muted"
-            }`}
-          >
-            내일의 주제
-          </button>
-        </div>
-
         <div className="overflow-y-auto">
-          {panel === "tomorrow" ? (
-            <TomorrowTopic
-              embedded
-              candidates={tomorrowCandidates}
-              onSupport={onSupportTomorrow}
-              supportedId={supportedTomorrowId}
-              onVoted={onVotedTomorrow}
-            />
-          ) : selectedBattle ? (
+          {selectedBattle ? (
             <DayDetail
               battle={selectedBattle}
               onBack={() => setSelected(null)}
             />
           ) : (
-            <div className="px-3 pb-6 pt-4" role="tabpanel" aria-label="전투 기록">
+            <div className="px-3 pb-6 pt-4" aria-label="전투 기록 달력">
               <p className="text-center text-[13px] font-semibold tracking-wide">
                 {BATTLE_YEAR}년 {BATTLE_MONTH}월
               </p>
               <p className="mt-1 text-center text-[10px] tracking-[0.14em] text-muted">
-                과거 · 흑=도전자 승 · 백=방어자 승
+                흑=도전자 승 · 백=방어자 승
               </p>
 
               <div className="mt-4 grid grid-cols-7 gap-px bg-white/15">

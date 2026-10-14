@@ -151,12 +151,21 @@ export function ShareResultCard({
             }`}
           >
             <div className="flex items-baseline justify-between">
-              <p
-                className={`font-[family-name:var(--font-brand)] text-[13px] font-semibold tracking-[0.28em] ${
-                  sideTone === "black" ? "text-white/80" : "text-black/70"
-                }`}
-              >
-                DOMA
+              <p className="leading-none">
+                <span
+                  className={`relative inline-block font-[family-name:var(--font-brand)] text-[13px] font-semibold tracking-[0.28em] ${
+                    sideTone === "black" ? "text-white/80" : "text-black/70"
+                  }`}
+                >
+                  DOMA
+                  <span
+                    className={`absolute left-full top-0 ml-[0.06em] text-[7px] font-semibold tracking-[0.06em] leading-none ${
+                      sideTone === "black" ? "text-white/50" : "text-black/40"
+                    }`}
+                  >
+                    KR
+                  </span>
+                </span>
               </p>
               <p
                 className={`font-mono text-[11px] tabular-nums tracking-[0.08em] ${
@@ -270,7 +279,7 @@ export function ShareResultCard({
                 sideTone === "black" ? "text-white/35" : "text-black/35"
               }`}
             >
-              PROOF · DOMA.KR
+              PROOF · DOMA KR
             </p>
           </div>
         </div>

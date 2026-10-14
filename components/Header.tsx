@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { DomaWordmark } from "@/components/DomaWordmark";
 
 export type HomeSurface = "today" | "tomorrow";
 
@@ -105,7 +106,7 @@ export function Header({
           className={`flex size-10 shrink-0 items-center justify-center ${
             light ? "text-black" : "text-white"
           }`}
-          aria-label="시간 축 — 전투 기록과 내일의 주제"
+          aria-label="전투 기록"
         >
           <CalendarIcon />
         </button>
@@ -119,12 +120,8 @@ export function Header({
             aria-busy={refreshing || undefined}
             className={refreshing ? "logo-refresh" : undefined}
           >
-            <h1
-              className={`font-[family-name:var(--font-brand)] text-[15px] font-semibold leading-none tracking-[0.28em] ${
-                light ? "text-black/70" : "text-white/75"
-              }`}
-            >
-              DOMA
+            <h1 className="leading-none">
+              <DomaWordmark size="md" light={light} />
             </h1>
           </button>
           {refreshing ? (

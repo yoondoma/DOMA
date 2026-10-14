@@ -3,7 +3,6 @@
 import { useCallback, useRef, useState } from "react";
 import { ArenaBar } from "@/components/ArenaBar";
 import { BattleCalendar } from "@/components/BattleCalendar";
-import type { CalendarPanel } from "@/components/BattleCalendar";
 import { BottomNav, type NavTab } from "@/components/BottomNav";
 import { ComposeChoice } from "@/components/ComposeChoice";
 import { Header, type HomeSurface } from "@/components/Header";
@@ -56,16 +55,9 @@ export function DomaHome() {
   const [refreshing, setRefreshing] = useState(false);
   const [entered, setEntered] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
-  const [calendarPanel, setCalendarPanel] =
-    useState<CalendarPanel>("history");
   const [searchOpen, setSearchOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const refreshLock = useRef(false);
-
-  const openCalendar = (panel: CalendarPanel = "history") => {
-    setCalendarPanel(panel);
-    setCalendarOpen(true);
-  };
 
   const lightShell =
     navTab === "home" && homeSurface === "today" && arenaView === "AEGIS";
@@ -209,9 +201,7 @@ export function DomaHome() {
           tone={lightShell ? "light" : "dark"}
           refreshing={refreshing}
           onRefresh={handleRefresh}
-          onOpenHistory={() =>
-            openCalendar(homeSurface === "tomorrow" ? "tomorrow" : "history")
-          }
+          onOpenHistory={() => setCalendarOpen(true)}
           onOpenSearch={() => setSearchOpen(true)}
           surface={homeSurface}
           onSurfaceChange={
@@ -304,15 +294,7 @@ export function DomaHome() {
 
       <BattleCalendar
         open={calendarOpen}
-        initialPanel={calendarPanel}
-        tomorrowCandidates={tomorrowCandidates}
-        onSupportTomorrow={handleSupportTomorrow}
-        supportedTomorrowId={supportedTomorrowId}
         onClose={() => setCalendarOpen(false)}
-        onVotedTomorrow={(title) => {
-          const short = title.length > 20 ? `${title.slice(0, 20)}…` : title;
-          showToast(`「${short}」에 투표했습니다`);
-        }}
       />
       <SearchSheet open={searchOpen} onClose={() => setSearchOpen(false)} />
 

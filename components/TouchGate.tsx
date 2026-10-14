@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { DomaMark } from "@/components/DomaMark";
+import { DomaWordmark } from "@/components/DomaWordmark";
 
 type TouchGateProps = {
   onEnter: () => void;
@@ -28,14 +29,11 @@ export function TouchGate({ onEnter }: TouchGateProps) {
         pressing ? "touch-press" : "active:opacity-90"
       }`}
     >
-      {/* 시각 중심: 마크+DOMA+.kr — hit target은 전체 화면 */}
+      {/* 시각 중심: 마크 + DOMAᴷᴿ — hit target은 전체 화면 */}
       <span className="pointer-events-none flex flex-col items-center" aria-hidden>
         <DomaMark size={88} />
-        <span className="mt-6 flex items-baseline justify-center font-[family-name:var(--font-brand)] text-[36px] font-semibold leading-none tracking-[0.28em]">
-          DOMA
-          <span className="ml-[0.08em] translate-y-[-3px] font-[family-name:var(--font-brand)] text-[12px] font-semibold tracking-[0.04em] text-white/70">
-            .kr
-          </span>
+        <span className="mt-6">
+          <DomaWordmark size="lg" />
         </span>
         <span
           className={`mt-6 text-[11px] tracking-[0.18em] text-muted ${

@@ -21,9 +21,18 @@ const brandSerif = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "DOMA — 토론 아레나",
+  title: "DOMA KR — 토론 아레나",
   description:
     "오늘의 논제에 참전하고, 280자 진술로 여론을 움직이는 토론 시스템.",
+  applicationName: "DOMA KR",
+  appleWebApp: {
+    title: "DOMA KR",
+    capable: true,
+  },
+  icons: {
+    icon: [{ url: "/icon.png", type: "image/png", sizes: "1024x1024" }],
+    apple: [{ url: "/apple-icon.png", sizes: "1024x1024", type: "image/png" }],
+  },
 };
 
 export default function RootLayout({
