@@ -366,14 +366,16 @@ function BattlefieldIntro({
 }) {
   const remaining = useCountdown(arena.endsAt);
   const closingSoon = useClosingSoon();
-  const ticker = useMemo(() => {
-    return BATTLE_HISTORY.slice(-2)
-      .reverse()
-      .map((b) => {
-        const side = b.winner === "NEXUS" ? "흑" : "백";
-        return `제${b.round}회 · ${side} 승리 ${b.winnerPercent}%`;
-      })
-      .join("  ◆  ");
+  /** 지금까지 양쪽 승률만 — 회차 나열 없음 */
+  const winRates = useMemo(() => {
+    const total = BATTLE_HISTORY.length;
+    if (total === 0) return null;
+    const nexusWins = BATTLE_HISTORY.filter((b) => b.winner === "NEXUS").length;
+    const aegisWins = total - nexusWins;
+    return {
+      nexus: Math.round((nexusWins / total) * 100),
+      aegis: Math.round((aegisWins / total) * 100),
+    };
   }, []);
 
   const ink = light ? "text-black" : "text-white";
@@ -408,14 +410,14 @@ function BattlefieldIntro({
             남음
           </span>
         </p>
-        {ticker ? (
+        {winRates ? (
           <p
-            className={`mt-4 truncate text-[10px] tracking-[0.04em] ${
-              light ? "text-black/35" : "text-white/35"
+            className={`mt-4 text-[11px] tracking-[0.06em] ${
+              light ? "text-black/40" : "text-white/40"
             }`}
-            aria-label="최근 판결"
+            aria-label="지금까지 승률"
           >
-            {ticker}
+            창 {winRates.nexus}% · 방패 {winRates.aegis}%
           </p>
         ) : null}
       </div>
