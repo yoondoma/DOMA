@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+import type { AlertCategory } from "@/components/Header";
 import { StatusBlock } from "@/components/StatusBlock";
 import {
   APP_NOTIFICATIONS,
@@ -16,6 +18,8 @@ function kindLabel(kind: AppNotification["kind"]): string {
       return "답글";
     case "mention":
       return "멘션";
+    case "follow":
+      return "팔로우";
     case "battle":
       return "전투";
   }
@@ -60,6 +64,25 @@ function KindMark({ kind }: { kind: AppNotification["kind"] }) {
       </svg>
     );
   }
+  if (kind === "follow") {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <circle cx="10" cy="9" r="3.25" stroke={stroke} strokeWidth="1.6" />
+        <path
+          d="M4.5 18.5c.6-2.6 2.7-4 5.5-4s4.9 1.4 5.5 4"
+          stroke={stroke}
+          strokeWidth="1.6"
+          strokeLinecap="square"
+        />
+        <path
+          d="M17.5 8v5M15 10.5h5"
+          stroke={stroke}
+          strokeWidth="1.6"
+          strokeLinecap="square"
+        />
+      </svg>
+    );
+  }
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
       <circle cx="12" cy="12" r="7.25" stroke={stroke} strokeWidth="1.6" />
@@ -81,6 +104,7 @@ type NotificationsScreenProps = {
   onOpenProfile?: (handle: string) => void;
   uiDemo?: UiDemo;
   onRetry?: () => void;
+  category?: AlertCategory;
 };
 
 export function NotificationsScreen({
@@ -88,9 +112,13 @@ export function NotificationsScreen({
   onOpenProfile,
   uiDemo = "normal",
   onRetry,
+  category = "all",
 }: NotificationsScreenProps) {
-  const list =
-    uiDemo === "empty" ? [] : APP_NOTIFICATIONS;
+  const list = useMemo(() => {
+    if (uiDemo === "empty") return [];
+    if (category === "all") return APP_NOTIFICATIONS;
+    return APP_NOTIFICATIONS.filter((n) => n.category === category);
+  }, [uiDemo, category]);
 
   return (
     <section
@@ -107,7 +135,7 @@ export function NotificationsScreen({
           onAction={onRetry}
         />
       ) : list.length === 0 ? (
-        <StatusBlock kind="empty" message="새 알림이 없습니다." />
+        <StatusBlock kind="empty" message="이 분류의 알림이 없습니다." />
       ) : (
         <ul aria-label="알림 목록">
           {list.map((n) => {

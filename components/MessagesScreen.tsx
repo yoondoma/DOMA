@@ -206,14 +206,24 @@ type MessagesScreenProps = {
   onOpenProfile: (profile: SocialProfile) => void;
   uiDemo?: UiDemo;
   onRetry?: () => void;
+  /** 헤더 새 메시지 시트 */
+  composeOpen?: boolean;
+  onComposeClose?: () => void;
 };
 
 export function MessagesScreen({
   onOpenProfile,
   uiDemo = "normal",
   onRetry,
+  composeOpen = false,
+  onComposeClose,
 }: MessagesScreenProps) {
   const [open, setOpen] = useState<MessageThread | null>(null);
+
+  const startWith = (t: MessageThread) => {
+    onComposeClose?.();
+    setOpen(t);
+  };
 
   return (
     <section
@@ -229,6 +239,57 @@ export function MessagesScreen({
           onOpenProfile={onOpenProfile}
         />
       )}
+
+      {composeOpen ? (
+        <div
+          className="fixed inset-0 z-[60] flex items-end justify-center bg-black/70"
+          role="dialog"
+          aria-modal
+          aria-label="새 메시지"
+        >
+          <button
+            type="button"
+            className="absolute inset-0"
+            aria-label="닫기"
+            onClick={onComposeClose}
+          />
+          <div className="relative z-10 w-full max-w-[560px] border-t border-white/20 bg-black px-4 pb-8 pt-4">
+            <div className="mb-3 flex items-baseline justify-between">
+              <p className="font-[family-name:var(--font-syne)] text-[15px] font-bold tracking-tight">
+                새 메시지
+              </p>
+              <button
+                type="button"
+                onClick={onComposeClose}
+                className="text-[12px] text-muted"
+              >
+                닫기
+              </button>
+            </div>
+            <ul aria-label="대화 상대">
+              {MESSAGE_THREADS.map((t) => (
+                <li key={t.id}>
+                  <button
+                    type="button"
+                    onClick={() => startWith(t)}
+                    className="flex w-full items-center gap-3 border-b border-white/10 py-3 text-left active:bg-white/[0.04]"
+                  >
+                    <Avatar name={t.name} />
+                    <span className="min-w-0">
+                      <span className="block truncate text-[14px] font-semibold">
+                        {t.name}
+                      </span>
+                      <span className="block truncate text-[12px] text-muted">
+                        @{t.handle}
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
