@@ -475,18 +475,24 @@ function BattlefieldIntro({
         className={`battlefield-rise border-b px-5 pb-4 pt-5 text-center ${border}`}
       >
         <div
-          className="flex items-baseline justify-between gap-3"
+          className="flex items-center justify-between gap-6"
           data-date-battle-row
         >
           <p
-            className={`min-w-0 truncate text-left text-[11px] tracking-[0.12em] ${soft}`}
+            className={`min-w-0 truncate text-left text-[10px] tracking-[0.08em] ${faint}`}
             data-kst-today
             aria-label="오늘 날짜"
           >
-            {formatKstTodayImmersion()}
+            <span className={light ? "text-black/35" : "text-white/35"}>
+              오늘
+            </span>
+            <span className={`mx-1.5 ${light ? "text-black/20" : "text-white/20"}`} aria-hidden>
+              ·
+            </span>
+            <span className={soft}>{formatKstTodayImmersion()}</span>
           </p>
           <p
-            className={`shrink-0 text-right text-[11px] font-medium tracking-[0.18em] ${faint}`}
+            className={`shrink-0 text-right text-[12px] font-bold tracking-[0.14em] ${ink}`}
             aria-label={`제 ${arena.round}회 전투`}
           >
             제 {arena.round}회 전투
@@ -857,18 +863,27 @@ export function ArenaBar({
           aria-label="오늘 주제 영역"
         >
           <div
-            className="flex items-baseline justify-between gap-3"
+            className="flex items-center justify-between gap-6"
             data-date-battle-row
           >
             <p
-              className={`min-w-0 truncate text-left text-[10px] tracking-[0.1em] ${soft}`}
+              className={`min-w-0 truncate text-left text-[10px] tracking-[0.08em] ${faint}`}
               data-kst-today
               aria-label="오늘 날짜"
             >
-              {formatKstTodayImmersion()}
+              <span className={light ? "text-black/35" : "text-white/35"}>
+                오늘
+              </span>
+              <span
+                className={`mx-1.5 ${light ? "text-black/20" : "text-white/20"}`}
+                aria-hidden
+              >
+                ·
+              </span>
+              <span className={soft}>{formatKstTodayImmersion()}</span>
             </p>
             <p
-              className={`shrink-0 text-right text-[11px] font-medium tracking-[0.16em] ${faint}`}
+              className={`shrink-0 text-right text-[12px] font-bold tracking-[0.12em] ${ink}`}
               aria-label={`제 ${arena.round}회 전투`}
             >
               제 {arena.round}회 전투
