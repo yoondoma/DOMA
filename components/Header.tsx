@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { DomaMark } from "@/components/DomaMark";
 import { DomaWordmark } from "@/components/DomaWordmark";
 
 export type HomeSurface = "today" | "tomorrow";
@@ -258,7 +259,8 @@ export function Header({
                     aria-busy={refreshing || undefined}
                     className={refreshing ? "logo-refresh" : undefined}
                   >
-                    <h1 className="leading-none">
+                    <h1 className="flex items-center justify-center gap-1.5 leading-none">
+                      <DomaMark size={22} light={light} />
                       <DomaWordmark size="md" light={light} />
                     </h1>
                   </button>

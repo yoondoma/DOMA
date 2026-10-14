@@ -7,6 +7,8 @@ type PostCardProps = {
   className?: string;
   as?: "article" | "li" | "div";
   focused?: boolean;
+  /** 방어(백) 포인트 셸 #F4F4F0 */
+  defend?: boolean;
   /** data-opinion-id 등 */
   "data-opinion-id"?: string;
   style?: CSSProperties;
@@ -18,14 +20,22 @@ export function PostCard({
   className = "",
   as: Tag = "article",
   focused = false,
+  defend = false,
   style,
   ...data
 }: PostCardProps) {
   return (
     <Tag
-      className={`post-card ${focused ? "ring-1 ring-inset ring-white/15" : ""} ${className}`}
+      className={`post-card ${defend ? "post-card-defend" : ""} ${
+        focused
+          ? defend
+            ? "ring-1 ring-inset ring-black/20"
+            : "ring-1 ring-inset ring-white/15"
+          : ""
+      } ${className}`}
       style={style}
       data-post-card
+      data-shell={defend ? "defend" : "dark"}
       {...data}
     >
       {children}

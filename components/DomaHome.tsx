@@ -1,11 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  ArenaBar,
-  dayTopSide,
-  useForcedTopSide,
-} from "@/components/ArenaBar";
+import { ArenaBar } from "@/components/ArenaBar";
 import { BattleCalendar } from "@/components/BattleCalendar";
 import { BottomNav, type NavTab } from "@/components/BottomNav";
 import { ComposeChoice } from "@/components/ComposeChoice";
@@ -122,20 +118,11 @@ export function DomaHome() {
   const refreshLock = useRef(false);
 
   const feedOpinions = uiDemo === "empty" ? [] : storeOpinions;
-  const forcedTop = useForcedTopSide();
   /**
-   * 셸 톤 = 지금 보고 있는 진영
-   * - 스와이프/선택 NEXUS→블랙 · AEGIS→화이트
-   * - intro는 화면에 보이는 TOP 진영을 따름
+   * 베이스 셸은 항상 다크 `#050505`.
+   * 방어 `#F4F4F0`는 카드/탭 포인트만 (전체 라이트 금지).
    */
-  const viewingCamp = useMemo(() => {
-    if (arenaView === "NEXUS" || arenaView === "AEGIS") return arenaView;
-    return dayTopSide(feedOpinions, forcedTop);
-  }, [arenaView, feedOpinions, forcedTop]);
-  const lightShell =
-    navTab === "home" &&
-    homeSurface === "today" &&
-    viewingCamp === "AEGIS";
+  const lightShell = false;
 
   /** 세션 → 참전 진영·프로필 표시 동기화 */
   useEffect(() => {
@@ -220,11 +207,9 @@ export function DomaHome() {
     }, 900);
   }, [nexusPercent, showToast]);
 
-  /** 진영 피드에서만 — intro 현황판 독은 두지 않음 (베타 전투 루프) */
+  /** intro + 진영 피드 — 네비 바로 위 sticky 흑/백 지지 */
   const campSupportOpen =
-    navTab === "home" &&
-    homeSurface === "today" &&
-    (arenaView === "NEXUS" || arenaView === "AEGIS");
+    navTab === "home" && homeSurface === "today";
 
   const handleJoin = (side: Side) => {
     if (!domaStore.getSession()) {
@@ -635,7 +620,7 @@ export function DomaHome() {
           className="pointer-events-none absolute inset-x-0 z-[55] flex justify-center px-4"
           style={{
             bottom: campSupportOpen
-              ? "calc(56px + 3.5rem + env(safe-area-inset-bottom) + 8px)"
+              ? "calc(44px + 3.5rem + env(safe-area-inset-bottom) + 8px)"
               : "calc(3.5rem + env(safe-area-inset-bottom) + 8px)",
           }}
           role="status"

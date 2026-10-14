@@ -109,8 +109,7 @@ export function TomorrowField({
           내일의 주제 확정까지
         </p>
         <p
-          className="timer-breathe timer-display mt-2 text-timer"
-          data-timer-breathe
+          className="timer-display mt-2 text-timer"
           aria-label={`주제 확정까지 ${confirmRemaining}`}
         >
           {confirmRemaining}

@@ -32,7 +32,7 @@ export function TouchGate({ onEnter }: TouchGateProps) {
       type="button"
       onClick={handleEnter}
       aria-label="터치하여 증명"
-      className={`flex min-h-dvh w-full flex-col items-center justify-center border-0 bg-black px-6 text-white outline-none focus-visible:outline-none ${
+      className={`flex min-h-dvh w-full flex-col items-center justify-center border-0 bg-ink px-6 text-paper outline-none focus-visible:outline-none ${
         pressing ? "touch-press opacity-90" : "active:opacity-90"
       }`}
     >

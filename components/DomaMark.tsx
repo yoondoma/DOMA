@@ -13,11 +13,14 @@ type DomaMarkProps = {
   pierce?: boolean;
 };
 
+/** 볼드·라운드 스트로크 (viewBox 48×72 기준) */
+const STROKE = 2.35;
+
 /**
  * preferred 한 심볼:
  * - 사각 밑변 없음 + 삼각 윗변(seam) 한 줄
- * - tip이 원 안쪽으로 진입, 원 호는 삼각 빗변 교차점에서만 시작 (tip 밑 통과 금지)
- * - 원을 살짝 키워 존재감, tip은 과겹침 없이 한 단계 더 밀착
+ * - tip이 원 안쪽으로 진입, 원 호는 삼각 빗변 교차점에서만 시작
+ * - 선 두껍게·볼드 + stroke join/cap 라운드로 살짝 부드러운 맛
  */
 export function DomaMark({
   size = 56,
@@ -36,7 +39,8 @@ export function DomaMark({
   const tipY = 51.8;
 
   const tri = `M6 ${seamY}H42L24 ${tipY}Z`;
-  const rect = `M15.75 ${seamY}V1H32.25V${seamY}`;
+  /** 사각 — 윗모서리만 살짝 라운드 (형태 유지) */
+  const rect = `M15.75 ${seamY}V4.2Q15.75 1 18.95 1H29.05Q32.25 1 32.25 4.2V${seamY}`;
   /**
    * tipY=51.8 · 교차 ≈ (19.38,43.93)-(28.62,43.93)
    * 끝점 살짝 안쪽 → tip 밑 호 미작성
@@ -57,34 +61,36 @@ export function DomaMark({
       data-mark-ellipse-top={ellipseTop}
       data-mark-overlap={+(tipY - ellipseTop).toFixed(2)}
       data-mark-pierce={pierce ? "1" : undefined}
+      data-mark-bold="1"
     >
       {/* 원(방패/방어) — 삼각 아래에서 press */}
       <g className="mark-pierce-shield">
         <path
           d={ellipseOpen}
           stroke={stroke}
-          strokeWidth="1.45"
-          strokeLinecap="butt"
+          strokeWidth={STROKE}
+          strokeLinecap="round"
           fill="none"
         />
       </g>
-      {/* 사각+삼각(창) — tip이 원 안으로 더 들어감 · fill로 교차 호 가림 */}
+      {/* 사각+삼각(창) — tip이 원 안으로 · fill로 교차 호 가림 */}
       <g className="mark-pierce-spear">
         <path d={tri} fill={bg} stroke="none" />
         <path
           d={tri}
           fill="none"
           stroke={stroke}
-          strokeWidth="1.45"
-          strokeLinejoin="miter"
+          strokeWidth={STROKE}
+          strokeLinejoin="round"
+          strokeLinecap="round"
         />
         <path
           d={rect}
           fill="none"
           stroke={stroke}
-          strokeWidth="1.45"
-          strokeLinejoin="miter"
-          strokeLinecap="butt"
+          strokeWidth={STROKE}
+          strokeLinejoin="round"
+          strokeLinecap="round"
         />
       </g>
     </svg>

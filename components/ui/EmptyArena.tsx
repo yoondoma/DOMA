@@ -7,9 +7,9 @@ type EmptyArenaProps = {
   className?: string;
 };
 
-/** Empty — 모노크롬 콜로세움 링 + 짧은 안내 */
+/** Empty — 모노크롬 그래픽 + 「터치하여 증명」만 */
 export function EmptyArena({
-  message = "아직 글이 없습니다.",
+  message = "터치하여 증명",
   actionLabel,
   onAction,
   className = "",
@@ -60,11 +60,8 @@ export function EmptyArena({
         />
         <circle cx="36" cy="34" r="2.2" fill="currentColor" opacity="0.55" />
       </svg>
-      <p className="max-w-[18rem] font-[family-name:var(--font-display)] text-[17px] leading-snug tracking-[-0.02em] text-paper/80">
+      <p className="max-w-[18rem] font-[family-name:var(--font-display)] text-[18px] leading-snug tracking-[-0.02em] text-paper/85">
         {message}
-      </p>
-      <p className="mt-2 text-[12px] tracking-[0.08em] text-meta">
-        펜은 칼보다 강하다
       </p>
       {actionLabel && onAction ? (
         <button

@@ -38,8 +38,11 @@ import {
   formatCountdownMs,
   parseClosingQuery,
   timerPhaseLabel,
+  timerPulseClass,
+  timerPulseFromNow,
   timerUrgencyClass,
   urgencyFromRemainingMs,
+  type TimerPulse,
   type UrgencyStage,
 } from "@/lib/timer-urgency";
 import { DAILY_TITLE_SHORT } from "@/lib/types/gamification";
@@ -57,6 +60,7 @@ type TimerUrgency = {
   /** 타이머 위 상시 — 전투 시작/종료까지 */
   phaseLabel: string;
   phase: "before" | "during" | "after";
+  pulse: TimerPulse;
 };
 
 /**
@@ -68,6 +72,7 @@ function useTimerUrgency(endsAt: string): TimerUrgency {
   const clock = useDomaStore().clock;
   const [mockMs, setMockMs] = useState<number | null>(null);
   const [remainingMs, setRemainingMs] = useState(0);
+  const [pulse, setPulse] = useState<TimerPulse>("off");
 
   useEffect(() => {
     const q = new URLSearchParams(window.location.search).get("closing");
@@ -81,6 +86,7 @@ function useTimerUrgency(endsAt: string): TimerUrgency {
 
   useEffect(() => {
     const tick = () => {
+      setPulse(timerPulseFromNow());
       if (mockMs != null) {
         setRemainingMs(mockMs);
         return;
@@ -115,6 +121,7 @@ function useTimerUrgency(endsAt: string): TimerUrgency {
     stage,
     phaseLabel: phaseInfo.label,
     phase: phaseInfo.phase,
+    pulse,
   };
 }
 
@@ -227,6 +234,7 @@ function OpinionRow({
       as="li"
       data-opinion-id={op.id}
       focused={focused}
+      defend={light}
       className="feed-item"
       style={{ animationDelay: `${index * 30}ms` }}
     >
@@ -375,6 +383,7 @@ function CampFeedPage({
           <PostCard
             data-opinion-id={focusOpinionId === top.id ? top.id : undefined}
             focused={focusOpinionId === top.id}
+            defend={light}
           >
             <div className="flex gap-3">
               <SmallAvatar
@@ -446,7 +455,6 @@ function CampFeedPage({
           </PostCard>
         ) : (
           <EmptyArena
-            message="TOP 의견이 아직 없습니다."
             actionLabel={onCompose ? "글쓰기" : undefined}
             onAction={onCompose}
             className="py-10"
@@ -462,7 +470,7 @@ function CampFeedPage({
       {uiDemo === "loading" ? (
         <FeedSkeleton count={3} />
       ) : rising.length === 0 && uiDemo !== "error" ? (
-        <EmptyArena message="아직 글이 없습니다." />
+        <EmptyArena />
       ) : rising.length === 0 ? null : (
         <ul className="feed-list" aria-label={`${label} 피드`}>
           {rising.map((op, i) => (
@@ -543,10 +551,10 @@ function BattlefieldIntro({
         </p>
         {timer.phase === "after" ? null : (
           <p
-            className={`timer-breathe mt-2 text-timer ${timerUrgencyClass(timer.stage, "hero")}`}
+            className={`mt-2 text-timer ${timerUrgencyClass(timer.stage, "hero")} ${timerPulseClass(timer.pulse)}`}
             aria-label={`${timer.phaseLabel} ${timer.remaining}`}
             data-urgency={timer.stage ?? "calm"}
-            data-timer-breathe
+            data-timer-pulse={timer.pulse}
             data-closing={
               timer.stage === "10m" ||
               timer.stage === "5m" ||
@@ -559,7 +567,7 @@ function BattlefieldIntro({
           </p>
         )}
         <p
-          className="mt-2.5 text-[11px] font-medium tracking-[0.08em] text-timer"
+          className={`mt-2.5 text-[11px] font-medium tracking-[0.08em] ${soft}`}
           data-kst-today
           aria-label="날짜"
         >
@@ -627,15 +635,11 @@ function BattlefieldIntro({
         ) : null}
         {locked ? (
           <div
-            className={`mx-auto mt-5 flex max-w-[28em] flex-wrap items-center justify-center gap-2 border px-3 py-2.5 ${
-              light ? "border-black/20" : "border-white/25"
-            }`}
+            className="verdict-band mx-auto mt-5 flex max-w-[28em] flex-wrap items-center justify-center gap-2 border px-3 py-2.5"
             data-verdict-strip
             aria-label="판결 확정"
           >
-            <p
-              className={`text-[12px] font-bold tracking-[0.12em] ${ink}`}
-            >
+            <p className="text-[12px] font-bold tracking-[0.12em] text-crimson">
               판결 확정
               {verdictSide
                 ? ` · ${verdictSide === "NEXUS" ? "도전자" : "방어자"}`
@@ -682,7 +686,8 @@ function BattlefieldIntro({
           aria-selected={false}
           aria-label="방어자"
           onClick={() => onPickSide("AEGIS")}
-          className="camp-press flex min-h-[80px] flex-col items-center justify-center gap-1.5 bg-paper px-3 py-3.5 text-ink active:brightness-95"
+          className="camp-press flex min-h-[80px] flex-col items-center justify-center gap-1.5 bg-defend px-3 py-3.5 text-ink active:brightness-95"
+          data-shell="defend"
         >
           <ShieldMark size={24} />
           <span className="text-[13px] font-bold tracking-[0.16em]">방어자</span>
@@ -690,12 +695,10 @@ function BattlefieldIntro({
       </div>
 
       {/* 발견 v0 — 홈 한 줄 · 진영 아래 · 하단 탭 아님 */}
-      <DiscoverStrip light={light} onSelect={onDiscoverSelect} />
+      <DiscoverStrip light={false} onSelect={onDiscoverSelect} />
 
       <p
-        className={`px-5 py-2 text-center text-[10px] tracking-[0.04em] ${
-          light ? "text-black/35" : "text-white/35"
-        }`}
+        className="px-5 py-2 text-center text-[10px] tracking-[0.04em] text-white/35"
         data-beta-feedback
       >
         feedback@doma.kr
@@ -742,8 +745,6 @@ export function ArenaBar({
   const programmaticScroll = useRef(false);
   /** view 변경이 스크롤에서 왔으면 강제 snap 금지 (瞬跳 방지) */
   const viewFromScroll = useRef(false);
-  const light = shellLight;
-
   const selected: Side | null =
     view === "NEXUS" || view === "AEGIS" ? view : null;
 
@@ -835,11 +836,13 @@ export function ArenaBar({
     return () => el.removeEventListener("scrollend", onScrollEnd);
   }, [selected, commitSideFromScroll]);
 
-  const ink = light ? "text-ink" : "text-paper";
-  const soft = light ? "text-ink/55" : "text-paper/55";
-  const faint = light ? "text-ink/40" : "text-paper/45";
-  const border = light ? "border-ink/12" : "border-paper/15";
-  const shellBg = light ? "bg-paper text-ink" : "bg-ink text-paper";
+  /** 베이스는 항상 다크 — 방어 포인트 셸은 카드/탭만 */
+  const light = false;
+  const shellBg = "bg-ink text-paper";
+  const ink = "text-paper";
+  const soft = "text-paper/55";
+  const faint = "text-paper/45";
+  const border = "border-edge";
 
   if (!selected) {
     return (
@@ -892,13 +895,13 @@ export function ArenaBar({
           </p>
           {timer.phase === "after" ? null : (
             <p
-              className={`timer-breathe mt-1 text-timer ${timerUrgencyClass(
+              className={`mt-1 text-timer ${timerUrgencyClass(
                 timer.stage,
                 "sticky",
-              )}`}
+              )} ${timerPulseClass(timer.pulse)}`}
               aria-label={`${timer.phaseLabel} ${timer.remaining}`}
               data-urgency={timer.stage ?? "calm"}
-              data-timer-breathe
+              data-timer-pulse={timer.pulse}
               data-closing={
                 timer.stage === "10m" ||
                 timer.stage === "5m" ||
@@ -941,17 +944,11 @@ export function ArenaBar({
           </div>
           {locked ? (
             <div
-              className={`mt-2.5 flex flex-wrap items-center justify-center gap-2 border px-2.5 py-2 ${
-                light ? "border-black/20 bg-black/[0.04]" : "border-white/25 bg-white/[0.06]"
-              }`}
+              className="verdict-band mt-2.5 flex flex-wrap items-center justify-center gap-2 border bg-ink/80 px-2.5 py-2"
               data-verdict-strip
               aria-label="판결 확정"
             >
-              <p
-                className={`text-[11px] font-bold tracking-[0.12em] ${
-                  light ? "text-black" : "text-white"
-                }`}
-              >
+              <p className="text-[11px] font-bold tracking-[0.12em] text-crimson">
                 판결 확정
                 {verdictSide
                   ? ` · ${verdictSide === "NEXUS" ? "도전자" : "방어자"}`
@@ -1003,9 +1000,10 @@ export function ArenaBar({
             aria-selected={selected === "AEGIS"}
             aria-label="방어자"
             onClick={() => scrollToSide("AEGIS")}
-            className={`camp-press flex min-h-[56px] flex-col items-center justify-center gap-1 bg-paper text-ink ${
+            className={`camp-press flex min-h-[56px] flex-col items-center justify-center gap-1 bg-defend text-ink ${
               selected === "AEGIS" ? "opacity-100" : "opacity-45"
             }`}
+            data-shell="defend"
           >
             <ShieldMark size={22} />
             <span className="text-[11px] font-bold tracking-[0.16em]">
@@ -1042,7 +1040,7 @@ export function ArenaBar({
             touchAction: "pan-x pan-y",
             /* 헤더·sticky 주제·하단네비(+진영 SupportBar) 밖 남은 높이 */
             height: campSupportDock
-              ? "calc(100dvh - 3.5rem - 7.5rem - 3.5rem - 32px - env(safe-area-inset-bottom, 0px))"
+              ? "calc(100dvh - 3.5rem - 7.5rem - 3.5rem - 44px - env(safe-area-inset-bottom, 0px))"
               : "calc(100dvh - 3.5rem - 7.5rem - 3.5rem - env(safe-area-inset-bottom, 0px))",
             maxHeight: "50dvh",
           }}
@@ -1058,7 +1056,7 @@ export function ArenaBar({
             onRetry={onRetry}
             onCompose={onCompose}
             focusOpinionId={focusOpinionId}
-            light={light}
+            light={false}
             onToast={onToast}
             onOpenShareCard={onOpenShareCard}
             onOpenAuthor={onOpenAuthor}
@@ -1073,7 +1071,7 @@ export function ArenaBar({
             onRetry={onRetry}
             onCompose={onCompose}
             focusOpinionId={focusOpinionId}
-            light={light}
+            light={true}
             onToast={onToast}
             onOpenShareCard={onOpenShareCard}
             onOpenAuthor={onOpenAuthor}

@@ -408,13 +408,13 @@ function DayChronicle({
           <div className="mt-1.5 flex items-center gap-2">
             {joint ? (
               <>
-                <SpearMark size={18} />
-                <ShieldMark size={18} className="text-black" />
+                <SpearMark size={18} className="winner-crimson" />
+                <ShieldMark size={18} className="winner-crimson" />
               </>
             ) : challengerWin ? (
-              <SpearMark size={18} />
+              <SpearMark size={18} className="winner-crimson" />
             ) : (
-              <ShieldMark size={18} />
+              <ShieldMark size={18} className="winner-crimson" />
             )}
             <span
               className={`text-[15px] font-bold tracking-[0.12em] ${
@@ -423,15 +423,7 @@ function DayChronicle({
             >
               {joint ? "도전자 · 방어자" : challengerWin ? "도전자" : "방어자"}
             </span>
-            <span
-              className={`ml-auto text-[18px] font-bold tabular-nums ${
-                joint
-                  ? "mix-blend-difference text-white"
-                  : challengerWin
-                    ? "text-white"
-                    : "text-black"
-              }`}
-            >
+            <span className="ml-auto text-[18px] font-bold tabular-nums text-crimson">
               {joint ? "50%" : `${battle.winnerPercent}%`}
             </span>
           </div>
@@ -478,7 +470,7 @@ function DayChronicle({
         ) : null}
 
         {/* 양 진영 — 보드 칸 */}
-        <div className="mt-5 grid grid-cols-2 gap-0 border border-white/15">
+        <div className="camp-pair mt-5 grid grid-cols-2 gap-0 border border-white/15">
           <div className="border-r border-white/15 bg-black px-3 py-3">
             <div className="flex items-center gap-1.5">
               <SpearMark size={14} />
@@ -532,7 +524,7 @@ function DayChronicle({
           <p className="text-[10px] font-bold tracking-[0.16em] text-muted">
             챔피언
           </p>
-          <div className="mt-2 border border-white/20">
+          <div className="r-md mt-2 border border-white/20">
             <div className="flex items-center gap-2 border-b border-white/10 px-3 py-2">
               <ProfileAvatar
                 handle={archive.champion.author}
@@ -576,7 +568,7 @@ function DayChronicle({
           <p className="text-[10px] font-bold tracking-[0.16em] text-muted">
             상대
           </p>
-          <div className="mt-2 border border-white/12">
+          <div className="r-md mt-2 border border-white/12">
             <div className="flex items-center gap-2 border-b border-white/10 px-3 py-2">
               <ProfileAvatar
                 handle={archive.rival.author}
@@ -747,7 +739,7 @@ export function BattleCalendar({
         aria-label="닫기"
         onClick={onClose}
       />
-      <div className="sheet-up relative z-10 flex max-h-[92dvh] w-full max-w-[560px] flex-col overflow-hidden border border-white/15 bg-black text-white sm:max-h-[85dvh]">
+      <div className="sheet-up r-sheet relative z-10 flex max-h-[92dvh] w-full max-w-[560px] flex-col overflow-hidden border border-white/15 bg-ink text-paper sm:max-h-[85dvh]">
         <div className="flex shrink-0 items-center justify-between border-b border-white/15 px-4 py-3">
           <p className="text-[12px] font-bold tracking-[0.18em]">전투 기록</p>
           <button
@@ -867,6 +859,19 @@ export function BattleCalendar({
                           >
                             {day}
                           </span>
+                          {battle && battle.winner !== "JOINT" ? (
+                            <span
+                              className="absolute bottom-0.5 left-1/2 -translate-x-1/2 winner-crimson"
+                              aria-hidden
+                              data-winner-mark={battle.winner}
+                            >
+                              {battle.winner === "NEXUS" ? (
+                                <SpearMark size={8} />
+                              ) : (
+                                <ShieldMark size={8} />
+                              )}
+                            </span>
+                          ) : null}
                           {saved ? (
                             <span className="absolute bottom-0.5 right-0.5">
                               <OfflineBadge

@@ -1,9 +1,14 @@
+import { kstParts } from "@/lib/kst";
+
 /**
  * 판결 타이머 압박 단계 — 스펙: battle-rules
  * 3h / 1h / 30m / 10m / 5m / 1m
  */
 
 export type UrgencyStage = "3h" | "1h" | "30m" | "10m" | "5m" | "1m";
+
+/** 최종 디렉션 — Pulse는 22:00~ / 22:50–23:00 가속 */
+export type TimerPulse = "off" | "breathe" | "rush";
 
 /** 남은 시간 ≤ 임계 → 해당 단계 (짧은 쪽 우선) */
 const STAGES: { id: UrgencyStage; ms: number; label: string }[] = [
@@ -93,23 +98,38 @@ export function formatCountdownMs(ms: number): string {
   return [h, m, s].map((n) => String(n).padStart(2, "0")).join(":");
 }
 
-/** intro(대) · sticky(소) — 디스플레이 세리프 · 웅장 */
+/**
+ * KST 벽시계 Pulse.
+ * - 평소: off (크림슨 숫자만)
+ * - 22:00–22:49: breathe
+ * - 22:50–22:59: rush
+ * 목업: `?pulse=breathe|rush|off`
+ */
+export function timerPulseFromNow(now: Date = new Date()): TimerPulse {
+  if (typeof window !== "undefined") {
+    const q = new URLSearchParams(window.location.search).get("pulse");
+    if (q === "breathe" || q === "1") return "breathe";
+    if (q === "rush" || q === "fast") return "rush";
+    if (q === "off" || q === "0") return "off";
+  }
+  const { h, min } = kstParts(now);
+  if (h === 22 && min >= 50) return "rush";
+  if (h === 22) return "breathe";
+  return "off";
+}
+
+export function timerPulseClass(pulse: TimerPulse): string {
+  if (pulse === "rush") return "timer-pulse-rush";
+  if (pulse === "breathe") return "timer-pulse";
+  return "";
+}
+
+/** intro(대) · sticky(소) — 디스플레이 세리프 · 웅장 · 크림슨 상시 */
 export function timerUrgencyClass(
-  stage: UrgencyStage | null,
+  _stage: UrgencyStage | null,
   size: "hero" | "sticky",
 ): string {
-  const base =
-    size === "hero"
-      ? "timer-display"
-      : "font-[family-name:var(--font-display)] text-[26px] font-bold tracking-[0.04em] tabular-nums leading-none sm:text-[28px]";
-  if (!stage) return base;
-  const pulse: Record<UrgencyStage, string> = {
-    "3h": "timer-urgency-3h",
-    "1h": "timer-urgency-1h",
-    "30m": "timer-urgency-30m",
-    "10m": "timer-urgency-10m",
-    "5m": "timer-urgency-5m",
-    "1m": "timer-urgency-1m",
-  };
-  return `${base} ${pulse[stage]}`;
+  return size === "hero"
+    ? "timer-display"
+    : "font-[family-name:var(--font-display)] text-[26px] font-bold tracking-[0.04em] tabular-nums leading-none sm:text-[28px]";
 }
