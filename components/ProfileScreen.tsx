@@ -1,13 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import {
+  TierBadge,
+  UserProfileCard,
+  ViralShareCard,
+} from "@/components/gamification";
 import { ShieldMark, SideBadge, SpearMark } from "@/components/SideMarks";
 import {
   PROFILE_AFFINITY,
+  PROFILE_GAMER,
   PROFILE_POSTS,
   PROFILE_RECENT_BATTLES,
   PROFILE_USER,
 } from "@/lib/profile-mock";
+import type { DailyTitle } from "@/lib/types/gamification";
 
 type ProfileTab = "posts" | "battles";
 
@@ -69,10 +76,18 @@ function AffinityBar({
 /** Threads/X형 기본 프로필 + 전투 기록·성향 */
 export function ProfileScreen({ onOpenShareCard }: ProfileScreenProps) {
   const [tab, setTab] = useState<ProfileTab>("posts");
+  const [viralTitle, setViralTitle] = useState<DailyTitle | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
   const a = PROFILE_AFFINITY;
   const u = PROFILE_USER;
 
+  const showToast = (message: string) => {
+    setToast(message);
+    window.setTimeout(() => setToast(null), 2200);
+  };
+
   return (
+    <>
     <section
       className="mx-auto max-w-[560px] bg-black text-white"
       aria-label="프로필"
@@ -96,6 +111,12 @@ export function ProfileScreen({ onOpenShareCard }: ProfileScreenProps) {
 
         <p className="mt-4 text-[14px] leading-[1.55] text-white/90">{u.bio}</p>
         <p className="mt-2 text-[12px] text-muted">{u.joinedLabel}</p>
+
+        <UserProfileCard
+          user={PROFILE_GAMER}
+          className="mt-4"
+          onPropagateTitle={setViralTitle}
+        />
 
         <div className="mt-3 flex gap-4 text-[13px]">
           <span>
@@ -193,8 +214,12 @@ export function ProfileScreen({ onOpenShareCard }: ProfileScreenProps) {
                   {u.name.slice(0, 1)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     <span className="text-[13px] font-semibold">{u.name}</span>
+                    <TierBadge
+                      tier={PROFILE_GAMER.currentTier.code}
+                      subTier={PROFILE_GAMER.currentTier.subtier}
+                    />
                     <span className="text-[12px] text-muted">@{u.handle}</span>
                     <span className="text-[12px] text-muted">· {p.timeLabel}</span>
                     <SideBadge side={p.side} />
@@ -275,5 +300,31 @@ export function ProfileScreen({ onOpenShareCard }: ProfileScreenProps) {
         </ul>
       )}
     </section>
+
+    {viralTitle ? (
+      <ViralShareCard
+        open
+        payload={{
+          username: PROFILE_GAMER.username,
+          totalWins: PROFILE_GAMER.totalWins,
+          tier: PROFILE_GAMER.currentTier,
+          title: viralTitle,
+        }}
+        onClose={() => setViralTitle(null)}
+        onToast={showToast}
+      />
+    ) : null}
+
+    {toast ? (
+      <div
+        className="fixed inset-x-0 bottom-20 z-[80] flex justify-center px-4"
+        role="status"
+      >
+        <p className="border border-neutral-200 bg-black px-3 py-2 text-[12px] text-white">
+          {toast}
+        </p>
+      </div>
+    ) : null}
+    </>
   );
 }

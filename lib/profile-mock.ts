@@ -1,4 +1,9 @@
 import { BATTLE_HISTORY } from "./battle-history";
+import {
+  createDailyTitle,
+  withResolvedTier,
+  type UserProfileType,
+} from "./types/gamification";
 import type { Side } from "./types";
 
 export type ProfilePost = {
@@ -26,6 +31,18 @@ export const PROFILE_USER = {
   following: 128,
   followers: 940,
 };
+
+/** 게이미피케이션 목 — DIAMOND II 근처 + 일일 칭호 */
+export const PROFILE_GAMER: UserProfileType = withResolvedTier({
+  id: "user-soohan",
+  username: PROFILE_USER.name,
+  totalWins: 145,
+  dailyTitles: [
+    createDailyTitle("10.24", "FINGER"),
+    createDailyTitle("10.12", "SPEAR"),
+    createDailyTitle("09.30", "VICTOR"),
+  ],
+});
 
 /** 성향 — 흑(도전자)·백(방어자) 참여·승패·지지 비율 목 */
 export const PROFILE_AFFINITY: AffinityStats = {
