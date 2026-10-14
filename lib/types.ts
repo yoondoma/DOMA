@@ -23,6 +23,8 @@ export type Opinion = {
   likedByMe?: boolean;
   supportedByMe?: boolean;
   isTopMinority?: boolean;
+  /** 올린 시각 (UTC ISO) — 표시는 KST 포맷 */
+  createdAtUtc?: string;
 };
 
 export type { Camp, DayId, TimeState } from "@/lib/types/domain";

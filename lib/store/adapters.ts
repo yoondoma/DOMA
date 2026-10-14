@@ -30,6 +30,7 @@ export function toUiOpinion(
     likedByMe: likedOpinionIds?.has(op.id) ?? false,
     supportedByMe: supportedOpinionIds?.has(op.id) ?? false,
     isTopMinority: op.isTopMinority,
+    createdAtUtc: op.createdAtUtc,
   };
 }
 

@@ -21,6 +21,10 @@ import {
 } from "@/components/SideMarks";
 import { RulesHud } from "@/components/RulesHud";
 import { TrojanMark } from "@/components/TrojanMark";
+import {
+  formatKstTodayImmersion,
+  formatPostTimeKst,
+} from "@/lib/format-time";
 import { compareByJudgmentAuthority } from "@/lib/judgment";
 import { useDomaStore } from "@/lib/store";
 import {
@@ -208,6 +212,16 @@ function OpinionRow({
             </span>
             <SideBadge side={op.side} />
             <TrojanMark count={op.trojanCount ?? 0} light={light} />
+            {op.createdAtUtc ? (
+              <time
+                className={`text-[11px] tabular-nums ${
+                  light ? "text-neutral-500" : "text-muted"
+                }`}
+                dateTime={op.createdAtUtc}
+              >
+                {formatPostTimeKst(op.createdAtUtc)}
+              </time>
+            ) : null}
           </div>
         </div>
         {op.authorId ? (
@@ -333,6 +347,14 @@ function CampFeedPage({
                 </span>
                 <SideBadge side={top.side} />
                 <TrojanMark count={top.trojanCount ?? 0} light={light} />
+                {top.createdAtUtc ? (
+                  <time
+                    className={`text-[11px] tabular-nums ${muted}`}
+                    dateTime={top.createdAtUtc}
+                  >
+                    {formatPostTimeKst(top.createdAtUtc)}
+                  </time>
+                ) : null}
                 {top.authorId ? (
                   <SafetyMenu
                     userId={top.authorId}
@@ -452,7 +474,14 @@ function BattlefieldIntro({
       <div
         className={`battlefield-rise border-b px-5 pb-4 pt-5 text-center ${border}`}
       >
-        <p className={`text-[11px] font-medium tracking-[0.22em] ${faint}`}>
+        <p
+          className={`text-[11px] tracking-[0.14em] ${soft}`}
+          data-kst-today
+          aria-label="오늘 날짜"
+        >
+          {formatKstTodayImmersion()}
+        </p>
+        <p className={`mt-1.5 text-[11px] font-medium tracking-[0.22em] ${faint}`}>
           제 {arena.round}회 전투
         </p>
         <p
@@ -618,6 +647,14 @@ function BattlefieldIntro({
                     count={champion.trojanCount ?? 0}
                     light={light}
                   />
+                  {champion.createdAtUtc ? (
+                    <time
+                      className={`text-[11px] tabular-nums ${soft}`}
+                      dateTime={champion.createdAtUtc}
+                    >
+                      {formatPostTimeKst(champion.createdAtUtc)}
+                    </time>
+                  ) : null}
                 </div>
               </div>
               <p
@@ -811,7 +848,14 @@ export function ArenaBar({
           }`}
           aria-label="오늘 주제 영역"
         >
-          <p className={`text-[11px] font-medium tracking-[0.2em] ${faint}`}>
+          <p
+            className={`text-[10px] tracking-[0.12em] ${soft}`}
+            data-kst-today
+            aria-label="오늘 날짜"
+          >
+            {formatKstTodayImmersion()}
+          </p>
+          <p className={`mt-0.5 text-[11px] font-medium tracking-[0.2em] ${faint}`}>
             제 {arena.round}회 전투
           </p>
           <p

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { OpinionSocial } from "@/components/OpinionSocial";
 import { StatusBlock } from "@/components/StatusBlock";
+import { formatPostTimeKst } from "@/lib/format-time";
 import { formatCountdown, nextOpenAtKstIso } from "@/lib/kst";
 import { domaStore, useDomaStore } from "@/lib/store";
 import {
@@ -84,6 +85,12 @@ export function TomorrowField({
     for (const c of shown) m.set(c.id, c.title);
     return m;
   }, [shown]);
+
+  const topicCreatedAt = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const t of snap.topicCandidates) m.set(t.id, t.createdAtUtc);
+    return m;
+  }, [snap.topicCandidates]);
 
   /** 실시간: 최신·좋아요 섞인 피드 (목) */
   const liveFeed = useMemo(() => {
@@ -190,6 +197,14 @@ export function TomorrowField({
                       <span className="ml-1.5 tracking-[0.08em] text-white/55">
                         · 안건자
                       </span>
+                      {topicCreatedAt.get(c.id) ? (
+                        <time
+                          className="ml-1.5 tabular-nums text-white/45"
+                          dateTime={topicCreatedAt.get(c.id)}
+                        >
+                          · {formatPostTimeKst(topicCreatedAt.get(c.id))}
+                        </time>
+                      ) : null}
                     </span>
                   </span>
                 </button>
@@ -294,6 +309,14 @@ export function TomorrowField({
                       <span className="border border-white/25 px-1.5 py-0.5 text-[10px] tracking-[0.08em] text-muted">
                         {stanceLabel(op.stance)}
                       </span>
+                      {op.createdAtUtc ? (
+                        <time
+                          className="text-[11px] tabular-nums text-muted"
+                          dateTime={op.createdAtUtc}
+                        >
+                          {formatPostTimeKst(op.createdAtUtc)}
+                        </time>
+                      ) : null}
                     </div>
                     <p className="mt-1.5 truncate text-[11px] text-muted">
                       {topic}

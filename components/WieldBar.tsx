@@ -111,7 +111,8 @@ export function WieldBar({ open, side, onClose, onSubmit }: WieldBarProps) {
             role="note"
             aria-label="작성 규칙 팁"
           >
-            글은 여러 번 가능 · 하루 한 진영에서만 · 연속 작성 3분 쿨다운
+            등록 후 수정·삭제할 수 없습니다 · 하루 한 진영 · 연속 작성 3분
+            쿨다운
           </p>
           <div className="mb-2 flex items-center justify-between text-[11px] text-muted">
             <span>

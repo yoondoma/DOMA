@@ -114,7 +114,9 @@ export function TomorrowCompose({
             aria-label="작성 규칙 팁"
             data-proposal-tip
           >
-            <span className="text-white">제안은 등록 후 수정할 수 없습니다.</span>{" "}
+            <span className="text-white">
+              제안은 등록 후 수정·삭제할 수 없습니다.
+            </span>{" "}
             창/방패로 나뉠 찬반형 주제로 · 지지 1위 자동 확정 · 연속 작성 3분
             쿨다운
           </p>

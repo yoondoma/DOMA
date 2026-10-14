@@ -80,6 +80,7 @@ function normalizeReply(r: Reply & { opinionId?: string }): Reply {
       body: r.body,
       likeCount: r.likeCount ?? 0,
       createdAtUtc: r.createdAtUtc,
+      editedAtUtc: r.editedAtUtc ?? null,
     };
   }
   const legacyId = r.opinionId ?? r.parentId;
@@ -91,6 +92,7 @@ function normalizeReply(r: Reply & { opinionId?: string }): Reply {
     body: r.body,
     likeCount: r.likeCount ?? 0,
     createdAtUtc: r.createdAtUtc,
+    editedAtUtc: r.editedAtUtc ?? null,
   };
 }
 
@@ -980,7 +982,7 @@ class MemoryStore {
     return row;
   }
 
-  /** 댓글 수정 — 본인만 · 지지/목마 무관 */
+  /** 댓글 수정 — 본인만 · `(수정됨)` 플래그 */
   updateReply(replyId: string, body: string): Reply {
     const next = clone(this.snap);
     if (!next.session) throw new Error("SESSION_REQUIRED");
@@ -993,10 +995,35 @@ class MemoryStore {
     const updated: Reply = {
       ...row,
       body: trimmed.slice(0, CONTENT_LIMITS.reply),
+      editedAtUtc: new Date().toISOString(),
     };
     next.replies = next.replies.map((r, i) => (i === idx ? updated : r));
     this.commit(next);
     return updated;
+  }
+
+  /** 댓글 삭제 — 본인만 · 의견/제안 삭제는 UI에서 제공하지 않음 */
+  deleteReply(replyId: string): boolean {
+    const next = clone(this.snap);
+    if (!next.session) throw new Error("SESSION_REQUIRED");
+    const row = next.replies.find((r) => r.id === replyId);
+    if (!row || row.authorId !== next.session.userId) return false;
+    next.replies = next.replies.filter((r) => r.id !== replyId);
+    if (row.parentKind === "opinion") {
+      next.opinions = next.opinions.map((o) =>
+        o.id === row.parentId
+          ? { ...o, replyCount: Math.max(0, o.replyCount - 1) }
+          : o,
+      );
+    }
+    next.likes = next.likes.filter(
+      (l) => !(l.targetKind === "reply" && l.targetId === replyId),
+    );
+    next.scraps = next.scraps.filter(
+      (s) => !(s.targetKind === "reply" && s.targetId === replyId),
+    );
+    this.commit(next);
+    return true;
   }
 
   toggleScrap(

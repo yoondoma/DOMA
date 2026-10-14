@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { isShutdownState } from "@/lib/arena-gate";
+import { formatPostTimeKst } from "@/lib/format-time";
 import { sharePost } from "@/lib/share-post";
 import { playDomaSound } from "@/lib/sound/doma-sound";
 import { domaStore, useDomaStore } from "@/lib/store";
@@ -310,6 +311,23 @@ export function OpinionSocial({
     }
   };
 
+  const onDeleteReply = (replyId: string) => {
+    try {
+      const ok = domaStore.deleteReply(replyId);
+      if (ok) {
+        if (editingId === replyId) {
+          setEditingId(null);
+          setEditDraft("");
+        }
+        onToast?.("댓글을 삭제했습니다");
+      } else {
+        onToast?.("본인 댓글만 삭제할 수 있습니다");
+      }
+    } catch {
+      onNeedLogin?.();
+    }
+  };
+
   const onLikeReply = (replyId: string) => {
     try {
       domaStore.toggleLike("reply", replyId);
@@ -468,18 +486,34 @@ export function OpinionSocial({
                         </div>
                       </div>
                     ) : (
-                      <p>
-                        <span className={`font-semibold ${active}`}>
-                          @{r.handle}
-                        </span>
-                        <span
-                          className={`ml-1.5 ${
+                      <div>
+                        <p>
+                          <span className={`font-semibold ${active}`}>
+                            @{r.handle}
+                          </span>
+                          <time
+                            className={`ml-1.5 text-[11px] tabular-nums ${muted}`}
+                            dateTime={r.createdAtUtc}
+                          >
+                            {formatPostTimeKst(r.createdAtUtc)}
+                          </time>
+                          {r.editedAtUtc ? (
+                            <span
+                              className={`ml-1 text-[11px] ${muted}`}
+                              data-edited-mark
+                            >
+                              (수정됨)
+                            </span>
+                          ) : null}
+                        </p>
+                        <p
+                          className={`mt-0.5 ${
                             light ? "text-black/80" : "text-white/80"
                           }`}
                         >
                           {r.body}
-                        </span>
-                      </p>
+                        </p>
+                      </div>
                     )}
                     {!editing ? (
                       <div className="mt-1.5 flex flex-wrap items-center gap-3">
@@ -512,17 +546,27 @@ export function OpinionSocial({
                           스크랩
                         </button>
                         {mine ? (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditingId(r.id);
-                              setEditDraft(r.body);
-                            }}
-                            className={muted}
-                            aria-label="댓글 수정"
-                          >
-                            수정
-                          </button>
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingId(r.id);
+                                setEditDraft(r.body);
+                              }}
+                              className={muted}
+                              aria-label="댓글 수정"
+                            >
+                              수정
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onDeleteReply(r.id)}
+                              className={muted}
+                              aria-label="댓글 삭제"
+                            >
+                              삭제
+                            </button>
+                          </>
                         ) : null}
                       </div>
                     ) : null}

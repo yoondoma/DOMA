@@ -15,6 +15,8 @@ export type FieldOpinion = {
   text: string;
   likes: number;
   stance: "support" | "lead" | "question";
+  /** 올린 시각 (UTC ISO) — 없으면 표시 생략 */
+  createdAtUtc?: string;
 };
 
 /** 내일의 주제 — 필드 후보 목 */
@@ -70,6 +72,13 @@ export const INITIAL_TOMORROW_TOPICS: TomorrowCandidate[] = [
   },
 ];
 
+
+/** 목 시각 — 모듈 로드 기준 상대시간 */
+const FO_NOW = Date.now();
+function foAgo(minutes: number): string {
+  return new Date(FO_NOW - minutes * 60_000).toISOString();
+}
+
 /** 후보별 필드 의견·지지 글 (목) — 스크롤 탐색용 */
 export const FIELD_OPINIONS: FieldOpinion[] = [
   {
@@ -78,6 +87,7 @@ export const FIELD_OPINIONS: FieldOpinion[] = [
     author: "mira.k",
     stance: "lead",
     likes: 128,
+    createdAtUtc: foAgo(3),
     text: "도심이 끝나는 게 아니라 ‘우연한 밀도의 도시’가 끝난다. 주제를 여기로 이끌자.",
   },
   {
@@ -86,6 +96,7 @@ export const FIELD_OPINIONS: FieldOpinion[] = [
     author: "zero.nexus",
     stance: "support",
     likes: 96,
+    createdAtUtc: foAgo(12),
     text: "원격이 도시를 죽인 게 아니라, 도시가 이미 비싸서 밀어낸 것이다.",
   },
   {
@@ -94,6 +105,7 @@ export const FIELD_OPINIONS: FieldOpinion[] = [
     author: "han.aegis",
     stance: "question",
     likes: 54,
+    createdAtUtc: foAgo(45),
     text: "‘중심’의 정의가 상업인가, 사람인가. 그걸 먼저 박아야 한다.",
   },
   {
@@ -102,6 +114,7 @@ export const FIELD_OPINIONS: FieldOpinion[] = [
     author: "loom",
     stance: "support",
     likes: 41,
+    createdAtUtc: foAgo(90),
     text: "교외의 부활은 해방이 아니라 이동 비용의 전가다.",
   },
   {
@@ -110,6 +123,7 @@ export const FIELD_OPINIONS: FieldOpinion[] = [
     author: "pulse",
     stance: "lead",
     likes: 33,
+    createdAtUtc: foAgo(180),
     text: "사무실이 사라지면 점심 경제가 먼저 죽는다. 그 연쇄를 주제로.",
   },
   {
@@ -118,6 +132,7 @@ export const FIELD_OPINIONS: FieldOpinion[] = [
     author: "orbit",
     stance: "lead",
     likes: 88,
+    createdAtUtc: foAgo(8),
     text: "의욕이 아니라 ‘강제된 생존 노동’을 줄이는 장치로 읽어야 한다.",
   },
   {
@@ -126,6 +141,7 @@ export const FIELD_OPINIONS: FieldOpinion[] = [
     author: "reed",
     stance: "support",
     likes: 62,
+    createdAtUtc: foAgo(25),
     text: "기본소득 반대론은 종종 게으름의 공포를 능력주의로 포장한다.",
   },
   {
@@ -134,6 +150,7 @@ export const FIELD_OPINIONS: FieldOpinion[] = [
     author: "kite",
     stance: "question",
     likes: 39,
+    createdAtUtc: foAgo(60),
     text: "재원은 어디서? 질문 없이 도덕만 남은 토론은 빈약하다.",
   },
   {
@@ -142,6 +159,7 @@ export const FIELD_OPINIONS: FieldOpinion[] = [
     author: "nova",
     stance: "support",
     likes: 27,
+    createdAtUtc: foAgo(120),
     text: "노동 의욕이 아니라 협상력이 바뀌는 쪽이 핵심이다.",
   },
   {
@@ -150,6 +168,7 @@ export const FIELD_OPINIONS: FieldOpinion[] = [
     author: "veil",
     stance: "lead",
     likes: 71,
+    createdAtUtc: foAgo(200),
     text: "실명제는 자유를 지키는 게 아니라 감시 비용을 낮춘다.",
   },
   {
@@ -158,6 +177,7 @@ export const FIELD_OPINIONS: FieldOpinion[] = [
     author: "ash",
     stance: "support",
     likes: 44,
+    createdAtUtc: foAgo(15),
     text: "혐오에 맞서는 도구와 국가의 명부를 같은 저울에 올리지 말자.",
   },
   {
@@ -166,6 +186,7 @@ export const FIELD_OPINIONS: FieldOpinion[] = [
     author: "glen",
     stance: "question",
     likes: 22,
+    createdAtUtc: foAgo(40),
     text: "익명 없이는 말하기 어려운 증언은 어디에 남나.",
   },
   {
@@ -174,6 +195,7 @@ export const FIELD_OPINIONS: FieldOpinion[] = [
     author: "volt",
     stance: "lead",
     likes: 59,
+    createdAtUtc: foAgo(70),
     text: "시간 스케일을 숨긴 탄소중립은 슬로건이다. 기저부하를 정면으로.",
   },
   {
@@ -182,6 +204,7 @@ export const FIELD_OPINIONS: FieldOpinion[] = [
     author: "iris",
     stance: "support",
     likes: 35,
+    createdAtUtc: foAgo(100),
     text: "폐기물을 ‘나중’으로 미루는 낙관이 가장 비싼 리스크다.",
   },
   {
@@ -190,6 +213,7 @@ export const FIELD_OPINIONS: FieldOpinion[] = [
     author: "quill",
     stance: "lead",
     likes: 48,
+    createdAtUtc: foAgo(5),
     text: "서열이 능력을 재는 게 아니라 능력을 서열의 언어로 다시 쓴다.",
   },
   {
@@ -198,6 +222,7 @@ export const FIELD_OPINIONS: FieldOpinion[] = [
     author: "moss",
     stance: "support",
     likes: 29,
+    createdAtUtc: foAgo(22),
     text: "공정한 시험이 불공정한 출발선을 지울 수는 없다.",
   },
   {
@@ -206,6 +231,7 @@ export const FIELD_OPINIONS: FieldOpinion[] = [
     author: "axle",
     stance: "lead",
     likes: 52,
+    createdAtUtc: foAgo(55),
     text: "알고리즘이 배정하는 일을 ‘사업’이라 부르는 순간 보호가 증발한다.",
   },
   {
@@ -214,6 +240,7 @@ export const FIELD_OPINIONS: FieldOpinion[] = [
     author: "fern",
     stance: "question",
     likes: 18,
+    createdAtUtc: foAgo(140),
     text: "유연함이 권리인지 위험 전가인지, 계약서 한 줄로 갈라야 한다.",
   },
   {
@@ -222,6 +249,7 @@ export const FIELD_OPINIONS: FieldOpinion[] = [
     author: "cinder",
     stance: "lead",
     likes: 61,
+    createdAtUtc: foAgo(9),
     text: "정의의 완성이 아니라 국가가 죽음을 집행할 자격의 문제다.",
   },
   {
@@ -230,6 +258,7 @@ export const FIELD_OPINIONS: FieldOpinion[] = [
     author: "dale",
     stance: "support",
     likes: 24,
+    createdAtUtc: foAgo(33),
     text: "오판의 비가역성을 외면한 응보는 복수에 가깝다.",
   },
 ];

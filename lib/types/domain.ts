@@ -128,6 +128,8 @@ export type Reply = {
   body: string;
   likeCount: number;
   createdAtUtc: string;
+  /** 수정 시 설정 · UI `(수정됨)` */
+  editedAtUtc?: string | null;
 };
 
 /** 스크랩(북마크) 대상 */

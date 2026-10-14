@@ -170,12 +170,26 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
           authorId: userIdFromHandle("mira.k"),
           body: "기준을 벤치마크로만 두면 책임 문제가 비게 된다. 같이 보자.",
           likeCount: 3,
-          createdAtUtc: clock.serverNowUtc,
+          createdAtUtc: new Date(
+            new Date(clock.serverNowUtc).getTime() - 8 * 60_000,
+          ).toISOString(),
+        },
+        {
+          id: `${makeReplyId("opinion", seedOpinion.id)}_self`,
+          parentKind: "opinion",
+          parentId: seedOpinion.id,
+          authorId: me.id,
+          body: "증거 없는 단정은 전장에 올리지 말자.",
+          likeCount: 1,
+          createdAtUtc: new Date(
+            new Date(clock.serverNowUtc).getTime() - 2 * 60_000,
+          ).toISOString(),
+          editedAtUtc: null,
         },
       ]
     : [];
   if (seedOpinion) {
-    seedOpinion.replyCount = 1;
+    seedOpinion.replyCount = replies.length;
   }
 
   const mira = byHandle.get("mira.k")!;

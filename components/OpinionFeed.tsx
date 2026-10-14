@@ -3,6 +3,7 @@
 import { Fragment, useMemo } from "react";
 import { AdSlot } from "@/components/AdSlot";
 import { SideBadge } from "@/components/SideMarks";
+import { formatPostTimeKst } from "@/lib/format-time";
 import { useUiOpinions } from "@/lib/store";
 import type { Opinion } from "@/lib/types";
 
@@ -52,6 +53,14 @@ function OpinionRow({ op, index }: { op: Opinion; index: number }) {
               @{op.author}
             </span>
             <SideBadge side={op.side} />
+            {op.createdAtUtc ? (
+              <time
+                className="text-[11px] tabular-nums text-muted"
+                dateTime={op.createdAtUtc}
+              >
+                {formatPostTimeKst(op.createdAtUtc)}
+              </time>
+            ) : null}
           </div>
         </div>
         <span className="inline-flex shrink-0 items-center gap-1 text-[11px] tabular-nums text-muted">
