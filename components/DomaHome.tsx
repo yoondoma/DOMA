@@ -1,7 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { ArenaBar } from "@/components/ArenaBar";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ArenaBar,
+  dayTopSide,
+  useForcedTopSide,
+} from "@/components/ArenaBar";
 import { BattleCalendar } from "@/components/BattleCalendar";
 import { BottomNav, type NavTab } from "@/components/BottomNav";
 import { ComposeChoice } from "@/components/ComposeChoice";
@@ -93,6 +97,16 @@ export function DomaHome() {
   const refreshLock = useRef(false);
 
   const feedOpinions = uiDemo === "empty" ? [] : storeOpinions;
+  const forcedTop = useForcedTopSide();
+  /** 셸 톤 = 그날 TOP 의견 진영 (탭/스와이프와 무관) */
+  const topCamp = useMemo(
+    () => dayTopSide(feedOpinions, forcedTop),
+    [feedOpinions, forcedTop],
+  );
+  const lightShell =
+    navTab === "home" &&
+    homeSurface === "today" &&
+    topCamp === "AEGIS";
 
   /** 세션 → 참전 진영·프로필 표시 동기화 */
   useEffect(() => {
@@ -311,12 +325,21 @@ export function DomaHome() {
   }
 
   return (
-    <div className="min-h-full bg-black text-white">
+    <div
+      className={`min-h-full ${lightShell ? "bg-white text-black" : "bg-black text-white"}`}
+      data-shell={lightShell ? "light" : "dark"}
+    >
       {/* 스크롤 본문만 페이드 — fixed 하단바/시트는 밖에 둬 containing block 유지 */}
-      <div className="arena-enter mx-auto min-h-full max-w-[560px] border-x border-white/10 bg-black">
+      <div
+        className={`arena-enter mx-auto min-h-full max-w-[560px] border-x ${
+          lightShell
+            ? "border-black/10 bg-white"
+            : "border-white/10 bg-black"
+        }`}
+      >
         <Header
           endsAt={INITIAL_ARENA.endsAt}
-          tone="dark"
+          tone={lightShell ? "light" : "dark"}
           refreshing={refreshing}
           onRefresh={handleRefresh}
           onOpenHistory={() => setCalendarOpen(true)}
@@ -370,11 +393,16 @@ export function DomaHome() {
         ) : null}
 
         {!guestProfile && navTab === "home" && homeSurface === "today" ? (
-          <PullRefresh refreshing={refreshing} onRefresh={handleRefresh}>
+          <PullRefresh
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            light={lightShell}
+          >
             <ArenaBar
               arena={INITIAL_ARENA}
               opinions={feedOpinions}
-              view={arenaView === "intro" ? "NEXUS" : arenaView}
+              view={arenaView}
+              shellLight={lightShell}
               onChangeView={(v) => {
                 setArenaView(v);
                 if (v === "intro") setFocusOpinionId(null);
@@ -453,7 +481,13 @@ export function DomaHome() {
           }}
           role="status"
         >
-          <div className="max-w-[560px] border border-white/30 bg-black px-3 py-2 text-center text-[12px] font-medium tracking-wide text-white">
+          <div
+            className={`max-w-[560px] border px-3 py-2 text-center text-[12px] font-medium tracking-wide ${
+              lightShell
+                ? "border-black/20 bg-white text-black"
+                : "border-white/30 bg-black text-white"
+            }`}
+          >
             {toast}
           </div>
         </div>

@@ -270,7 +270,7 @@ body {
   transform: scale(0.985);
 }
 
-/* 진영 가로 스와이프 — 스크롤바 숨김 */
+/* 진영 가로 스와이프 — 스크롤바만 CSS, layout은 인라인(grid)으로 강제 */
 .camp-swipe {
   scrollbar-width: none;
   -ms-overflow-style: none;
