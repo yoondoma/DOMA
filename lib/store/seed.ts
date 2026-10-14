@@ -32,7 +32,7 @@ import { defaultPrivacy } from "@/lib/types/privacy";
 import type { SessionQuota } from "@/lib/types/quota";
 
 const SEED_HANDLES = [
-  { handle: "soohan", displayName: "수한", bio: "판결을 겨루는 사람. 증거 없으면 말하지 않는다." },
+  { handle: "doma.guest", displayName: "게스트", bio: "판결을 겨루는 사람. 증거 없으면 말하지 않는다." },
   { handle: "you", displayName: "you", bio: "" },
   { handle: "mira.k", displayName: "mira.k", bio: "" },
   { handle: "zero.nexus", displayName: "zero.nexus", bio: "" },
@@ -96,7 +96,7 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
     ensureUser(byHandle, b.opponentAuthor);
   }
 
-  const me = byHandle.get("soohan")!;
+  const me = byHandle.get("doma.guest")!;
   const session: Session = {
     id: makeSessionId(dayId, me.id),
     userId: me.id,
@@ -138,9 +138,9 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
     };
   });
 
-  /** 프로필 목마 데모 — 수한 글 + 타 진영 전환 */
+  /** 프로필 목마 데모 — 게스트 글 + 타 진영 전환 */
   opinions.unshift({
-    id: "op-soohan-1",
+    id: "op-guest-1",
     dayId,
     authorId: me.id,
     camp: "challenger",
@@ -226,7 +226,7 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
       targetKind: "topic",
       targetId: "tm-1",
       preview: "원격 근무는 도시의 중심을 끝낼 것인가?",
-      authorHandle: "soohan",
+      authorHandle: "doma.guest",
       createdAtUtc: clock.serverNowUtc,
     },
     {
@@ -327,7 +327,7 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
     campSwitches: (() => {
       const switches: CampSwitch[] = [];
       const pulseOp = opinions.find((o) => o.id === "op-4");
-      const myOp = opinions.find((o) => o.id === "op-soohan-1");
+      const myOp = opinions.find((o) => o.id === "op-guest-1");
       const add = (
         opinionId: string,
         toCamp: "challenger" | "defender",
@@ -364,14 +364,13 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
     /** 홈 아레나 표시용 메타 (UI ArenaState와 병행) */
     arenaMeta: {
       round: 412,
-      topicTitle: "인공지능은 인간의 지성을 완전히 대체할 것인가?",
-      description:
-        "계산·언어·창작까지 모델이 밀어붙이는 지금, ‘지성’의 경계는 어디에 남는지 묻는다. 도전자와 방어자가 같은 질문을 두고 판결을 겨룬다.",
+      topicTitle: "AI는 인간 지성을 대체하는가?",
+      description: "",
       challengerShare: 58,
       defenderShare: 42,
       challengerVotes: 4821,
       defenderVotes: 4519,
-      proposerId: userIdFromHandle("soohan"),
+      proposerId: userIdFromHandle("doma.guest"),
     },
   };
 }

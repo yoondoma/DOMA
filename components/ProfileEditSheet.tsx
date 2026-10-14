@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { isBannedIdentityToken } from "@/lib/public-identity";
 
 export type EditableProfile = {
   name: string;
@@ -37,14 +38,17 @@ export function ProfileEditSheet({
   if (!open) return null;
 
   const save = () => {
+    const name = draft.name.trim() || profile.name;
+    const handle = draft.handle.trim().replace(/^@/, "") || profile.handle;
+    if (isBannedIdentityToken(name) || isBannedIdentityToken(handle)) {
+      onToast?.("실명·개인 식별은 쓸 수 없습니다");
+      return;
+    }
     const next: EditableProfile = {
-      name: draft.name.trim() || profile.name,
-      handle: draft.handle.trim().replace(/^@/, "") || profile.handle,
+      name,
+      handle,
       bio: draft.bio.trim(),
-      avatarChar: (draft.avatarChar.trim() || draft.name || profile.name).slice(
-        0,
-        1,
-      ),
+      avatarChar: (draft.avatarChar.trim() || name || profile.name).slice(0, 1),
     };
     onSave(next);
     onToast?.("프로필을 저장했습니다");
@@ -109,7 +113,7 @@ export function ProfileEditSheet({
 
           <label className="mt-8 block">
             <span className="text-[11px] tracking-[0.1em] text-neutral-200">
-              이름
+              닉네임
             </span>
             <input
               value={draft.name}

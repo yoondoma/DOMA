@@ -30,6 +30,7 @@ import { domaStore, useDomaStore, useSession } from "@/lib/store";
 import { resolveCosmetics } from "@/lib/types/cosmetics";
 import type { UiDemo } from "@/lib/ui-demo";
 import type { DailyTitle, ScoreEvent } from "@/lib/types/gamification";
+import type { Side } from "@/lib/types";
 
 type ProfileTab = "posts" | "scraps" | "battles";
 type FollowMode = "following" | "followers";
@@ -55,6 +56,11 @@ type ProfileScreenProps = {
   uiDemo?: UiDemo;
   onRetry?: () => void;
   onCompose?: () => void;
+  /** 설정 스크랩 등에서 탭 강제 */
+  initialTab?: ProfileTab;
+  onTabChange?: (tab: ProfileTab) => void;
+  /** 내 글/스크랩 → 전장 글 */
+  onOpenArenaOpinion?: (opinionId: string, side: Side) => void;
 };
 
 /** Threads형 · 팔로워/티어/전과 상세 · score 기반 */
@@ -67,10 +73,22 @@ export function ProfileScreen({
   uiDemo = "normal",
   onRetry,
   onCompose,
+  initialTab,
+  onTabChange,
+  onOpenArenaOpinion,
 }: ProfileScreenProps) {
   const snap = useDomaStore();
   const { user: me } = useSession();
-  const [tab, setTab] = useState<ProfileTab>("posts");
+  const [tab, setTab] = useState<ProfileTab>(initialTab ?? "posts");
+
+  useEffect(() => {
+    if (initialTab) setTab(initialTab);
+  }, [initialTab]);
+
+  const selectTab = (next: ProfileTab) => {
+    setTab(next);
+    onTabChange?.(next);
+  };
   const [viralTitle, setViralTitle] = useState<DailyTitle | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [followMode, setFollowMode] = useState<FollowMode | null>(null);
@@ -126,7 +144,7 @@ export function ProfileScreen({
     setTitleDetail(found ?? { ...badge, round: 0, topic: "", note: "" });
   };
 
-  /** 스크랩은 본인만 (수한 확정) */
+  /** 스크랩은 본인만 (정책 확정) */
   const profileScraps = useMemo(() => {
     if (!isSelf) return [];
     const uid = profileUser?.id ?? me?.id;
@@ -137,7 +155,7 @@ export function ProfileScreen({
   }, [snap.scraps, profileUser, isSelf, me?.id]);
 
   useEffect(() => {
-    if (!isSelf && tab === "scraps") setTab("posts");
+    if (!isSelf && tab === "scraps") selectTab("posts");
   }, [isSelf, tab]);
 
   /** 작성자 합산 목마 — 타 진영에서 이 사람 의견을 지지하며 넘어온 수 */
@@ -199,10 +217,8 @@ export function ProfileScreen({
           <p className="mt-4 text-[14px] leading-[1.55] text-white">
             {display.bio}
           </p>
-          <p className="mt-2 text-[12px] tracking-[0.04em] text-neutral-200">
-            {PROFILE_USER.joinedLabel}
-            <span className="mx-1.5 text-neutral-700">·</span>
-            통산 {gamer.wins}승 {gamer.losses}패
+          <p className="mt-2 text-[12px] tabular-nums tracking-[0.04em] text-neutral-200">
+            {gamer.wins}승 {gamer.losses}패
           </p>
 
           <p className="mt-3 text-[13px] text-neutral-200">
@@ -233,14 +249,14 @@ export function ProfileScreen({
             data-profile-season
           >
             <p className="text-center text-[10px] font-bold tracking-[0.16em] text-neutral-200">
-              이번 시즌
+              시즌
             </p>
             <p className="mt-2 text-center text-[13px] tabular-nums text-white">
-              승 {gamer.winsSeason ?? gamer.score}
+              {gamer.winsSeason ?? gamer.score}승
               <span className="mx-1.5 text-neutral-600">·</span>
+              {gamer.currentTier.display}
+              <span className="mx-1 text-neutral-600">/</span>
               최고 {gamer.tierPeakSeason ?? gamer.currentTier.code}
-              <span className="mx-1.5 text-neutral-600">·</span>
-              현재 {gamer.currentTier.display}
             </p>
             <div className="mt-3 flex h-1.5 w-full overflow-hidden border border-neutral-700">
               <div
@@ -296,37 +312,17 @@ export function ProfileScreen({
 
           {isSelf ? (
             <div
-              className="mt-5 border-t border-neutral-800 pt-4"
+              className="mt-4 flex justify-end border-t border-neutral-800 pt-3"
               aria-label="프로필 편집"
             >
-              <div className="flex items-baseline justify-between gap-3">
-                <p className="text-[11px] font-bold tracking-[0.16em] text-neutral-200">
-                  프로필
-                </p>
-                <button
-                  type="button"
-                  onClick={onOpenProfileEdit}
-                  className="text-[11px] tracking-[0.12em] text-neutral-200 underline underline-offset-4"
-                  aria-label="프로필 편집"
-                >
-                  편집
-                </button>
-              </div>
-              <p className="mt-2 text-[13px] leading-[1.5] text-neutral-200">
-                핸들 · 소개를 고칩니다. 스크랩은 나만 봅니다.
-              </p>
-              <dl className="mt-3 space-y-2 text-[13px]">
-                <div className="flex justify-between gap-3 border-b border-neutral-800 py-2">
-                  <dt className="text-neutral-200">핸들</dt>
-                  <dd className="truncate text-white">@{display.handle}</dd>
-                </div>
-                <div className="flex justify-between gap-3 border-b border-neutral-800 py-2">
-                  <dt className="text-neutral-200">소개</dt>
-                  <dd className="max-w-[65%] truncate text-right text-white">
-                    {display.bio || "—"}
-                  </dd>
-                </div>
-              </dl>
+              <button
+                type="button"
+                onClick={onOpenProfileEdit}
+                className="text-[11px] tracking-[0.12em] text-neutral-200 underline underline-offset-4"
+                aria-label="프로필 편집"
+              >
+                편집
+              </button>
             </div>
           ) : null}
         </div>
@@ -342,7 +338,7 @@ export function ProfileScreen({
             type="button"
             role="tab"
             aria-selected={tab === "posts"}
-            onClick={() => setTab("posts")}
+            onClick={() => selectTab("posts")}
             className={`py-2.5 text-[13px] tracking-[0.06em] ${
               tab === "posts"
                 ? "border-b border-white text-white"
@@ -356,7 +352,7 @@ export function ProfileScreen({
               type="button"
               role="tab"
               aria-selected={tab === "scraps"}
-              onClick={() => setTab("scraps")}
+              onClick={() => selectTab("scraps")}
               className={`py-2.5 text-[13px] tracking-[0.06em] ${
                 tab === "scraps"
                   ? "border-b border-white text-white"
@@ -371,7 +367,7 @@ export function ProfileScreen({
             type="button"
             role="tab"
             aria-selected={tab === "battles"}
-            onClick={() => setTab("battles")}
+            onClick={() => selectTab("battles")}
             className={`py-2.5 text-[13px] tracking-[0.06em] ${
               tab === "battles"
                 ? "border-b border-white text-white"
@@ -402,29 +398,53 @@ export function ProfileScreen({
           ) : (
             <ul aria-label="내 글" className="pb-4">
               {PROFILE_POSTS.map((p) => (
-                <li
-                  key={p.id}
-                  className="border-b border-neutral-800 px-4 py-3.5"
-                >
-                  <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-neutral-200">
-                    <span className="text-[13px] font-semibold text-white">
-                      {display.name}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setTierOpen(true)}
-                      aria-label="티어 상세"
-                    >
-                      <TierBadge tier={PROFILE_GAMER.currentTier.code} />
-                    </button>
-                    <span>· {p.timeLabel}</span>
-                  </div>
-                  <p className="mt-1.5 text-[14px] leading-[1.5] text-white">
-                    {p.text}
-                  </p>
-                  <p className="mt-2 text-[12px] tabular-nums text-neutral-200">
-                    ♥ {p.likes}
-                  </p>
+                <li key={p.id} className="border-b border-neutral-800">
+                  <button
+                    type="button"
+                    className="w-full px-4 py-3.5 text-left active:bg-white/[0.04]"
+                    onClick={() => {
+                      if (p.opinionId && onOpenArenaOpinion) {
+                        onOpenArenaOpinion(p.opinionId, p.side);
+                        return;
+                      }
+                      showToast(
+                        p.side === "NEXUS"
+                          ? "도전자 진영에서 비슷한 글을 확인하세요"
+                          : "방어자 진영에서 비슷한 글을 확인하세요",
+                      );
+                    }}
+                    data-profile-post={p.id}
+                  >
+                    <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-neutral-200">
+                      <span className="text-[13px] font-semibold text-white">
+                        {display.name}
+                      </span>
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setTierOpen(true);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.stopPropagation();
+                            setTierOpen(true);
+                          }
+                        }}
+                        aria-label="티어 상세"
+                      >
+                        <TierBadge tier={PROFILE_GAMER.currentTier.code} />
+                      </span>
+                      <span>· {p.timeLabel}</span>
+                    </div>
+                    <p className="mt-1.5 text-[14px] leading-[1.5] text-white">
+                      {p.text}
+                    </p>
+                    <p className="mt-2 text-[12px] tabular-nums text-neutral-200">
+                      ♥ {p.likes}
+                    </p>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -438,19 +458,44 @@ export function ProfileScreen({
           ) : (
             <ul aria-label="스크랩" className="pb-4" data-scraps-private>
               {profileScraps.map((s) => (
-                <li
-                  key={s.id}
-                  className="border-b border-neutral-800 px-4 py-3.5"
-                >
-                  <div className="flex items-baseline justify-between gap-3 text-[11px] tracking-[0.08em] text-neutral-200">
-                    <span>{scrapKindLabel(s.targetKind)}</span>
-                    {s.authorHandle ? (
-                      <span className="text-white">@{s.authorHandle}</span>
-                    ) : null}
-                  </div>
-                  <p className="mt-1.5 line-clamp-3 text-[14px] leading-[1.5] text-white">
-                    {s.preview}
-                  </p>
+                <li key={s.id} className="border-b border-neutral-800">
+                  <button
+                    type="button"
+                    className="w-full px-4 py-3.5 text-left active:bg-white/[0.04]"
+                    onClick={() => {
+                      if (
+                        s.targetKind === "opinion" &&
+                        onOpenArenaOpinion
+                      ) {
+                        const op = snap.opinions.find(
+                          (o) => o.id === s.targetId,
+                        );
+                        if (op) {
+                          onOpenArenaOpinion(
+                            op.id,
+                            op.camp === "challenger" ? "NEXUS" : "AEGIS",
+                          );
+                          return;
+                        }
+                      }
+                      if (s.targetKind === "topic") {
+                        showToast("내일 필드에서 주제를 확인하세요");
+                        return;
+                      }
+                      showToast(s.preview.slice(0, 40));
+                    }}
+                    data-scrap-item={s.id}
+                  >
+                    <div className="flex items-baseline justify-between gap-3 text-[11px] tracking-[0.08em] text-neutral-200">
+                      <span>{scrapKindLabel(s.targetKind)}</span>
+                      {s.authorHandle ? (
+                        <span className="text-white">@{s.authorHandle}</span>
+                      ) : null}
+                    </div>
+                    <p className="mt-1.5 line-clamp-3 text-[14px] leading-[1.5] text-white">
+                      {s.preview}
+                    </p>
+                  </button>
                 </li>
               ))}
             </ul>

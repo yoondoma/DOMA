@@ -1,13 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { GirdleMark, ShieldMark, SpearMark } from "@/components/SideMarks";
 import {
-  BATTLE_HISTORY,
-  BATTLE_MONTH,
-  BATTLE_YEAR,
   battleByDate,
+  battleMonth,
+  getBattleHistory,
 } from "@/lib/battle-history";
+import {
+  dayArchive,
+  type ArchiveOpinion,
+  type DayArchive,
+} from "@/lib/day-archive";
+import { kstCalendarDayId } from "@/lib/kst";
 import {
   OFFLINE_SIM_EVENT,
   OFFLINE_VERDICT_EVENT,
@@ -24,6 +29,8 @@ type BattleCalendarProps = {
   open: boolean;
   onClose: () => void;
   onToast?: (message: string) => void;
+  /** 핸들·프로필 사진만 */
+  onOpenProfile?: (handle: string) => void;
 };
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
@@ -52,53 +59,329 @@ function OfflineBadge({ light }: { light?: boolean }) {
   );
 }
 
-function DayDetail({
+/** 작은 아바타 — 탭 시만 프로필 */
+function ProfileAvatar({
+  handle,
+  light,
+  onOpen,
+}: {
+  handle: string;
+  light?: boolean;
+  onOpen?: (handle: string) => void;
+}) {
+  const body = (
+    <span
+      className={`inline-flex size-7 shrink-0 items-center justify-center border text-[10px] font-bold ${
+        light
+          ? "border-black/25 text-black"
+          : "border-white/30 text-white"
+      }`}
+      aria-hidden
+    >
+      {handle.slice(0, 1).toUpperCase()}
+    </span>
+  );
+  if (!onOpen) return body;
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onOpen(handle);
+      }}
+      className="shrink-0"
+      aria-label={`@${handle} 프로필 사진`}
+      data-profile-avatar
+    >
+      {body}
+    </button>
+  );
+}
+
+/** 핸들만 프로필 — 부모 행 클릭과 분리 */
+function HandleButton({
+  handle,
+  className = "",
+  light,
+  onOpen,
+}: {
+  handle: string;
+  className?: string;
+  light?: boolean;
+  onOpen?: (handle: string) => void;
+}) {
+  if (!onOpen) {
+    return <span className={className}>@{handle}</span>;
+  }
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onOpen(handle);
+      }}
+      className={`${className} underline-offset-2 hover:underline`}
+      aria-label={`@${handle} 프로필`}
+      data-profile-handle
+    >
+      @{handle}
+    </button>
+  );
+}
+
+function PanelChrome({
+  title,
+  onBack,
+  backLabel,
+  light,
+  children,
+}: {
+  title: string;
+  onBack?: () => void;
+  backLabel?: string;
+  light?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className={`flex h-full min-h-0 w-full shrink-0 flex-col ${
+        light ? "bg-white text-black" : "bg-black text-white"
+      }`}
+    >
+      <div
+        className={`flex shrink-0 items-center gap-2 border-b px-3 py-3 ${
+          light ? "border-black/15" : "border-white/15"
+        }`}
+      >
+        {onBack ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className={`px-2 py-1 text-[13px] ${
+              light ? "text-neutral-500" : "text-muted"
+            }`}
+            aria-label={backLabel ?? "뒤로"}
+          >
+            ← {backLabel ?? "뒤로"}
+          </button>
+        ) : (
+          <span className="w-14" aria-hidden />
+        )}
+        <p
+          className={`mx-auto pr-10 text-[11px] font-bold tracking-[0.14em] ${
+            light ? "text-black/60" : "text-white/70"
+          }`}
+        >
+          {title}
+        </p>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
+    </div>
+  );
+}
+
+/** 챔피언 스레드 — 댓글 전부 · 좌슬라이드로 진입 */
+function ChampionThread({
+  opinion,
+  topic,
+  round,
+  onBack,
+  onOpenProfile,
+  onToast,
+}: {
+  opinion: ArchiveOpinion;
+  topic: string;
+  round: number;
+  onBack: () => void;
+  onOpenProfile?: (handle: string) => void;
+  onToast?: (message: string) => void;
+}) {
+  const dark = opinion.side === "NEXUS";
+  return (
+    <PanelChrome
+      title="기록"
+      onBack={onBack}
+      backLabel="하루"
+      light={!dark}
+    >
+      <div
+        className="px-4 py-4"
+        data-champion-thread
+        data-champion-side={opinion.side}
+      >
+        <p
+          className={`text-[10px] tracking-[0.14em] ${
+            dark ? "text-muted" : "text-neutral-500"
+          }`}
+        >
+          제 {round}회 · {topic}
+        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <ProfileAvatar
+            handle={opinion.author}
+            light={!dark}
+            onOpen={onOpenProfile}
+          />
+          {opinion.side === "NEXUS" ? (
+            <SpearMark size={16} />
+          ) : (
+            <ShieldMark size={16} />
+          )}
+          <HandleButton
+            handle={opinion.author}
+            light={!dark}
+            onOpen={onOpenProfile}
+            className="text-[14px] font-semibold"
+          />
+          {opinion.adoptedLabel ? (
+            <span
+              className={`border px-1.5 py-0.5 text-[10px] font-bold tracking-[0.1em] ${
+                dark
+                  ? "border-white bg-white text-black"
+                  : "border-black bg-black text-white"
+              }`}
+            >
+              {opinion.adoptedLabel}
+            </span>
+          ) : null}
+        </div>
+        <p className="mt-4 text-[15px] leading-[1.65]">“{opinion.body}”</p>
+        <p
+          className={`mt-3 text-[12px] tabular-nums ${
+            dark ? "text-white/55" : "text-black/50"
+          }`}
+        >
+          지지 {opinion.supports.toLocaleString("ko-KR")} · 좋아요{" "}
+          {opinion.likes.toLocaleString("ko-KR")}
+        </p>
+        <div className="mt-3 flex gap-2">
+          <button
+            type="button"
+            onClick={() => onToast?.("기록에서 스크랩했습니다 (본인만)")}
+            className={`flex-1 border py-2 text-[11px] font-bold tracking-[0.1em] ${
+              dark
+                ? "border-white/40 text-white"
+                : "border-black/30 text-black"
+            }`}
+          >
+            스크랩
+          </button>
+          <button
+            type="button"
+            onClick={() => onToast?.("챔피언 기록 카드를 준비했습니다")}
+            className={`flex-1 border py-2 text-[11px] font-bold tracking-[0.1em] ${
+              dark
+                ? "border-white bg-white text-black"
+                : "border-black bg-black text-white"
+            }`}
+          >
+            공유
+          </button>
+        </div>
+
+        <div
+          className={`mt-6 border-t pt-4 ${
+            dark ? "border-white/15" : "border-black/12"
+          }`}
+        >
+          <p
+            className={`text-[10px] font-bold tracking-[0.16em] ${
+              dark ? "text-muted" : "text-neutral-500"
+            }`}
+          >
+            그날 댓글 · {opinion.comments.length}
+          </p>
+          <ul className="mt-3" aria-label="그날 댓글 전체">
+            {opinion.comments.map((c) => (
+              <li
+                key={c.id}
+                className={`border-b py-3 ${
+                  dark ? "border-white/10" : "border-black/10"
+                }`}
+                data-archive-comment={c.id}
+              >
+                <div className="flex items-center gap-2">
+                  <ProfileAvatar
+                    handle={c.author}
+                    light={!dark}
+                    onOpen={onOpenProfile}
+                  />
+                  <HandleButton
+                    handle={c.author}
+                    light={!dark}
+                    onOpen={onOpenProfile}
+                    className="text-[13px] font-semibold"
+                  />
+                  <span
+                    className={`text-[11px] tabular-nums ${
+                      dark ? "text-white/40" : "text-black/40"
+                    }`}
+                  >
+                    {c.timeLabel}
+                  </span>
+                  <span
+                    className={`ml-auto text-[11px] tabular-nums ${
+                      dark ? "text-white/45" : "text-black/45"
+                    }`}
+                  >
+                    ♥ {c.likes}
+                  </span>
+                </div>
+                <p className="mt-1.5 pl-9 text-[13px] leading-[1.5]">{c.body}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </PanelChrome>
+  );
+}
+
+/** 하루 콜로세움 — 탐험 지도 */
+function DayChronicle({
   battle,
+  archive,
   saved,
   offlineSim,
   onBack,
   onToggleSave,
+  onOpenChampion,
+  onOpenProfile,
 }: {
   battle: BattleDay;
+  archive: DayArchive;
   saved: boolean;
   offlineSim: boolean;
   onBack: () => void;
   onToggleSave: () => void;
+  onOpenChampion: (kind: "champion" | "rival") => void;
+  onOpenProfile?: (handle: string) => void;
 }) {
   const joint = battle.winner === "JOINT";
   const challengerWin = battle.winner === "NEXUS";
   const dateLabel = battle.date.split("-").join(".");
+  const [proposerOpen, setProposerOpen] = useState(false);
 
   return (
-    <div className="flex flex-col bg-black text-white" aria-label="전투 상세">
-      <div className="flex items-center gap-2 border-b border-white/15 px-3 py-3">
-        <button
-          type="button"
-          onClick={onBack}
-          className="px-2 py-1 text-[13px] text-muted"
-          aria-label="달력으로"
+    <PanelChrome title={dateLabel} onBack={onBack} backLabel="달력">
+      <div className="px-4 py-4" data-day-chronicle={battle.date}>
+        <p
+          className="mb-3 text-center text-[11px] tracking-[0.12em] text-white/55"
+          data-colosseum-gate
         >
-          ← 달력
-        </button>
-        <p className="mx-auto pr-10 text-[12px] font-bold tracking-[0.16em]">
-          {dateLabel}
+          제 {battle.round}회
         </p>
-      </div>
 
-      <div className="px-4 py-4">
         {offlineSim ? (
           <p
-            className="mb-3 border border-white/20 px-2 py-1.5 text-[11px] tracking-[0.08em] text-neutral-200"
+            className="mb-3 border border-white/20 px-2 py-1 text-[10px] tracking-[0.08em] text-neutral-200"
             data-offline-sim-banner
           >
-            오프라인 시뮬레이션 · 저장된 판결
+            오프라인 · 저장분
           </p>
         ) : null}
 
-        <p className="text-[11px] tracking-[0.16em] text-muted">
-          제 {battle.round}회 전투
-        </p>
-        <h3 className="mt-2 font-[family-name:var(--font-syne)] text-[18px] font-bold leading-snug">
+        <h3 className="font-[family-name:var(--font-syne)] text-[18px] font-bold leading-snug">
           {battle.topic}
         </h3>
 
@@ -120,7 +403,7 @@ function DayDetail({
                   : "text-neutral-500"
             }`}
           >
-            {joint ? "공동 승리" : "승리자"}
+            {joint ? "공동 승리" : "판결"}
           </p>
           <div className="mt-1.5 flex items-center gap-2">
             {joint ? (
@@ -152,80 +435,184 @@ function DayDetail({
               {joint ? "50%" : `${battle.winnerPercent}%`}
             </span>
           </div>
-          <p
-            className={`mt-1 text-[11px] ${
-              joint
-                ? "text-white/70 mix-blend-difference"
-                : challengerWin
-                  ? "text-muted"
-                  : "text-neutral-500"
-            }`}
-          >
-            {joint
-              ? "지지·좋아요 동점 · 창+방패"
-              : `상대 ${100 - battle.winnerPercent}% · @${battle.opponentAuthor}`}
-          </p>
         </div>
 
-        <div className="mt-5">
-          <p className="text-[10px] font-bold tracking-[0.16em] text-muted">
-            승리 의견
-          </p>
-          <p className="mt-2 font-[family-name:var(--font-syne)] text-[15px] leading-[1.5]">
-            “{battle.winnerOpinion}”
-          </p>
-          <p className="mt-1.5 text-[12px] text-muted">@{battle.winnerAuthor}</p>
-        </div>
-
+        {/* 제안자 — 맥락 토글 vs 핸들 프로필 분리 */}
         {battle.proposerHandle ? (
-          <div className="mt-6 border-t border-white/12 pt-4">
+          <div className="mt-5 border-t border-white/12 pt-4">
             <p className="text-[10px] font-bold tracking-[0.16em] text-muted">
-              그날의 제안자
+              제안자
             </p>
             <div className="mt-2 flex items-center gap-2">
+              <ProfileAvatar
+                handle={battle.proposerHandle}
+                onOpen={onOpenProfile}
+              />
               {battle.hasGirdle !== false ? (
                 <GirdleMark size={14} className="text-white" />
               ) : null}
-              <span className="text-[13px] font-semibold">
-                @{battle.proposerHandle}
-              </span>
+              <HandleButton
+                handle={battle.proposerHandle}
+                onOpen={onOpenProfile}
+                className="text-[13px] font-semibold"
+              />
               <span className="text-[11px] tracking-[0.08em] text-muted">
-                {DAILY_TITLE_SHORT.PROPOSER} · 허리띠
+                {DAILY_TITLE_SHORT.PROPOSER}
               </span>
+              <button
+                type="button"
+                onClick={() => setProposerOpen((v) => !v)}
+                className="ml-auto text-[11px] text-muted underline-offset-2 hover:underline"
+                aria-expanded={proposerOpen}
+                data-proposer-toggle
+              >
+                {proposerOpen ? "접기" : "맥락"}
+              </button>
             </div>
+            {proposerOpen ? (
+              <p className="mt-2 text-[13px] leading-[1.5] text-white/75">
+                {archive.proposerNote}
+              </p>
+            ) : null}
           </div>
         ) : null}
 
-        <div className="mt-6 border-t border-white/12 pt-4">
-          <p className="text-[10px] font-bold tracking-[0.16em] text-muted">
-            맞붙었던 상대
-          </p>
-          <div className="mt-2 flex items-center gap-2">
-            {challengerWin ? <ShieldMark size={16} /> : <SpearMark size={16} />}
-            <span className="text-[13px] font-semibold">
-              @{battle.opponentAuthor}
-            </span>
-            <span className="ml-auto text-[13px] tabular-nums text-muted">
-              {battle.loserPercent}%
-            </span>
-          </div>
-          <p className="mt-2 text-[13px] leading-[1.45] text-white/80">
-            “{battle.opponentOpinion}”
-          </p>
-        </div>
-
-        {/* 유튜브 오프라인식 — 판결 텍스트·결과 로컬 저장 */}
-        <div
-          className="mt-8 border-t border-white/12 pt-4"
-          data-offline-save
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-[14px] text-white">오프라인 저장</p>
-              <p className="mt-0.5 text-[12px] text-neutral-200">
-                기기에 판결 텍스트·결과를 보관합니다
+        {/* 양 진영 — 보드 칸 */}
+        <div className="mt-5 grid grid-cols-2 gap-0 border border-white/15">
+          <div className="border-r border-white/15 bg-black px-3 py-3">
+            <div className="flex items-center gap-1.5">
+              <SpearMark size={14} />
+              <p className="text-[10px] font-bold tracking-[0.12em] text-muted">
+                도전자
               </p>
             </div>
+            <div className="mt-2 flex items-center gap-2">
+              <ProfileAvatar
+                handle={archive.challenger.author}
+                onOpen={onOpenProfile}
+              />
+              <HandleButton
+                handle={archive.challenger.author}
+                onOpen={onOpenProfile}
+                className="text-[13px] font-semibold"
+              />
+            </div>
+            <p className="mt-1.5 text-[11px] leading-snug text-white/55">
+              {archive.challenger.mood}
+            </p>
+          </div>
+          <div className="bg-white px-3 py-3 text-black">
+            <div className="flex items-center gap-1.5">
+              <ShieldMark size={14} />
+              <p className="text-[10px] font-bold tracking-[0.12em] text-neutral-500">
+                방어자
+              </p>
+            </div>
+            <div className="mt-2 flex items-center gap-2">
+              <ProfileAvatar
+                handle={archive.defender.author}
+                light
+                onOpen={onOpenProfile}
+              />
+              <HandleButton
+                handle={archive.defender.author}
+                light
+                onOpen={onOpenProfile}
+                className="text-[13px] font-semibold"
+              />
+            </div>
+            <p className="mt-1.5 text-[11px] leading-snug text-black/55">
+              {archive.defender.mood}
+            </p>
+          </div>
+        </div>
+
+        {/* 챔피언 카드 — 탭 = 슬라이드(기록), 핸들 = 프로필 */}
+        <div className="mt-5 border-t border-white/12 pt-4">
+          <p className="text-[10px] font-bold tracking-[0.16em] text-muted">
+            챔피언
+          </p>
+          <div className="mt-2 border border-white/20">
+            <div className="flex items-center gap-2 border-b border-white/10 px-3 py-2">
+              <ProfileAvatar
+                handle={archive.champion.author}
+                onOpen={onOpenProfile}
+              />
+              {archive.champion.side === "NEXUS" ? (
+                <SpearMark size={14} />
+              ) : (
+                <ShieldMark size={14} />
+              )}
+              <HandleButton
+                handle={archive.champion.author}
+                onOpen={onOpenProfile}
+                className="text-[13px] font-semibold"
+              />
+              {archive.champion.adoptedLabel ? (
+                <span className="border border-white/40 px-1 py-px text-[10px] font-bold tracking-[0.1em]">
+                  {archive.champion.adoptedLabel}
+                </span>
+              ) : null}
+            </div>
+            <button
+              type="button"
+              onClick={() => onOpenChampion("champion")}
+              className="w-full px-3 py-3 text-left active:bg-white/[0.04]"
+              data-open-champion
+              aria-label="챔피언 글·댓글 펼치기"
+            >
+              <p className="line-clamp-3 text-[14px] leading-[1.5] text-white/90">
+                “{archive.champion.body}”
+              </p>
+              <p className="mt-2 text-[11px] tabular-nums text-muted">
+                지지 {archive.champion.supports.toLocaleString("ko-KR")} · 댓글{" "}
+                {archive.champion.comments.length}
+              </p>
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-[10px] font-bold tracking-[0.16em] text-muted">
+            상대
+          </p>
+          <div className="mt-2 border border-white/12">
+            <div className="flex items-center gap-2 border-b border-white/10 px-3 py-2">
+              <ProfileAvatar
+                handle={archive.rival.author}
+                onOpen={onOpenProfile}
+              />
+              {archive.rival.side === "NEXUS" ? (
+                <SpearMark size={14} />
+              ) : (
+                <ShieldMark size={14} />
+              )}
+              <HandleButton
+                handle={archive.rival.author}
+                onOpen={onOpenProfile}
+                className="text-[13px] font-semibold"
+              />
+              <span className="ml-auto text-[12px] tabular-nums text-muted">
+                {battle.loserPercent}%
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => onOpenChampion("rival")}
+              className="w-full px-3 py-3 text-left active:bg-white/[0.04]"
+              data-open-rival
+              aria-label="상대 글·댓글 펼치기"
+            >
+              <p className="line-clamp-2 text-[13px] leading-[1.45] text-white/75">
+                “{archive.rival.body}”
+              </p>
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-8 border-t border-white/12 pt-4" data-offline-save>
+          <div className="flex items-center justify-between gap-3">
+            <p className="min-w-0 text-[13px] text-white">오프라인</p>
             <button
               type="button"
               role="switch"
@@ -246,32 +633,38 @@ function DayDetail({
               />
             </button>
           </div>
-          {saved ? (
-            <p className="mt-2 text-[11px] text-neutral-200">
-              보관함에 있음 · 달력에 저장 배지
-            </p>
-          ) : null}
         </div>
       </div>
-    </div>
+    </PanelChrome>
   );
 }
 
-/** 전투 기록 달력 — 과거 흑/백 전적 + 오프라인 보관 */
+/** 전투 기록 달력 = 카드북 · 좌좌좌 슬라이드 */
 export function BattleCalendar({
   open,
   onClose,
   onToast,
+  onOpenProfile,
 }: BattleCalendarProps) {
   const [selected, setSelected] = useState<string | null>(null);
+  const [thread, setThread] = useState<"champion" | "rival" | null>(null);
   const [savedDates, setSavedDates] = useState<Set<string>>(new Set());
-  const [archive, setArchive] = useState<SavedVerdict[]>([]);
+  const [archiveList, setArchiveList] = useState<SavedVerdict[]>([]);
   const [offlineSim, setOfflineSim] = useState(false);
   const [view, setView] = useState<"calendar" | "archive">("calendar");
+  const [now] = useState(() => new Date());
+
+  const history = useMemo(() => getBattleHistory(now), [now]);
+  const { year, month } = useMemo(() => battleMonth(now), [now]);
+  const todayKst = useMemo(() => kstCalendarDayId(now), [now]);
+
+  /** 0=달력 1=하루 2=챔피언 */
+  const slide =
+    selected && thread ? 2 : selected ? 1 : 0;
 
   const syncSaved = () => {
     const list = listSavedVerdicts();
-    setArchive(list);
+    setArchiveList(list);
     setSavedDates(new Set(list.map((v) => v.date)));
     setOfflineSim(loadOfflineSim());
   };
@@ -279,6 +672,7 @@ export function BattleCalendar({
   useEffect(() => {
     if (open) {
       setSelected(null);
+      setThread(null);
       setView("calendar");
       syncSaved();
     }
@@ -298,12 +692,12 @@ export function BattleCalendar({
 
   const byDate = useMemo(() => {
     const map = new Map<string, BattleDay>();
-    for (const b of BATTLE_HISTORY) map.set(b.date, b);
+    for (const b of history) map.set(b.date, b);
     return map;
-  }, []);
+  }, [history]);
 
-  const totalDays = daysInMonth(BATTLE_YEAR, BATTLE_MONTH);
-  const pad = startWeekday(BATTLE_YEAR, BATTLE_MONTH);
+  const totalDays = daysInMonth(year, month);
+  const pad = startWeekday(year, month);
   const cells: (number | null)[] = [
     ...Array.from({ length: pad }, () => null),
     ...Array.from({ length: totalDays }, (_, i) => i + 1),
@@ -312,23 +706,32 @@ export function BattleCalendar({
   if (!open) return null;
 
   const selectedBattle = selected
-    ? battleByDate(selected) ??
-      archive.find((a) => a.date === selected) ??
+    ? battleByDate(selected, now) ??
+      archiveList.find((a) => a.date === selected) ??
       null
     : null;
 
+  const selectedArchive =
+    selected && selectedBattle ? dayArchive(selected, now) : null;
+
   const openDay = (date: string) => {
-    const online = battleByDate(date);
+    const online = battleByDate(date, now);
     const saved = isVerdictSaved(date);
     if (offlineSim && !saved) {
       onToast?.("오프라인 · 저장된 판결만 읽을 수 있습니다");
       return;
     }
     if (!online && !saved) {
-      onToast?.("판결을 찾을 수 없습니다");
+      onToast?.("아직 기록이 없는 날입니다");
       return;
     }
+    setThread(null);
     setSelected(date);
+  };
+
+  const goProfile = (handle: string) => {
+    onClose();
+    onOpenProfile?.(handle);
   };
 
   return (
@@ -345,7 +748,7 @@ export function BattleCalendar({
         onClick={onClose}
       />
       <div className="sheet-up relative z-10 flex max-h-[92dvh] w-full max-w-[560px] flex-col overflow-hidden border border-white/15 bg-black text-white sm:max-h-[85dvh]">
-        <div className="flex items-center justify-between border-b border-white/15 px-4 py-3">
+        <div className="flex shrink-0 items-center justify-between border-b border-white/15 px-4 py-3">
           <p className="text-[12px] font-bold tracking-[0.18em]">전투 기록</p>
           <button
             type="button"
@@ -357,269 +760,233 @@ export function BattleCalendar({
           </button>
         </div>
 
-        {!selectedBattle ? (
+        {/* 좌←좌←좌 슬라이드 스택 */}
+        <div
+          className="relative min-h-0 flex-1 overflow-hidden"
+          data-calendar-slider
+          data-slide={slide}
+        >
           <div
-            className="flex border-b border-white/10"
-            role="tablist"
-            aria-label="달력과 보관함"
+            className="flex h-full transition-transform duration-300 ease-out"
+            style={{
+              width: "300%",
+              transform: `translateX(-${(slide * 100) / 3}%)`,
+            }}
           >
-            <button
-              type="button"
-              role="tab"
-              aria-selected={view === "calendar"}
-              onClick={() => setView("calendar")}
-              className={`flex-1 py-2.5 text-[12px] tracking-[0.1em] ${
-                view === "calendar"
-                  ? "border-b border-white text-white"
-                  : "text-muted"
-              }`}
-            >
-              달력
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={view === "archive"}
-              onClick={() => setView("archive")}
-              className={`flex-1 py-2.5 text-[12px] tracking-[0.1em] ${
-                view === "archive"
-                  ? "border-b border-white text-white"
-                  : "text-muted"
-              }`}
-              data-archive-tab
-            >
-              보관함{archive.length ? ` · ${archive.length}` : ""}
-            </button>
-          </div>
-        ) : null}
-
-        {offlineSim && !selectedBattle ? (
-          <p
-            className="border-b border-white/10 px-4 py-2 text-[11px] tracking-[0.08em] text-neutral-200"
-            data-offline-sim-banner
-          >
-            오프라인 시뮬레이션 ON · 저장 배지만 열림
-          </p>
-        ) : null}
-
-        <div className="overflow-y-auto">
-          {selectedBattle ? (
-            <DayDetail
-              battle={selectedBattle}
-              saved={savedDates.has(selectedBattle.date)}
-              offlineSim={offlineSim}
-              onBack={() => setSelected(null)}
-              onToggleSave={() => {
-                const next = toggleVerdictSaved(selectedBattle);
-                syncSaved();
-                onToast?.(
-                  next
-                    ? "판결을 오프라인 저장했습니다"
-                    : "오프라인 저장을 해제했습니다",
-                );
-              }}
-            />
-          ) : view === "archive" ? (
-            <ul
-              className="px-3 py-4"
-              aria-label="오프라인 보관함"
-              data-offline-archive
-            >
-              {archive.length === 0 ? (
-                <li className="px-1 py-10 text-center text-[13px] text-muted">
-                  저장한 판결이 없습니다.
-                  <br />
-                  달력에서 지난 전투를 열고 저장하세요.
-                </li>
-              ) : (
-                archive.map((b) => (
-                  <li key={b.date} className="border-b border-white/10">
-                    <button
-                      type="button"
-                      onClick={() => openDay(b.date)}
-                      className="flex w-full items-center gap-2 px-1 py-3 text-left"
-                    >
-                      <OfflineBadge />
-                      <span className="min-w-0 flex-1 truncate text-[13px]">
-                        {b.date.slice(5).replace("-", "/")} · {b.topic}
-                      </span>
-                      <span className="text-[12px] tabular-nums text-muted">
-                        {b.winner === "JOINT" ? "공동" : `${b.winnerPercent}%`}
-                      </span>
-                    </button>
-                  </li>
-                ))
-              )}
-            </ul>
-          ) : (
-            <div className="px-3 pb-6 pt-4" aria-label="전투 기록 달력">
-              <p className="text-center text-[13px] font-semibold tracking-wide">
-                {BATTLE_YEAR}년 {BATTLE_MONTH}월
-              </p>
-              <p className="mt-1 text-center text-[10px] tracking-[0.14em] text-muted">
-                흑=도전 · 백=방어 · 반반=공동 · 띠=제안자 · 저장=오프라인
-              </p>
-
-              <div className="mt-4 grid grid-cols-7 gap-px bg-white/15">
-                {WEEKDAYS.map((w) => (
-                  <div
-                    key={w}
-                    className="bg-black py-1.5 text-center text-[10px] text-muted"
-                  >
-                    {w}
-                  </div>
-                ))}
-                {cells.map((day, idx) => {
-                  if (day == null) {
-                    return (
-                      <div key={`e-${idx}`} className="aspect-square bg-black" />
-                    );
-                  }
-                  const key = `2026-10-${String(day).padStart(2, "0")}`;
-                  const battle = byDate.get(key);
-                  const joint = battle?.winner === "JOINT";
-                  const challengerWin = battle?.winner === "NEXUS";
-                  const saved = savedDates.has(key);
-
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      disabled={!battle && !saved}
-                      onClick={() => (battle || saved) && openDay(key)}
-                      aria-label={
-                        battle
-                          ? `${day}일, ${
-                              joint
-                                ? "공동 승리"
-                                : challengerWin
-                                  ? "도전자 승리"
-                                  : "방어자 승리"
-                            }${battle.hasGirdle ? ", 제안자 허리띠" : ""}${
-                              saved ? ", 오프라인 저장" : ""
-                            }`
-                          : `${day}일`
-                      }
-                      className={`relative aspect-square border-0 p-0 text-[12px] font-semibold tabular-nums outline-none ${
-                        !battle
-                          ? "bg-neutral-950 text-neutral-600"
-                          : joint
-                            ? "bg-[linear-gradient(90deg,#000_50%,#fff_50%)] text-white"
-                            : challengerWin
-                              ? "bg-black text-white"
-                              : "bg-white text-black"
-                      } ${battle ? "active:opacity-80" : ""}`}
-                    >
-                      {saved ? (
-                        <span
-                          className={`absolute right-0.5 top-0.5 size-1.5 ${
-                            challengerWin || joint || !battle
-                              ? "bg-white"
-                              : "bg-black"
-                          }`}
-                          data-offline-dot
-                          aria-hidden
-                        />
-                      ) : null}
-                      <span className="flex h-full flex-col items-center justify-center gap-0.5">
-                        <span
-                          className={
-                            joint ? "mix-blend-difference text-white" : undefined
-                          }
-                        >
-                          {day}
-                        </span>
-                        {battle ? (
-                          <span className="flex scale-90 items-center gap-0.5">
-                            {joint ? (
-                              <>
-                                <SpearMark size={10} />
-                                <ShieldMark size={10} className="text-black" />
-                              </>
-                            ) : challengerWin ? (
-                              <SpearMark size={10} />
-                            ) : (
-                              <ShieldMark size={10} />
-                            )}
-                            {battle.hasGirdle ? (
-                              <GirdleMark
-                                size={9}
-                                className={
-                                  joint
-                                    ? "text-white mix-blend-difference"
-                                    : challengerWin
-                                      ? "text-white"
-                                      : "text-black"
-                                }
-                              />
-                            ) : null}
-                          </span>
-                        ) : null}
-                      </span>
-                    </button>
-                  );
-                })}
+            {/* 0 · 달력 보드 */}
+            <div className="flex h-full w-1/3 shrink-0 flex-col">
+              <div
+                className="flex shrink-0 border-b border-white/10"
+                role="tablist"
+                aria-label="달력과 보관함"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={view === "calendar"}
+                  onClick={() => setView("calendar")}
+                  className={`flex-1 py-2.5 text-[12px] font-bold tracking-[0.12em] ${
+                    view === "calendar"
+                      ? "bg-white text-black"
+                      : "text-muted"
+                  }`}
+                >
+                  달력
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={view === "archive"}
+                  onClick={() => setView("archive")}
+                  className={`flex-1 py-2.5 text-[12px] font-bold tracking-[0.12em] ${
+                    view === "archive"
+                      ? "bg-white text-black"
+                      : "text-muted"
+                  }`}
+                >
+                  보관함
+                </button>
               </div>
 
-              <ul className="mt-5 space-y-2 px-1" aria-label="최근 전투">
-                {BATTLE_HISTORY.slice()
-                  .reverse()
-                  .slice(0, 4)
-                  .map((b) => {
-                    const saved = savedDates.has(b.date);
-                    return (
-                      <li key={b.date}>
+              {view === "calendar" ? (
+                <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-6 pt-3">
+                  <p className="px-1 text-center text-[13px] font-semibold tracking-[0.06em]">
+                    {year}년 {month}월
+                  </p>
+                  <div className="mt-3 grid grid-cols-7 gap-px text-center text-[10px] text-muted">
+                    {WEEKDAYS.map((w) => (
+                      <div key={w} className="py-1">
+                        {w}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-7 gap-px">
+                    {cells.map((day, i) => {
+                      if (day == null) {
+                        return (
+                          <div key={`e-${i}`} className="aspect-square" />
+                        );
+                      }
+                      const key = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+                      const battle = byDate.get(key);
+                      const saved = savedDates.has(key);
+                      const isToday = key === todayKst;
+                      const isFuture = key > todayKst;
+                      return (
                         <button
+                          key={key}
                           type="button"
-                          onClick={() => openDay(b.date)}
-                          className={`flex w-full items-center gap-2 border px-3 py-2.5 text-left text-[12px] ${
-                            b.winner === "JOINT"
-                              ? "border-white/25 bg-[linear-gradient(90deg,#000_50%,#fff_50%)] text-white"
-                              : b.winner === "NEXUS"
-                                ? "border-white/20 bg-black"
-                                : "border-white/30 bg-white text-black"
-                          }`}
+                          disabled={!battle && !saved}
+                          onClick={() => (battle || saved) && openDay(key)}
+                          className={`relative flex aspect-square flex-col items-center justify-center text-[12px] tabular-nums ${
+                            isToday ? "ring-1 ring-inset ring-timer" : ""
+                          } ${
+                            battle
+                              ? battle.winner === "NEXUS"
+                                ? "bg-black text-white"
+                                : battle.winner === "AEGIS"
+                                  ? "bg-white text-black"
+                                  : "bg-[linear-gradient(135deg,#000_50%,#fff_50%)] text-white"
+                              : isFuture
+                                ? "text-white/20"
+                                : "text-white/35"
+                          } disabled:cursor-default`}
+                          aria-label={
+                            battle
+                              ? `${key} 제 ${battle.round}회`
+                              : `${key}${isFuture ? " · 미래" : ""}`
+                          }
+                          data-cal-day={key}
                         >
-                          {b.winner === "JOINT" ? (
-                            <>
-                              <SpearMark size={14} />
-                              <ShieldMark size={14} className="text-black" />
-                            </>
-                          ) : b.winner === "NEXUS" ? (
-                            <SpearMark size={14} />
-                          ) : (
-                            <ShieldMark size={14} />
-                          )}
                           <span
-                            className={`min-w-0 flex-1 truncate ${
-                              b.winner === "JOINT"
-                                ? "mix-blend-difference text-white"
+                            className={
+                              battle?.winner === "JOINT"
+                                ? "mix-blend-difference"
                                 : ""
-                            }`}
+                            }
                           >
-                            {b.date.slice(5).replace("-", "/")} · {b.topic}
+                            {day}
                           </span>
                           {saved ? (
-                            <OfflineBadge light={b.winner === "AEGIS"} />
+                            <span className="absolute bottom-0.5 right-0.5">
+                              <OfflineBadge
+                                light={battle?.winner === "AEGIS"}
+                              />
+                            </span>
                           ) : null}
-                          <span
-                            className={`tabular-nums ${
-                              b.winner === "JOINT"
-                                ? "mix-blend-difference text-white"
-                                : ""
-                            }`}
-                          >
-                            {b.winner === "JOINT"
-                              ? "공동"
-                              : `${b.winnerPercent}%`}
-                          </span>
                         </button>
-                      </li>
-                    );
-                  })}
-              </ul>
+                      );
+                    })}
+                  </div>
+                  <ul className="mt-4 space-y-0 border-t border-white/10 pt-2">
+                    {history
+                      .slice()
+                      .reverse()
+                      .slice(0, 5)
+                      .map((b) => (
+                        <li key={b.date} className="border-b border-white/10">
+                          <button
+                            type="button"
+                            onClick={() => openDay(b.date)}
+                            className="flex w-full items-baseline gap-2 px-1 py-2.5 text-left text-[12px] active:bg-white/[0.04]"
+                          >
+                            <span className="tabular-nums text-muted">
+                              {b.date.slice(5)}
+                            </span>
+                            <span className="min-w-0 flex-1 truncate">
+                              {b.topic}
+                            </span>
+                            <span className="shrink-0 text-muted">
+                              #{b.round}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              ) : (
+                <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
+                  {archiveList.length === 0 ? (
+                    <p className="py-10 text-center text-[13px] text-muted">
+                      저장한 판결이 없습니다.
+                    </p>
+                  ) : (
+                    <ul>
+                      {archiveList.map((v) => (
+                        <li key={v.date} className="border-b border-white/10">
+                          <button
+                            type="button"
+                            onClick={() => openDay(v.date)}
+                            className="w-full px-1 py-3 text-left"
+                          >
+                            <p className="text-[12px] tabular-nums text-muted">
+                              {v.date}
+                            </p>
+                            <p className="mt-1 text-[14px] font-semibold">
+                              {v.topic}
+                            </p>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
             </div>
-          )}
+
+            {/* 1 · 하루 연대기 */}
+            <div className="h-full w-1/3 shrink-0">
+              {selectedBattle && selectedArchive ? (
+                <DayChronicle
+                  battle={selectedBattle}
+                  archive={selectedArchive}
+                  saved={savedDates.has(selectedBattle.date)}
+                  offlineSim={offlineSim}
+                  onBack={() => {
+                    setSelected(null);
+                    setThread(null);
+                  }}
+                  onToggleSave={() => {
+                    const r = toggleVerdictSaved(selectedBattle);
+                    onToast?.(
+                      r
+                        ? "판결을 오프라인 저장했습니다"
+                        : "오프라인 저장을 해제했습니다",
+                    );
+                    syncSaved();
+                  }}
+                  onOpenChampion={setThread}
+                  onOpenProfile={onOpenProfile ? goProfile : undefined}
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-[13px] text-muted">
+                  날짜를 열어 주세요
+                </div>
+              )}
+            </div>
+
+            {/* 2 · 챔피언 스레드 */}
+            <div className="h-full w-1/3 shrink-0">
+              {selectedBattle && selectedArchive && thread ? (
+                <ChampionThread
+                  opinion={
+                    thread === "champion"
+                      ? selectedArchive.champion
+                      : selectedArchive.rival
+                  }
+                  topic={selectedBattle.topic}
+                  round={selectedBattle.round}
+                  onBack={() => setThread(null)}
+                  onOpenProfile={onOpenProfile ? goProfile : undefined}
+                  onToast={onToast}
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-[13px] text-muted">
+                  챔피언 글을 열어 주세요
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

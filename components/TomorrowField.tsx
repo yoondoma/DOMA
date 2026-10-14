@@ -188,12 +188,8 @@ export function TomorrowField({
                     <span className="block font-[family-name:var(--font-syne)] text-[15px] font-bold leading-snug">
                       {c.title}
                     </span>
-                    <span className="mt-1.5 block text-[12px] leading-[1.45] text-white/60">
-                      {c.note}
-                    </span>
                     <span className="mt-1.5 block text-[12px] tabular-nums text-muted">
-                      지지 {c.votes.toLocaleString("ko-KR")} · {pct}% · 이끔{" "}
-                      {c.stewards}
+                      지지 {c.votes.toLocaleString("ko-KR")} · {pct}%
                       {topicCreatedAt.get(c.id) ? (
                         <time
                           className="ml-1.5 tabular-nums text-white/45"

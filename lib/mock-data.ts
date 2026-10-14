@@ -1,25 +1,29 @@
+import {
+  arenaDayId,
+  lockAtUtcForDay,
+  resolveTimelineClock,
+} from "@/lib/kst";
 import type { ArenaState, Opinion } from "./types";
 
-/** 데모용: 자정까지 카운트다운 */
-function endOfTodayIso(): string {
-  const d = new Date();
-  d.setHours(23, 59, 59, 999);
-  return d.toISOString();
+/** 전장 마감 — KST 23:00(lock). 쿨다운이면 다음 OPEN까지 */
+function arenaEndsAtIso(): string {
+  const clock = resolveTimelineClock();
+  if (clock.state === "COOLDOWN") return clock.nextOpenAtUtc;
+  return lockAtUtcForDay(arenaDayId());
 }
 
 export const INITIAL_ARENA: ArenaState = {
   round: 412,
-  topic: "인공지능은 인간의 지성을 완전히 대체할 것인가?",
-  description:
-    "계산·언어·창작까지 모델이 밀어붙이는 지금, ‘지성’의 경계는 어디에 남는지 묻는다. 도전자와 방어자가 같은 질문을 두고 판결을 겨룬다.",
-  endsAt: endOfTodayIso(),
+  topic: "AI는 인간 지성을 대체하는가?",
+  description: "",
+  endsAt: arenaEndsAtIso(),
   nexusPercent: 58,
   aegisPercent: 42,
   nexusVotes: 4821,
   aegisVotes: 4519,
   /** 오늘 주제 제안자 — 성 토마스의 허리띠 · 「제안자」 */
-  proposerId: "usr_soohan",
-  proposerHandle: "soohan",
+  proposerId: "usr_doma_guest",
+  proposerHandle: "doma.guest",
 };
 
 export const INITIAL_OPINIONS: Opinion[] = [
@@ -42,7 +46,7 @@ export const INITIAL_OPINIONS: Opinion[] = [
     id: "op-2",
     side: "NEXUS",
     author: "zero.nexus",
-    text: "지성의 핵심이 패턴 인식과 예측이라면, 이미 많은 영역에서 인간은 뒤처졌다. '완전히'의 기준을 감정으로 낮추지 말자. 증거는 벤치마크에 있다. @soohan 이 기준을 같이 보자.",
+    text: "지성의 핵심이 패턴 인식과 예측이라면, 이미 많은 영역에서 인간은 뒤처졌다. '완전히'의 기준을 감정으로 낮추지 말자. 증거는 벤치마크에 있다. @doma.guest 이 기준을 같이 보자.",
     likes: 481,
   },
   {

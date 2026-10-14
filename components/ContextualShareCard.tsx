@@ -190,7 +190,7 @@ export function ContextualShareCard({
               </div>
             ) : (
               <p className={`mt-4 text-[10px] font-bold tracking-[0.2em] ${faint}`}>
-                오늘의 전장
+                전장
               </p>
             )}
 
@@ -201,14 +201,6 @@ export function ContextualShareCard({
             >
               {payload.topic}
             </p>
-
-            {!isOpinion && payload.description ? (
-              <p
-                className={`mt-3 line-clamp-3 text-[13px] leading-[1.55] ${soft}`}
-              >
-                {payload.description}
-              </p>
-            ) : null}
 
             {isOpinion && payload.opinionText ? (
               <div className={`mt-4 flex-1 border-t pt-4 ${border}`}>

@@ -283,14 +283,14 @@ export function SettingsSheet({
                         id: "account",
                         label: "계정",
                         hint: sessionUser
-                          ? `@${sessionUser.handle} · 만 14+`
-                          : "로그인 · 만 14+",
+                          ? `@${sessionUser.handle}`
+                          : "로그인",
                         onClick: () => setPanel("account"),
                       },
                       {
                         id: "scrap",
                         label: "스크랩",
-                        hint: "본인만 봄 · 프로필 스크랩 탭",
+                        hint: "본인만",
                         onClick: () => {
                           onClose();
                           onOpenScraps?.();
@@ -304,15 +304,13 @@ export function SettingsSheet({
                       {
                         id: "notify",
                         label: "알림",
-                        hint: "판결 · 내 글 · 메시지 · 멘션",
+                        hint: "판결 · 글 · DM",
                         onClick: () => setPanel("notify"),
                       },
                       {
                         id: "sound",
                         label: "앱 사운드",
-                        hint: sound.enabled
-                          ? "켜짐 · 입장+판결 스팅만"
-                          : "꺼짐 · 입장+판결 스팅",
+                        hint: sound.enabled ? "켜짐" : "꺼짐",
                         onClick: () => setPanel("sound"),
                       },
                     ],
@@ -323,13 +321,13 @@ export function SettingsSheet({
                       {
                         id: "privacy",
                         label: "프라이버시·차단",
-                        hint: "DM 수신 · 차단 · 신고 안내",
+                        hint: "DM · 차단",
                         onClick: () => setPanel("privacy"),
                       },
                       {
                         id: "content",
                         label: "콘텐츠 한도",
-                        hint: "제안·의견 500 · 댓글 280 · 쿨다운 3분",
+                        hint: "500 · 280 · 3분",
                         onClick: () => setPanel("content"),
                       },
                     ],
@@ -340,17 +338,13 @@ export function SettingsSheet({
                       {
                         id: "offline",
                         label: "오프라인·보관",
-                        hint: offlineSim
-                          ? "시뮬레이션 켜짐"
-                          : "판결 저장 · 로드된 화면",
+                        hint: offlineSim ? "시뮬 켜짐" : "판결 저장",
                         onClick: () => setPanel("offline"),
                       },
                       {
                         id: "monetize",
                         label: "광고·꾸미기",
-                        hint: adPreview.enabled
-                          ? "오늘·내일 아래 미리보기 켜짐"
-                          : "슬롯 미리보기 · 코스메틱 훅",
+                        hint: adPreview.enabled ? "미리보기 켜짐" : "슬롯 · 프레임",
                         onClick: () => setPanel("monetize"),
                       },
                     ],
@@ -361,19 +355,17 @@ export function SettingsSheet({
                       {
                         id: "help",
                         label: "도움말·규칙",
-                        hint: "전장 규칙 · DOMA",
+                        hint: "전장 규칙",
                         onClick: () => setPanel("help"),
                       },
                       {
                         id: "beta-feedback",
-                        label: "베타 피드백",
-                        hint: "feedback@doma.kr · 전투/공유/칭호만",
+                        label: "의견 보내기",
+                        hint: "feedback@doma.kr",
                         onClick: () => {
                           window.location.href =
                             "mailto:feedback@doma.kr?subject=DOMA%20베타%20피드백";
-                          onToast?.(
-                            "피드백 → feedback@doma.kr (메일 앱이 열립니다)",
-                          );
+                          onToast?.("feedback@doma.kr");
                         },
                       },
                     ],
@@ -430,11 +422,10 @@ export function SettingsSheet({
                   ? `로그인 · @${sessionUser.handle}`
                   : "로그아웃 상태"}
               </p>
-              <p className="px-1 pb-3 text-center text-[12px] leading-relaxed text-neutral-200">
-                가입은 만 14세 이상. 카카오는 목업 · 아래 계정 전환으로
-                입장합니다.
+              <p className="px-1 pb-2 text-center text-[11px] text-neutral-200">
+                만 14+ · 카카오 목업
               </p>
-              <SectionLabel>계정 전환 (목업)</SectionLabel>
+              <SectionLabel>계정 전환</SectionLabel>
               <ul aria-label="계정 전환">
                 {SWITCHABLE.map((handle) => {
                   const active = sessionUser?.handle === handle;
@@ -458,9 +449,8 @@ export function SettingsSheet({
               {sessionUser ? (
                 <>
                   <SectionLabel>탈퇴</SectionLabel>
-                  <p className="px-1 pb-3 text-[12px] leading-relaxed text-neutral-200">
-                    탈퇴 후 글은 「탈퇴한 사용자」로 남습니다. 같은 계정
-                    재가입은 7일 뒤부터.
+                  <p className="px-1 pb-2 text-[11px] text-neutral-200">
+                    글은 남음 · 재가입 7일
                   </p>
                   <button
                     type="button"
@@ -689,17 +679,12 @@ export function SettingsSheet({
 
           {panel === "monetize" ? (
             <div className="px-2" data-monetize-settings>
-              <p className="px-1 py-3 text-[13px] leading-relaxed text-neutral-200">
-                광고는 오늘·내일 전장 아래 칸 하나씩만. 입장 게이트·피드
-                남발 없음. 지지·%·타이머·TOP 본문·티어 부스트는 없습니다.
-                꾸미기는 코스메틱만 · 승패 무관.
+              <p className="px-1 py-2 text-[11px] text-neutral-200">
+                오늘·내일 아래 1칸 · 승패 무관 꾸미기
               </p>
               <div className="flex items-center justify-between gap-3 border-b border-neutral-800 py-3.5">
                 <div className="min-w-0">
                   <p className="text-[14px] text-white">광고 슬롯 미리보기</p>
-                  <p className="mt-0.5 text-[12px] text-neutral-200">
-                    오늘·내일 아래 · 빈「Sponsored」· SDK 없음
-                  </p>
                 </div>
                 <button
                   type="button"
@@ -730,8 +715,8 @@ export function SettingsSheet({
                   />
                 </button>
               </div>
-              <p className="mt-4 px-1 text-[12px] leading-relaxed text-neutral-200">
-                꾸미기(목) — 결제·상점 없음. 프로필 프레임만 로컬 적용.
+              <p className="mt-3 px-1 text-[11px] text-neutral-200">
+                프레임만 · 결제 없음
               </p>
               <ul className="mt-2" aria-label="프레임 선택" data-cosmetics-mock>
                 {(
@@ -876,16 +861,12 @@ export function SettingsSheet({
 
           {panel === "offline" ? (
             <div className="px-2" data-offline-settings>
-              <p className="px-1 py-3 text-[13px] leading-relaxed text-neutral-200">
-                이미 연 화면은 브라우저 메모리·캐시로 잠깐 유지됩니다.
-                지난 판결은 달력 상세에서 「오프라인 저장」할 수 있습니다.
+              <p className="px-1 py-2 text-[11px] text-neutral-200">
+                판결은 달력에서 저장
               </p>
               <div className="flex items-center justify-between gap-3 border-b border-neutral-800 py-3.5">
                 <div className="min-w-0">
                   <p className="text-[14px] text-white">오프라인 시뮬레이션</p>
-                  <p className="mt-0.5 text-[12px] text-neutral-200">
-                    켜면 저장한 판결만 상세 열림
-                  </p>
                 </div>
                 <button
                   type="button"
@@ -915,38 +896,25 @@ export function SettingsSheet({
                   />
                 </button>
               </div>
-              <p className="mt-4 px-1 text-[12px] leading-relaxed text-neutral-200">
-                PWA는 웹 우선 · 홈화면 추가용 manifest만. 스토어 앱 코드는
-                없습니다.
-              </p>
             </div>
           ) : null}
 
           {panel === "help" ? (
-            <div className="space-y-4 px-3 py-3 text-[13px] leading-relaxed text-neutral-200">
+            <div className="space-y-3 px-3 py-3 text-[13px] leading-relaxed text-neutral-200">
               <p>
-                <span className="text-white">DOMA</span> — 24시간 의견 증명
-                전장. KST 시계 · 지지가 판결의 권위입니다.
+                <span className="text-white">DOMA</span> · 24h · KST · 지지=판결
               </p>
-              <p>
-                글 좋아요는 하루 5회(오늘 의견만). 댓글♥·공유·스크랩은
-                무제한. 작성 쿨다운 3분.
-              </p>
+              <p>♥ 5/일 · 이동 3 · 쿨다운 3분</p>
               <p
-                className="border border-neutral-800 px-3 py-2.5 text-[12px] leading-relaxed"
+                className="border border-neutral-800 px-3 py-2 text-[12px]"
                 data-beta-feedback
               >
-                베타 피드백 →{" "}
                 <a
                   href="mailto:feedback@doma.kr?subject=DOMA%20베타%20피드백"
                   className="text-white underline underline-offset-4"
                 >
                   feedback@doma.kr
                 </a>
-                <span className="text-neutral-500">
-                  {" "}
-                  · 전투 / 공유 / 칭호만 적어 주세요
-                </span>
               </p>
               <button
                 type="button"

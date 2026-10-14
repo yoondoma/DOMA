@@ -48,8 +48,8 @@ export function RulesHud({ light, className = "" }: RulesHudProps) {
       aria-label="남은 참여 횟수"
       data-rules-hud
     >
-      <Cell label="글 좋아요" remaining={likes.remaining} max={likes.max} />
-      <Cell label="진영이동" remaining={moves.remaining} max={moves.max} />
+      <Cell label="♥" remaining={likes.remaining} max={likes.max} />
+      <Cell label="이동" remaining={moves.remaining} max={moves.max} />
     </div>
   );
 }

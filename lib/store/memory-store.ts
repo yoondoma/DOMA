@@ -43,6 +43,7 @@ import type {
   CreateOpinionInput,
   StoreSnapshot,
 } from "@/lib/store/types";
+import type { Cosmetics } from "@/lib/types/cosmetics";
 import {
   defaultPrivacy,
   type DmPolicy,
@@ -61,7 +62,14 @@ import {
   socialIdForHandle,
 } from "@/lib/account";
 
-const STORAGE_KEY = "doma.store.v5";
+import {
+  LEGACY_STORE_KEYS,
+  isBannedIdentityToken,
+  snapshotNeedsIdentityReseed,
+} from "@/lib/public-identity";
+
+/** v6 — 공공 신원 스크럽 이후. 레거시 키는 로드 시 폐기 */
+const STORAGE_KEY = "doma.store.v6";
 
 type Listener = () => void;
 
@@ -119,15 +127,50 @@ function normalizeSnap(parsed: StoreSnapshot): StoreSnapshot {
   };
 }
 
+function clearLegacyStores() {
+  if (typeof window === "undefined") return;
+  for (const key of LEGACY_STORE_KEYS) {
+    try {
+      window.localStorage.removeItem(key);
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
 function loadPersisted(): StoreSnapshot | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
+    if (!raw) {
+      clearLegacyStores();
+      return null;
+    }
     const parsed = JSON.parse(raw) as StoreSnapshot;
-    if (parsed?.version !== 1) return null;
-    return normalizeSnap(parsed);
+    if (parsed?.version !== 1) {
+      clearLegacyStores();
+      try {
+        window.localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        /* ignore */
+      }
+      return null;
+    }
+    const snap = normalizeSnap(parsed);
+    /** 옛 실명·soohan 세션이 남으면 시드로 갈아엎음 */
+    if (snapshotNeedsIdentityReseed(snap)) {
+      clearLegacyStores();
+      try {
+        window.localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        /* ignore */
+      }
+      return null;
+    }
+    clearLegacyStores();
+    return snap;
   } catch {
+    clearLegacyStores();
     return null;
   }
 }
@@ -221,7 +264,7 @@ class MemoryStore {
 
   private defaultUserId(): string | undefined {
     return (
-      this.snap.users.find((u) => u.handle === "soohan")?.id ??
+      this.snap.users.find((u) => u.handle === "doma.guest")?.id ??
       this.snap.users[0]?.id
     );
   }
@@ -411,6 +454,12 @@ class MemoryStore {
     }
     const handle = normalizeHandle(input.handle);
     if (handle.length < 2) throw new Error("HANDLE_INVALID");
+    if (
+      isBannedIdentityToken(handle) ||
+      isBannedIdentityToken(input.displayName)
+    ) {
+      throw new Error("HANDLE_INVALID");
+    }
     const socialId = input.socialId ?? socialIdForHandle(handle);
     const rejoin = checkRejoin(socialId);
     if (!rejoin.ok) {
@@ -524,7 +573,7 @@ class MemoryStore {
       ...defaultPrivacy(),
       ...next.privacyByUser[uid],
       ...patch,
-      /** 수한 확정: 스크랩은 항상 본인만 */
+      /** 정책 확정: 스크랩은 항상 본인만 */
       scrapsPublic: false,
     };
     next.privacyByUser = { ...next.privacyByUser, [uid]: merged };
@@ -1183,6 +1232,17 @@ class MemoryStore {
       defenderShare: 100 - c,
     };
     this.commit(next);
+  }
+
+  /** 목: 내 cosmetics 패치 (결제 없음) */
+  patchMyCosmetics(patch: Partial<Cosmetics>): Cosmetics {
+    const next = clone(this.snap);
+    if (!next.session) throw new Error("SESSION_REQUIRED");
+    const u = next.users.find((x) => x.id === next.session!.userId);
+    if (!u) throw new Error("USER_NOT_FOUND");
+    u.cosmetics = { ...(u.cosmetics ?? {}), ...patch };
+    this.commit(next);
+    return u.cosmetics;
   }
 
   /** 테스트·목업 강제 empty */

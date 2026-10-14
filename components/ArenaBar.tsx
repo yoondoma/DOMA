@@ -374,7 +374,7 @@ function CampFeedPage({
       >
         <Mark size={16} className={ink} />
         <p className={`text-[10px] font-bold tracking-[0.16em] ${muted}`}>
-          TOP 의견 · {label}
+          TOP
         </p>
       </div>
 
@@ -477,12 +477,12 @@ function CampFeedPage({
         )}
       </div>
 
-      <div className={`border-t px-4 py-2 ${border}`}>
+      <div className={`border-t px-4 py-1.5 ${border}`}>
         <p className={`text-[10px] font-bold tracking-[0.18em] ${muted}`}>
-          {label} 올라오는 글
+          피드
         </p>
       </div>
-      <ul aria-label={`${label} 올라오는 글`}>
+      <ul aria-label={`${label} 피드`}>
         {rising.length === 0 &&
         uiDemo !== "loading" &&
         uiDemo !== "error" ? (
@@ -555,10 +555,10 @@ function BattlefieldIntro({
         {/* 제 N회 → 상태(시작/종료까지) → 카운트다운 */}
         <p
           className={`text-[12px] font-bold tracking-[0.14em] ${ink}`}
-          aria-label={`제 ${arena.round}회 전투`}
+          aria-label={`제 ${arena.round}회`}
           data-battle-round
         >
-          제 {arena.round}회 전투
+          제 {arena.round}회
         </p>
         <p
           className={`mt-2 text-[11px] tracking-[0.18em] ${
@@ -587,14 +587,10 @@ function BattlefieldIntro({
             }
           >
             {timer.remaining}
-            <span className="ml-2 align-middle text-[13px] font-medium tracking-[0.14em] text-timer/90">
-              남음
-            </span>
           </p>
         )}
-        {/* 날짜 — 타이머 아래 · 빨간 액센트 · 「오늘」문구 없음 */}
         <p
-          className="mt-2.5 text-[12px] font-medium tracking-[0.08em] text-timer"
+          className="mt-2 text-[11px] font-medium tracking-[0.08em] text-timer"
           data-kst-today
           aria-label="날짜"
         >
@@ -602,24 +598,22 @@ function BattlefieldIntro({
         </p>
       </div>
 
-      {/* 오늘의 전장 — 주제 본문 */}
+      {/* 주제 — 라벨 없이 질문만 */}
       <div
-        className="battlefield-rise battlefield-rise-delay px-6 pb-6 pt-7 text-center sm:px-8 sm:pb-7 sm:pt-8"
+        className="battlefield-rise battlefield-rise-delay px-6 pb-5 pt-6 text-center sm:px-8 sm:pb-6 sm:pt-7"
         aria-label="오늘 주제 영역"
       >
-        <div className="flex items-center justify-center gap-1.5">
-          <p
-            className={`text-[12px] font-bold tracking-[0.22em] ${
-              light ? "text-black/50" : "text-white/50"
-            }`}
+        <div className="flex items-start justify-center gap-1.5">
+          <h2
+            className={`max-w-[18em] font-[family-name:var(--font-display)] text-[24px] font-bold leading-[1.4] tracking-[-0.01em] sm:text-[28px] sm:leading-[1.38] ${ink}`}
           >
-            오늘의 전장
-          </p>
+            {arena.topic}
+          </h2>
           {onOpenRules ? (
             <button
               type="button"
               onClick={onOpenRules}
-              className={`inline-flex size-5 items-center justify-center border text-[10px] font-bold tracking-[0.06em] ${
+              className={`mt-1 inline-flex size-5 shrink-0 items-center justify-center border text-[10px] font-bold tracking-[0.06em] ${
                 light
                   ? "border-black/25 text-black/55"
                   : "border-white/25 text-white/55"
@@ -631,31 +625,17 @@ function BattlefieldIntro({
             </button>
           ) : null}
         </div>
-        <h2
-          className={`mx-auto mt-4 max-w-[18em] font-[family-name:var(--font-display)] text-[24px] font-bold leading-[1.4] tracking-[-0.01em] sm:mt-5 sm:text-[28px] sm:leading-[1.38] ${ink}`}
-        >
-          {arena.topic}
-        </h2>
         {arena.proposerHandle ? (
           <p
-            className={`mx-auto mt-3.5 inline-flex items-center justify-center gap-1.5 text-[12px] font-medium tracking-[0.08em] sm:mt-4 ${
+            className={`mx-auto mt-3 inline-flex items-center justify-center gap-1.5 text-[12px] font-medium tracking-[0.08em] ${
               light ? "text-black/55" : "text-white/55"
             }`}
             aria-label={`제안자 ${arena.proposerHandle}`}
           >
             <GirdleMark size={13} className="opacity-90" />
             <span className={ink}>@{arena.proposerHandle}</span>
-            <span aria-hidden>·</span>
-            <span>{DAILY_TITLE_SHORT.PROPOSER}</span>
           </p>
         ) : null}
-        <p
-          className={`mx-auto mt-4 max-w-[28em] text-[14px] leading-[1.75] sm:mt-5 sm:text-[15px] sm:leading-[1.8] ${
-            light ? "text-black/68" : "text-white/68"
-          }`}
-        >
-          {arena.description}
-        </p>
         {onOpenShareCard ? (
           <button
             type="button"
@@ -667,13 +647,13 @@ function BattlefieldIntro({
                 description: arena.description,
               })
             }
-            className={`mt-4 text-[12px] font-medium tracking-[0.1em] underline-offset-4 hover:underline ${
-              light ? "text-black/55" : "text-white/55"
+            className={`mt-3 text-[11px] font-medium tracking-[0.1em] underline-offset-4 hover:underline ${
+              light ? "text-black/45" : "text-white/45"
             }`}
             aria-label="주제 공유"
             data-share-topic
           >
-            주제 공유
+            공유
           </button>
         ) : null}
         {locked ? (
@@ -744,12 +724,12 @@ function BattlefieldIntro({
       <DiscoverStrip light={light} onSelect={onDiscoverSelect} />
 
       <p
-        className={`px-5 py-3 text-center text-[11px] tracking-[0.04em] ${
-          light ? "text-black/40" : "text-white/40"
+        className={`px-5 py-2 text-center text-[10px] tracking-[0.04em] ${
+          light ? "text-black/35" : "text-white/35"
         }`}
         data-beta-feedback
       >
-        베타 의견 → feedback@doma.kr
+        feedback@doma.kr
       </p>
     </div>
   );
@@ -982,12 +962,7 @@ export function ArenaBar({
               </button>
             ) : null}
           </div>
-          <p
-            className={`mx-auto mt-2 max-w-[36em] line-clamp-2 text-[12px] leading-[1.55] ${soft}`}
-          >
-            {arena.description}
-          </p>
-          <RulesHud light={light} className="mt-2.5" />
+          <RulesHud light={light} className="mt-2" />
           {locked ? (
             <div
               className={`mt-2.5 flex flex-wrap items-center justify-center gap-2 border px-2.5 py-2 ${
@@ -1064,19 +1039,15 @@ export function ArenaBar({
         </div>
 
         <div
-          className={`flex items-center justify-between border-b px-3 py-1.5 ${border}`}
+          className={`flex items-center justify-end border-b px-3 py-1 ${border}`}
         >
-          <p className={`text-[10px] tracking-[0.12em] ${faint}`}>
-            좌우로 밀면 진영 피드 ·{" "}
-            {selected === "NEXUS" ? "도전자" : "방어자"}
-          </p>
           <button
             type="button"
             onClick={() => onChangeView("intro")}
-            className={`px-2 py-1 text-[12px] ${faint}`}
+            className={`px-2 py-1 text-[11px] ${faint}`}
             aria-label="기본 화면으로"
           >
-            전장으로
+            전장
           </button>
         </div>
 
