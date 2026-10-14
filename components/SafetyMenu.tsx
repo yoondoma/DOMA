@@ -114,7 +114,7 @@ export function SafetyMenu({
 
       {panel === "block" || panel === "report" ? (
         <div
-          className="fixed inset-0 z-[80] flex items-end justify-center bg-black/70 sm:items-center"
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 px-4"
           role="dialog"
           aria-modal
           aria-label={panel === "block" ? "차단 확인" : "신고"}
@@ -125,9 +125,7 @@ export function SafetyMenu({
             aria-label="닫기"
             onClick={close}
           />
-          <div
-            className={`relative z-10 w-full max-w-[560px] border border-white/20 bg-black px-4 py-5 text-white sm:mx-4`}
-          >
+          <div className="relative z-10 w-full max-w-[560px] border border-white/20 bg-black px-4 py-5 text-white">
             {panel === "block" ? (
               <>
                 <p className="text-[14px] font-semibold">이 이용자를 차단할까요?</p>
