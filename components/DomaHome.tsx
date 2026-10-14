@@ -21,9 +21,10 @@ import { PullRefresh } from "@/components/PullRefresh";
 import { RulesSheet } from "@/components/RulesSheet";
 import { SearchSheet } from "@/components/SearchSheet";
 import {
-  SettingsSheet,
+  ProfileEditSheet,
   type EditableProfile,
-} from "@/components/SettingsSheet";
+} from "@/components/ProfileEditSheet";
+import { SettingsSheet } from "@/components/SettingsSheet";
 import { PROFILE_USER } from "@/lib/profile-mock";
 import { ShareResultCard } from "@/components/ShareResultCard";
 import { SupportBar } from "@/components/SupportBar";
@@ -91,6 +92,7 @@ export function DomaHome() {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [profileEditOpen, setProfileEditOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [editableProfile, setEditableProfile] = useState<EditableProfile>({
     name: PROFILE_USER.name,
@@ -575,7 +577,7 @@ export function DomaHome() {
           <ProfileScreen
             isSelf
             profile={editableProfile}
-            onOpenSettings={() => setSettingsOpen(true)}
+            onOpenProfileEdit={() => setProfileEditOpen(true)}
             onOpenShareCard={() => setShareOpen(true)}
             uiDemo={uiDemo}
             onRetry={onRetry}
@@ -639,9 +641,15 @@ export function DomaHome() {
       />
       <SettingsSheet
         open={settingsOpen}
+        onProfileSync={setEditableProfile}
+        onClose={() => setSettingsOpen(false)}
+        onToast={showToast}
+      />
+      <ProfileEditSheet
+        open={profileEditOpen}
         profile={editableProfile}
         onSave={setEditableProfile}
-        onClose={() => setSettingsOpen(false)}
+        onClose={() => setProfileEditOpen(false)}
         onToast={showToast}
       />
 

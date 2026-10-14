@@ -87,21 +87,32 @@ function SearchIcon() {
   );
 }
 
+/** 정사각 24×24 · 대칭 톱니 스트로크 (찌그러짐 금지) */
 function SettingsIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      className="box-content size-[22px] shrink-0"
+      style={{ aspectRatio: "1 / 1" }}
+    >
       <path
-        d="M10.2 2.8h3.6l.45 2.05a6.9 6.9 0 0 1 1.7.7l1.9-1.1 2.55 2.55-1.1 1.9c.3.53.54 1.1.7 1.7L21.2 10.2v3.6l-2.05.45a6.9 6.9 0 0 1-.7 1.7l1.1 1.9-2.55 2.55-1.9-1.1a6.9 6.9 0 0 1-1.7.7l-.45 2.05h-3.6l-.45-2.05a6.9 6.9 0 0 1-1.7-.7l-1.9 1.1-2.55-2.55 1.1-1.9a6.9 6.9 0 0 1-.7-1.7L2.8 13.8v-3.6l2.05-.45a6.9 6.9 0 0 1 .7-1.7l-1.1-1.9L6.95 3.6l1.9 1.1a6.9 6.9 0 0 1 1.7-.7L10.2 2.8Z"
+        d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
         stroke="currentColor"
-        strokeWidth="1.55"
-        strokeLinejoin="miter"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
       />
       <circle
         cx="12"
         cy="12"
-        r="3.15"
+        r="3"
         stroke="currentColor"
-        strokeWidth="1.55"
+        strokeWidth="1.5"
+        vectorEffect="non-scaling-stroke"
       />
     </svg>
   );

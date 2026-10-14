@@ -11,7 +11,7 @@ import {
   ViralShareCard,
 } from "@/components/gamification";
 import { RecordDetailScreen } from "@/components/RecordDetailScreen";
-import type { EditableProfile } from "@/components/SettingsSheet";
+import type { EditableProfile } from "@/components/ProfileEditSheet";
 import { TierDetailScreen } from "@/components/TierDetailScreen";
 import {
   PROFILE_FOLLOWERS,
@@ -43,7 +43,10 @@ type ProfileScreenProps = {
   onOpenShareCard?: () => void;
   isSelf?: boolean;
   profile?: EditableProfile;
+  /** @deprecated 톱니는 Header — 하위 호환 */
   onOpenSettings?: () => void;
+  /** 프로필 본문 아래 칸 → 프로필 편집 */
+  onOpenProfileEdit?: () => void;
   /** 타인 프로필에서 뒤로 (DM·알림 등) */
   onBack?: () => void;
   uiDemo?: UiDemo;
@@ -56,7 +59,7 @@ export function ProfileScreen({
   onOpenShareCard,
   isSelf = true,
   profile,
-  onOpenSettings,
+  onOpenProfileEdit,
   onBack,
   uiDemo = "normal",
   onRetry,
@@ -248,23 +251,36 @@ export function ProfileScreen({
           {isSelf ? (
             <div
               className="mt-5 border-t border-neutral-800 pt-4"
-              aria-label="개인설정"
+              aria-label="프로필 편집"
             >
               <div className="flex items-baseline justify-between gap-3">
                 <p className="text-[11px] font-bold tracking-[0.16em] text-neutral-200">
-                  개인설정
+                  프로필
                 </p>
                 <button
                   type="button"
-                  onClick={onOpenSettings}
+                  onClick={onOpenProfileEdit}
                   className="text-[11px] tracking-[0.12em] text-neutral-200 underline underline-offset-4"
+                  aria-label="프로필 편집"
                 >
                   편집
                 </button>
               </div>
               <p className="mt-2 text-[13px] leading-[1.5] text-neutral-200">
-                이름 · 바이오 · 아바타를 설정 화면에서 고칩니다.
+                핸들 · 소개 · 스크랩 공개 등 프로필을 고칩니다.
               </p>
+              <dl className="mt-3 space-y-2 text-[13px]">
+                <div className="flex justify-between gap-3 border-b border-neutral-800 py-2">
+                  <dt className="text-neutral-200">핸들</dt>
+                  <dd className="truncate text-white">@{display.handle}</dd>
+                </div>
+                <div className="flex justify-between gap-3 border-b border-neutral-800 py-2">
+                  <dt className="text-neutral-200">소개</dt>
+                  <dd className="max-w-[65%] truncate text-right text-white">
+                    {display.bio || "—"}
+                  </dd>
+                </div>
+              </dl>
             </div>
           ) : null}
         </div>
