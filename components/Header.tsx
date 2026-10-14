@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { DomaMark } from "@/components/DomaMark";
 import { DomaWordmark } from "@/components/DomaWordmark";
 
 export type HomeSurface = "today" | "tomorrow";
 
 type HeaderProps = {
-  endsAt: string;
+  /** @deprecated 헤더 타이머 제거 — 전장 카운트다운만 사용. 호환용 유지 */
+  endsAt?: string;
   /** 방어자 탭일 때 흰 톤 */
   tone?: "dark" | "light";
   refreshing?: boolean;
@@ -21,15 +22,6 @@ type HeaderProps = {
   surface?: HomeSurface;
   onSurfaceChange?: (surface: HomeSurface) => void;
 };
-
-function formatCountdown(ms: number): string {
-  if (ms <= 0) return "00:00:00";
-  const totalSec = Math.floor(ms / 1000);
-  const h = Math.floor(totalSec / 3600);
-  const m = Math.floor((totalSec % 3600) / 60);
-  const s = totalSec % 60;
-  return [h, m, s].map((n) => String(n).padStart(2, "0")).join(":");
-}
 
 function CalendarIcon() {
   return (
@@ -93,9 +85,11 @@ function SettingsIcon() {
   );
 }
 
-/** 메인: 마크 없음 · 오늘/내일 1급 전환 · DOMA 절제 · 탭/pull 새로고침 */
+/**
+ * 좌: DOMA 마크 + 큰 워드마크 · 우: 달력·검색
+ * 빨간 타이머는 헤더에 두지 않음 (전장 카운트다운만)
+ */
 export function Header({
-  endsAt,
   tone = "dark",
   refreshing,
   onRefresh,
@@ -106,17 +100,7 @@ export function Header({
   surface = "today",
   onSurfaceChange,
 }: HeaderProps) {
-  const [remaining, setRemaining] = useState("--:--:--");
   const light = tone === "light";
-
-  useEffect(() => {
-    const tick = () => {
-      setRemaining(formatCountdown(new Date(endsAt).getTime() - Date.now()));
-    };
-    tick();
-    const id = window.setInterval(tick, 1000);
-    return () => window.clearInterval(id);
-  }, [endsAt]);
 
   return (
     <header
@@ -126,79 +110,76 @@ export function Header({
           : "border-white/12 bg-black/92"
       }`}
     >
-      <div className="relative mx-auto flex max-w-[560px] items-center px-3 py-2">
+      <div className="relative mx-auto flex max-w-[560px] items-center gap-2 px-3 py-2.5">
         <button
           type="button"
-          onClick={onOpenHistory}
-          className={`flex size-10 shrink-0 items-center justify-center ${
-            light ? "text-black" : "text-white"
+          onClick={onRefresh}
+          disabled={refreshing}
+          aria-label="새로고침"
+          aria-busy={refreshing || undefined}
+          className={`flex min-w-0 flex-1 items-center gap-2.5 text-left ${
+            refreshing ? "logo-refresh" : ""
           }`}
-          aria-label="전투 기록"
         >
-          <CalendarIcon />
+          <DomaMark size={34} light={light} />
+          <h1 className="min-w-0 leading-none">
+            <DomaWordmark size="md" light={light} />
+          </h1>
         </button>
 
-        <div className="flex min-w-0 flex-1 flex-col items-center justify-center">
+        <div className="flex shrink-0 items-center gap-0.5">
           <button
             type="button"
-            onClick={onRefresh}
-            disabled={refreshing}
-            aria-label="새로고침"
-            aria-busy={refreshing || undefined}
-            className={refreshing ? "logo-refresh" : undefined}
+            onClick={onOpenHistory}
+            className={`flex size-10 items-center justify-center ${
+              light ? "text-black" : "text-white"
+            }`}
+            aria-label="전투 기록"
           >
-            <h1 className="leading-none">
-              <DomaWordmark size="md" light={light} />
-            </h1>
+            <CalendarIcon />
           </button>
-          {refreshing ? (
-            <span
-              className={`mt-1 text-[10px] tracking-[0.14em] ${
-                light ? "text-neutral-500" : "text-muted"
+          {trailing === "settings" ? (
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              className={`flex size-10 items-center justify-center ${
+                light ? "text-black" : "text-white"
               }`}
+              aria-label="설정"
             >
-              업데이트 중
-            </span>
+              <SettingsIcon />
+            </button>
           ) : (
-            <time
-              dateTime={endsAt}
-              className="mt-1 font-mono text-[12px] font-medium tabular-nums tracking-[0.12em] text-timer"
-              aria-label={`남은 시간 ${remaining}`}
+            <button
+              type="button"
+              onClick={onOpenSearch}
+              className={`flex size-10 items-center justify-center ${
+                light ? "text-black" : "text-white"
+              }`}
+              aria-label="검색"
             >
-              {remaining}
-            </time>
+              <SearchIcon />
+            </button>
           )}
         </div>
-
-        {trailing === "settings" ? (
-          <button
-            type="button"
-            onClick={onOpenSettings}
-            className={`flex size-10 shrink-0 items-center justify-center ${
-              light ? "text-black" : "text-white"
-            }`}
-            aria-label="설정"
-          >
-            <SettingsIcon />
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={onOpenSearch}
-            className={`flex size-10 shrink-0 items-center justify-center ${
-              light ? "text-black" : "text-white"
-            }`}
-            aria-label="검색"
-          >
-            <SearchIcon />
-          </button>
-        )}
       </div>
+
+      {refreshing ? (
+        <p
+          className={`pb-1.5 text-center text-[10px] tracking-[0.14em] ${
+            light ? "text-neutral-500" : "text-muted"
+          }`}
+        >
+          업데이트 중
+        </p>
+      ) : null}
 
       {/* 오늘 | 내일 — 나란한 1급 서피스 */}
       {onSurfaceChange ? (
         <div
-          className="mx-auto grid max-w-[560px] grid-cols-2 border-t border-white/10"
+          className={`mx-auto grid max-w-[560px] grid-cols-2 border-t ${
+            light ? "border-black/10" : "border-white/10"
+          }`}
           role="tablist"
           aria-label="오늘과 내일"
         >

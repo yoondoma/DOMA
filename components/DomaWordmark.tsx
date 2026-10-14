@@ -16,8 +16,8 @@ const sizeClass = {
     kr: "text-[11px]",
   },
   md: {
-    brand: "text-[15px]",
-    kr: "text-[7.5px]",
+    brand: "text-[22px]",
+    kr: "text-[9px]",
   },
   sm: {
     brand: "text-[13px]",

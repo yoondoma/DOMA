@@ -151,8 +151,6 @@ function BattlefieldIntro({
   onPickSide: (side: Side) => void;
 }) {
   const remaining = useCountdown(arena.endsAt);
-  const nexusCount = opinions.filter((o) => o.side === "NEXUS").length;
-  const aegisCount = opinions.filter((o) => o.side === "AEGIS").length;
   const champion = useMemo(() => {
     if (opinions.length === 0) return null;
     return [...opinions].sort((a, b) => b.likes - a.likes)[0] ?? null;
@@ -221,13 +219,10 @@ function BattlefieldIntro({
           aria-selected={false}
           aria-label="도전자"
           onClick={() => onPickSide("NEXUS")}
-          className="flex min-h-[132px] flex-col items-center justify-center gap-2 border-r border-white/15 bg-black px-3 py-5 text-white active:bg-white/[0.04]"
+          className="flex min-h-[120px] flex-col items-center justify-center gap-2.5 border-r border-white/15 bg-black px-3 py-5 text-white active:bg-white/[0.04]"
         >
           <SpearMark size={36} />
-          <span className="text-[15px] font-bold tracking-[0.12em]">흑 진영</span>
-          <span className="text-[11px] tracking-[0.08em] text-white/55">
-            도전자 · {nexusCount}명 참전
-          </span>
+          <span className="text-[14px] font-bold tracking-[0.16em]">도전자</span>
         </button>
         <button
           type="button"
@@ -235,13 +230,10 @@ function BattlefieldIntro({
           aria-selected={false}
           aria-label="방어자"
           onClick={() => onPickSide("AEGIS")}
-          className="flex min-h-[132px] flex-col items-center justify-center gap-2 bg-white px-3 py-5 text-black active:bg-neutral-100"
+          className="flex min-h-[120px] flex-col items-center justify-center gap-2.5 bg-white px-3 py-5 text-black active:bg-neutral-100"
         >
           <ShieldMark size={36} />
-          <span className="text-[15px] font-bold tracking-[0.12em]">백 진영</span>
-          <span className="text-[11px] tracking-[0.08em] text-black/55">
-            방어자 · {aegisCount}명 참전
-          </span>
+          <span className="text-[14px] font-bold tracking-[0.16em]">방어자</span>
         </button>
       </div>
 
