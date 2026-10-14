@@ -21,6 +21,7 @@ import { PullRefresh } from "@/components/PullRefresh";
 import { RulesSheet } from "@/components/RulesSheet";
 import { SearchSheet } from "@/components/SearchSheet";
 import { AdSlot } from "@/components/AdSlot";
+import { AuthSheet } from "@/components/AuthSheet";
 import {
   ProfileEditSheet,
   type EditableProfile,
@@ -96,6 +97,8 @@ export function DomaHome() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [profileEditOpen, setProfileEditOpen] = useState(false);
   const [gateSplashOpen, setGateSplashOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [leftSocialId, setLeftSocialId] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [editableProfile, setEditableProfile] = useState<EditableProfile>({
     name: PROFILE_USER.name,
@@ -151,6 +154,13 @@ export function DomaHome() {
   useEffect(() => {
     if (navTab !== "messages") setNewMessageOpen(false);
   }, [navTab]);
+
+  /** 미로그인 → 가입/로그인 루트 */
+  useEffect(() => {
+    if (!entered) return;
+    if (!session) setAuthOpen(true);
+    else setAuthOpen(false);
+  }, [entered, session]);
 
   /** 목업 `?shutdown=1` → LOCKED 강제 */
   useEffect(() => {
@@ -659,6 +669,10 @@ export function DomaHome() {
       <SettingsSheet
         open={settingsOpen}
         onProfileSync={setEditableProfile}
+        onLeftAccount={(socialId) => {
+          setLeftSocialId(socialId);
+          setAuthOpen(true);
+        }}
         onClose={() => setSettingsOpen(false)}
         onToast={showToast}
       />
@@ -667,6 +681,16 @@ export function DomaHome() {
         profile={editableProfile}
         onSave={setEditableProfile}
         onClose={() => setProfileEditOpen(false)}
+        onToast={showToast}
+      />
+      <AuthSheet
+        open={authOpen && !session}
+        preferSocialId={leftSocialId}
+        onComplete={(p) => {
+          setEditableProfile(p);
+          setLeftSocialId(null);
+          setAuthOpen(false);
+        }}
         onToast={showToast}
       />
 

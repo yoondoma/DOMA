@@ -32,6 +32,10 @@ export type User = {
   createdAtUtc: string;
   /** 코스메틱 예약 — 기본 omit/null = B&W. 티어 무관 */
   cosmetics?: Cosmetics;
+  /** 목 소셜 id — `kakao:handle` */
+  socialId?: string;
+  /** 탈퇴 시각 (목) — 세션 종료 후 재가입 쿨다운용 */
+  leftAtUtc?: string | null;
 };
 
 /** 당일 참전 세션 (유저 × dayId) */

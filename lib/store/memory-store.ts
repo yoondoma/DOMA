@@ -35,6 +35,7 @@ import {
   makeSessionId,
   makeSupportId,
   makeTopicCandidateId,
+  userIdFromHandle,
 } from "@/lib/types/ids";
 import { buildSeedSnapshot } from "@/lib/store/seed";
 import type {
@@ -52,6 +53,13 @@ import {
   cooldownRemainingMs,
 } from "@/lib/types/content";
 import { emptyQuota, QUOTA_LIMITS } from "@/lib/types/quota";
+import {
+  checkRejoin,
+  isAge14Plus,
+  normalizeHandle,
+  recordLeave,
+  socialIdForHandle,
+} from "@/lib/account";
 
 const STORAGE_KEY = "doma.store.v5";
 
@@ -207,10 +215,28 @@ class MemoryStore {
   }
 
   private autoLoginDefault() {
+    /** `?signup=1` · `?auth=1` — 자동 로그인 끄고 가입 루트 목업 */
+    if (typeof window !== "undefined") {
+      const q = new URLSearchParams(window.location.search);
+      if (q.get("signup") === "1" || q.get("auth") === "1") {
+        this.snap.session = null;
+        persist(this.snap);
+        return;
+      }
+    }
     const userId = this.defaultUserId();
     if (!userId) {
       persist(this.snap);
       return;
+    }
+    const user = this.snap.users.find((u) => u.id === userId);
+    if (user) {
+      const socialId = user.socialId ?? socialIdForHandle(user.handle);
+      if (!checkRejoin(socialId).ok) {
+        this.snap.session = null;
+        persist(this.snap);
+        return;
+      }
     }
     const dayId = this.snap.clock.dayId;
     this.snap.session = {
@@ -286,7 +312,7 @@ class MemoryStore {
     return this.snap.arenaMeta;
   }
 
-  /** 목 로그인 — handle 또는 userId */
+  /** 목 로그인 — handle 또는 userId · 탈퇴 쿨다운이면 REJOIN_COOLDOWN */
   login(userIdOrHandle: string): Session {
     const next = clone(this.snap);
     const key = userIdOrHandle.replace(/^@/, "");
@@ -294,9 +320,24 @@ class MemoryStore {
       next.users.find((u) => u.id === key) ??
       next.users.find((u) => u.handle === key.toLowerCase());
     if (!user) throw new Error("USER_NOT_FOUND");
+    const socialId = user.socialId ?? socialIdForHandle(user.handle);
+    const rejoin = checkRejoin(socialId);
+    if (!rejoin.ok) {
+      const err = new Error("REJOIN_COOLDOWN");
+      (err as Error & { messageKo: string }).messageKo = rejoin.message;
+      throw err;
+    }
     const dayId = next.clock.dayId;
     const prevCamp =
       next.session?.userId === user.id ? next.session.joinedCamp : null;
+    const idx = next.users.findIndex((u) => u.id === user.id);
+    if (idx >= 0) {
+      next.users[idx] = {
+        ...next.users[idx],
+        socialId,
+        leftAtUtc: null,
+      };
+    }
     next.session = {
       id: makeSessionId(dayId, user.id),
       userId: user.id,
@@ -317,6 +358,99 @@ class MemoryStore {
   /** 다른 시드 유저로 전환 (목) */
   switchUser(userIdOrHandle: string): Session {
     return this.login(userIdOrHandle);
+  }
+
+  /**
+   * 탈퇴 — 세션 종료 · leftAt 기록 · 7일 재가입 쿨다운.
+   * 설문·비번 반복 없음.
+   */
+  leaveAccount(): void {
+    const next = clone(this.snap);
+    if (!next.session) throw new Error("SESSION_REQUIRED");
+    const uid = next.session.userId;
+    const idx = next.users.findIndex((u) => u.id === uid);
+    if (idx < 0) throw new Error("USER_NOT_FOUND");
+    const user = next.users[idx];
+    const socialId = user.socialId ?? socialIdForHandle(user.handle);
+    const leftAtUtc = new Date().toISOString();
+    recordLeave(socialId, new Date(leftAtUtc));
+    next.users[idx] = {
+      ...user,
+      socialId,
+      leftAtUtc,
+    };
+    next.session = null;
+    this.commit(next);
+  }
+
+  /**
+   * 카카오 목 가입/로그인.
+   * 연령 미달 → AGE_GATE · 탈퇴 쿨다운 → REJOIN_COOLDOWN · 핸들 중복 → HANDLE_TAKEN
+   */
+  signupKakaoMock(input: {
+    handle: string;
+    birthYear: number;
+    displayName?: string;
+    /** 재가입 쿨다운 검사용 — 기본 kakao:handle */
+    socialId?: string;
+  }): Session {
+    if (!isAge14Plus(input.birthYear)) {
+      throw new Error("AGE_GATE");
+    }
+    const handle = normalizeHandle(input.handle);
+    if (handle.length < 2) throw new Error("HANDLE_INVALID");
+    const socialId = input.socialId ?? socialIdForHandle(handle);
+    const rejoin = checkRejoin(socialId);
+    if (!rejoin.ok) {
+      const err = new Error("REJOIN_COOLDOWN");
+      (err as Error & { messageKo: string }).messageKo = rejoin.message;
+      throw err;
+    }
+    const next = clone(this.snap);
+    let user = next.users.find(
+      (u) => u.socialId === socialId || u.handle === handle,
+    );
+    if (user && user.handle !== handle && user.socialId === socialId) {
+      /* 같은 소셜 · 핸들 변경 허용 */
+    } else if (
+      next.users.some((u) => u.handle === handle && u.socialId !== socialId)
+    ) {
+      throw new Error("HANDLE_TAKEN");
+    }
+    if (!user) {
+      user = {
+        id: userIdFromHandle(handle),
+        handle,
+        displayName: input.displayName?.trim() || handle,
+        bio: "",
+        createdAtUtc: new Date().toISOString(),
+        cosmetics: {},
+        socialId,
+        leftAtUtc: null,
+      };
+      next.users.push(user);
+    } else {
+      const idx = next.users.findIndex((u) => u.id === user!.id);
+      next.users[idx] = {
+        ...next.users[idx],
+        handle,
+        displayName:
+          input.displayName?.trim() || next.users[idx].displayName || handle,
+        socialId,
+        leftAtUtc: null,
+      };
+      user = next.users[idx];
+    }
+    const dayId = next.clock.dayId;
+    next.session = {
+      id: makeSessionId(dayId, user.id),
+      userId: user.id,
+      dayId,
+      joinedCamp: null,
+      createdAtUtc: new Date().toISOString(),
+    };
+    this.commit(next);
+    return next.session;
   }
 
   listOpinions(dayId?: DayId): Opinion[] {

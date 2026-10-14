@@ -63,6 +63,8 @@ function ensureUser(
     createdAtUtc: "2026-03-01T00:00:00.000Z",
     /** 기본 B&W — 필드만 예약 */
     cosmetics: {},
+    socialId: `kakao:${key}`,
+    leftAtUtc: null,
   };
   byHandle.set(key, user);
   return user;

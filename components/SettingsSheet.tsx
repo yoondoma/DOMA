@@ -25,11 +25,20 @@ type SettingsSheetProps = {
   open: boolean;
   /** 계정 전환 시 프로필 표시 동기화 */
   onProfileSync?: (next: EditableProfile) => void;
+  /** 탈퇴 완료 — 가입 루트로 */
+  onLeftAccount?: (socialId: string | null) => void;
   onClose: () => void;
   onToast?: (message: string) => void;
 };
 
-type Panel = "menu" | "account" | "privacy" | "sound" | "help" | "monetize";
+type Panel =
+  | "menu"
+  | "account"
+  | "privacy"
+  | "sound"
+  | "help"
+  | "monetize"
+  | "leave";
 
 const SWITCHABLE = ["soohan", "mira.k", "zero.nexus", "han.aegis"] as const;
 const DM_OPTIONS: DmPolicy[] = ["everyone", "mutual", "off"];
@@ -62,6 +71,7 @@ function Chevron() {
 export function SettingsSheet({
   open,
   onProfileSync,
+  onLeftAccount,
   onClose,
   onToast,
 }: SettingsSheetProps) {
@@ -150,7 +160,22 @@ export function SettingsSheet({
             ? "앱 사운드"
             : panel === "monetize"
               ? "광고·꾸미기"
-              : "도움말";
+              : panel === "leave"
+                ? "탈퇴"
+                : "도움말";
+
+  const confirmLeave = () => {
+    try {
+      const u = domaStore.getCurrentUser();
+      const socialId = u?.socialId ?? null;
+      domaStore.leaveAccount();
+      onToast?.("탈퇴했습니다");
+      onClose();
+      onLeftAccount?.(socialId);
+    } catch {
+      onToast?.("탈퇴에 실패했습니다");
+    }
+  };
 
   return (
     <div
@@ -404,7 +429,7 @@ export function SettingsSheet({
           ) : null}
 
           {panel === "account" ? (
-            <div className="px-2">
+            <div className="px-2" data-account-settings>
               <p className="px-1 py-3 text-[13px] text-neutral-200">
                 {sessionUser
                   ? `로그인 · @${sessionUser.handle}`
@@ -430,6 +455,43 @@ export function SettingsSheet({
                   );
                 })}
               </ul>
+              {sessionUser ? (
+                <button
+                  type="button"
+                  onClick={() => setPanel("leave")}
+                  className="mt-8 w-full border border-neutral-700 py-3.5 text-[14px] text-neutral-200"
+                  data-leave-entry
+                >
+                  탈퇴
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+
+          {panel === "leave" ? (
+            <div className="px-2" data-leave-confirm>
+              <p className="px-1 py-3 text-[14px] leading-relaxed text-white">
+                정말 탈퇴할까요?
+              </p>
+              <p className="px-1 text-[13px] leading-relaxed text-neutral-200">
+                탈퇴하면 세션이 끝나고, 같은 계정으로는 7일 뒤 다시 가입할 수
+                있습니다.
+              </p>
+              <button
+                type="button"
+                onClick={confirmLeave}
+                className="mt-8 w-full border border-white bg-white py-3.5 text-[14px] font-bold tracking-[0.08em] text-black"
+                data-leave-confirm-btn
+              >
+                탈퇴
+              </button>
+              <button
+                type="button"
+                onClick={() => setPanel("account")}
+                className="mt-3 w-full py-3 text-[13px] text-neutral-200"
+              >
+                취소
+              </button>
             </div>
           ) : null}
 
