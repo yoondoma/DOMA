@@ -2,12 +2,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
   <rect width="1024" height="1024" fill="#000000"/>
   <g transform="translate(512 512) scale(9.2) translate(-24 -36)">
-    <defs>
-      <clipPath id="ell" clipPathUnits="userSpaceOnUse">
-        <path fill-rule="evenodd" clip-rule="evenodd" d="M0 0H48V72H0Z M0.8 18.8h46.4L24 60.2Z"/>
-      </clipPath>
-    </defs>
-    <ellipse cx="24" cy="56.5" rx="20.5" ry="12" fill="none" stroke="#ffffff" stroke-width="1.45" clip-path="url(#ell)"/>
+    <path d="M18.55 45.4 A20.5 12 0 1 0 29.45 45.4" fill="none" stroke="#ffffff" stroke-width="1.45" stroke-linecap="butt"/>
     <path d="M6 23.2h36L24 52Z" fill="#000000" stroke="none"/>
     <path d="M6 23.2h36L24 52Z" fill="none" stroke="#ffffff" stroke-width="1.45" stroke-linejoin="miter"/>
     <rect x="15.75" y="1" width="16.5" height="22" fill="none" stroke="#ffffff" stroke-width="1.45"/>
