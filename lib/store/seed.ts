@@ -260,8 +260,16 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
       createdAtUtc: "2026-09-01T00:00:00.000Z",
     });
   }
-  /** DM 데모 — mira/zero/han은 팔로워(일반 수신), pulse는 비팔로워(요청함) */
-  for (const handle of ["mira.k", "zero.nexus", "han.aegis"] as const) {
+  /** DM 데모 — 상호 팔로=일반 수신, pulse만 비팔로워(요청함) */
+  for (const handle of [
+    "mira.k",
+    "zero.nexus",
+    "han.aegis",
+    "nova",
+    "reed",
+    "kiln",
+    "slate",
+  ] as const) {
     const u = byHandle.get(handle)!;
     const id = makeFollowId(u.id, me.id);
     if (!follows.some((f) => f.id === id)) {

@@ -72,11 +72,40 @@ export const MESSAGE_THREADS: MessageThread[] = [
     timeLabel: "1시간",
   },
   {
+    id: "dm-5",
+    name: "nova",
+    handle: "nova",
+    preview: "오늘 전장 타이머 전에 한 줄만 더 올릴게요.",
+    timeLabel: "2시간",
+    unread: true,
+  },
+  {
     id: "dm-3",
     name: "han.aegis",
     handle: "han.aegis",
     preview: "내일 주제 후보 같이 볼래요?",
     timeLabel: "어제",
+  },
+  {
+    id: "dm-6",
+    name: "reed",
+    handle: "reed",
+    preview: "판결 카드 저장해 두었습니다.",
+    timeLabel: "어제",
+  },
+  {
+    id: "dm-7",
+    name: "kiln",
+    handle: "kiln",
+    preview: "방패 쪽 근거 세 줄로 압축했어요.",
+    timeLabel: "2일",
+  },
+  {
+    id: "dm-8",
+    name: "slate",
+    handle: "slate",
+    preview: "다음 시즌 티어 컷 감 잡히세요?",
+    timeLabel: "2일",
   },
   {
     id: "dm-4",
@@ -96,6 +125,22 @@ export const CHAT_BY_THREAD: Record<string, ChatLine[]> = {
   "dm-2": [
     { id: "c4", fromMe: false, text: "벤치마크 링크 보냈어요." },
     { id: "c5", fromMe: true, text: "확인했습니다." },
+  ],
+  "dm-5": [
+    { id: "c6", fromMe: false, text: "오늘 전장 타이머 전에 한 줄만 더 올릴게요." },
+    { id: "c7", fromMe: true, text: "좋아요. 짧게 가세요." },
+  ],
+  "dm-3": [
+    { id: "c8", fromMe: false, text: "내일 주제 후보 같이 볼래요?" },
+  ],
+  "dm-6": [
+    { id: "c9", fromMe: false, text: "판결 카드 저장해 두었습니다." },
+  ],
+  "dm-7": [
+    { id: "c10", fromMe: false, text: "방패 쪽 근거 세 줄로 압축했어요." },
+  ],
+  "dm-8": [
+    { id: "c11", fromMe: false, text: "다음 시즌 티어 컷 감 잡히세요?" },
   ],
 };
 
@@ -124,6 +169,30 @@ export const SOCIAL_PROFILES: Record<string, SocialProfile> = {
     handle: "pulse",
     bio: "위임의 곡선을 지켜본다. 대체는 한 번에 오지 않는다.",
     avatarChar: "P",
+  },
+  nova: {
+    name: "nova",
+    handle: "nova",
+    bio: "짧은 진술만 남긴다.",
+    avatarChar: "N",
+  },
+  reed: {
+    name: "reed",
+    handle: "reed",
+    bio: "판결 기록을 모은다.",
+    avatarChar: "R",
+  },
+  kiln: {
+    name: "kiln",
+    handle: "kiln",
+    bio: "방어 근거를 압축한다.",
+    avatarChar: "K",
+  },
+  slate: {
+    name: "slate",
+    handle: "slate",
+    bio: "시즌 컷을 본다.",
+    avatarChar: "S",
   },
 };
 
