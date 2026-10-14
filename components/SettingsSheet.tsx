@@ -38,6 +38,7 @@ type SettingsSheetProps = {
 type Panel =
   | "menu"
   | "account"
+  | "notify"
   | "privacy"
   | "sound"
   | "help"
@@ -48,11 +49,45 @@ type Panel =
 const SWITCHABLE = ["soohan", "mira.k", "zero.nexus", "han.aegis"] as const;
 const DM_OPTIONS: DmPolicy[] = ["everyone", "mutual", "off"];
 
-function RowIcon({ children }: { children: ReactNode }) {
+const NOTIFY_KEY = "doma.notifyPrefs.v1";
+
+type NotifyPrefs = {
+  judgment: boolean;
+  mine: boolean;
+  message: boolean;
+  mention: boolean;
+};
+
+function defaultNotifyPrefs(): NotifyPrefs {
+  return { judgment: true, mine: true, message: true, mention: true };
+}
+
+function loadNotifyPrefs(): NotifyPrefs {
+  if (typeof window === "undefined") return defaultNotifyPrefs();
+  try {
+    const raw = window.localStorage.getItem(NOTIFY_KEY);
+    if (!raw) return defaultNotifyPrefs();
+    return { ...defaultNotifyPrefs(), ...(JSON.parse(raw) as Partial<NotifyPrefs>) };
+  } catch {
+    return defaultNotifyPrefs();
+  }
+}
+
+function saveNotifyPrefs(patch: Partial<NotifyPrefs>): NotifyPrefs {
+  const next = { ...loadNotifyPrefs(), ...patch };
+  try {
+    window.localStorage.setItem(NOTIFY_KEY, JSON.stringify(next));
+  } catch {
+    /* ignore */
+  }
+  return next;
+}
+
+function SectionLabel({ children }: { children: ReactNode }) {
   return (
-    <span className="flex size-6 shrink-0 items-center justify-center text-white" aria-hidden>
+    <p className="px-1 pb-1 pt-5 text-center text-[10px] font-bold tracking-[0.18em] text-neutral-200 first:pt-2">
       {children}
-    </span>
+    </p>
   );
 }
 
@@ -91,6 +126,7 @@ export function SettingsSheet({
     loadAdPreviewPrefs(),
   );
   const [offlineSim, setOfflineSim] = useState(false);
+  const [notify, setNotify] = useState<NotifyPrefs>(() => loadNotifyPrefs());
 
   useEffect(() => {
     if (open) {
@@ -98,6 +134,7 @@ export function SettingsSheet({
       setPrivacyLocal(domaStore.getPrivacy());
       setSoundLocal(loadSoundPrefs());
       setAdPreview(loadAdPreviewPrefs());
+      setNotify(loadNotifyPrefs());
       setOfflineSim(loadOfflineSim());
     }
   }, [open, snap.privacyByUser, snap.session?.userId]);
@@ -161,17 +198,19 @@ export function SettingsSheet({
       ? "설정"
       : panel === "account"
         ? "계정"
-        : panel === "privacy"
-          ? "프라이버시·차단"
-          : panel === "sound"
-            ? "앱 사운드"
-            : panel === "monetize"
-              ? "광고·꾸미기"
-              : panel === "offline"
-                ? "오프라인·보관"
-                : panel === "leave"
-                  ? "탈퇴"
-                  : "도움말";
+        : panel === "notify"
+          ? "알림"
+          : panel === "privacy"
+            ? "프라이버시·차단"
+            : panel === "sound"
+              ? "앱 사운드"
+              : panel === "monetize"
+                ? "광고·꾸미기"
+                : panel === "offline"
+                  ? "오프라인·보관"
+                  : panel === "leave"
+                    ? "탈퇴"
+                    : "도움말";
 
   const confirmLeave = () => {
     try {
@@ -215,252 +254,157 @@ export function SettingsSheet({
 
         <div className="flex-1 overflow-y-auto px-2 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-2">
           {panel === "menu" ? (
-            <ul aria-label="설정 목록" className="px-2">
+            <div aria-label="설정 목록" className="px-2">
               {(
                 [
                   {
-                    id: "account",
-                    label: "계정",
-                    hint: sessionUser ? `@${sessionUser.handle}` : "로그인",
-                    onClick: () => setPanel("account"),
-                    icon: (
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="8" r="3.25" stroke="currentColor" strokeWidth="1.5" />
-                        <path
-                          d="M5.5 19.5c1.6-3 4-4.5 6.5-4.5s4.9 1.5 6.5 4.5"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                    ),
+                    group: "계정",
+                    rows: [
+                      {
+                        id: "account",
+                        label: "계정",
+                        hint: sessionUser
+                          ? `@${sessionUser.handle} · 만 14+`
+                          : "로그인 · 만 14+",
+                        onClick: () => setPanel("account"),
+                      },
+                      {
+                        id: "scrap",
+                        label: "스크랩",
+                        hint: "본인만 봄 · 프로필 스크랩 탭",
+                        onClick: () =>
+                          onToast?.("프로필 → 스크랩 탭에서 확인하세요"),
+                      },
+                    ],
                   },
                   {
-                    id: "notify",
-                    label: "알림",
-                    hint: "판결 · 내 글 · 메시지",
-                    onClick: () => onToast?.("알림 세부 — 곧 연결"),
-                    icon: (
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                        <path
-                          d="M6 17h12l-1.2-2.1V10a4.8 4.8 0 1 0-9.6 0v4.9L6 17Z"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M10 19a2 2 0 0 0 4 0"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        />
-                      </svg>
-                    ),
+                    group: "알림·사운드",
+                    rows: [
+                      {
+                        id: "notify",
+                        label: "알림",
+                        hint: "판결 · 내 글 · 메시지 · 멘션",
+                        onClick: () => setPanel("notify"),
+                      },
+                      {
+                        id: "sound",
+                        label: "앱 사운드",
+                        hint: sound.enabled
+                          ? "켜짐 · 입장+판결 스팅만"
+                          : "꺼짐 · 입장+판결 스팅",
+                        onClick: () => setPanel("sound"),
+                      },
+                    ],
                   },
                   {
-                    id: "scrap",
-                    label: "스크랩·저장",
-                    hint: "프로필 스크랩 탭",
-                    onClick: () =>
-                      onToast?.("프로필 → 스크랩 탭에서 확인하세요"),
-                    icon: (
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                        <path
-                          d="M7 4.5h10v15l-5-3.2L7 19.5V4.5Z"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    ),
+                    group: "프라이버시·안전",
+                    rows: [
+                      {
+                        id: "privacy",
+                        label: "프라이버시·차단",
+                        hint: "DM 수신 · 차단 · 신고 안내",
+                        onClick: () => setPanel("privacy"),
+                      },
+                      {
+                        id: "content",
+                        label: "콘텐츠 한도",
+                        hint: "제안·의견 500 · 댓글 280 · 쿨다운 3분",
+                        onClick: () =>
+                          onToast?.(
+                            "제안 500 · 의견 500 · 댓글 280 · 작성 쿨다운 3분",
+                          ),
+                      },
+                    ],
                   },
                   {
-                    id: "privacy",
-                    label: "프라이버시·차단",
-                    hint: "DM · 차단 목록",
-                    onClick: () => setPanel("privacy"),
-                    icon: (
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                        <rect
-                          x="5.5"
-                          y="10.5"
-                          width="13"
-                          height="9.5"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        />
-                        <path
-                          d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        />
-                      </svg>
-                    ),
+                    group: "데이터·광고",
+                    rows: [
+                      {
+                        id: "offline",
+                        label: "오프라인·보관",
+                        hint: offlineSim
+                          ? "시뮬레이션 켜짐"
+                          : "판결 저장 · 로드된 화면",
+                        onClick: () => setPanel("offline"),
+                      },
+                      {
+                        id: "monetize",
+                        label: "광고·꾸미기",
+                        hint: adPreview.enabled
+                          ? "오늘·내일 아래 미리보기 켜짐"
+                          : "슬롯 미리보기 · 코스메틱 훅",
+                        onClick: () => setPanel("monetize"),
+                      },
+                    ],
                   },
                   {
-                    id: "content",
-                    label: "콘텐츠",
-                    hint: "글자 수 · 쿨다운",
-                    onClick: () =>
-                      onToast?.(
-                        "제안 500 · 의견 500 · 댓글 280 · 작성 쿨다운 3분",
-                      ),
-                    icon: (
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                        <path
-                          d="M5 6.5h14M5 12h10M5 17.5h12"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="square"
-                        />
-                      </svg>
-                    ),
-                  },
-                  {
-                    id: "sound",
-                    label: "앱 사운드",
-                    hint: sound.enabled ? "켜짐" : "꺼짐",
-                    onClick: () => setPanel("sound"),
-                    icon: (
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                        <path
-                          d="M4.5 9.5v5h3.2L12.5 19V5L7.7 9.5H4.5Z"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M15.5 9.5a3.2 3.2 0 0 1 0 5M17.8 7.2a6 6 0 0 1 0 9.6"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                    ),
-                  },
-                  {
-                    id: "monetize",
-                    label: "광고·꾸미기 (준비 중)",
-                    hint: adPreview.enabled
-                      ? "슬롯 미리보기 켜짐"
-                      : "슬롯 · 스킨 훅",
-                    onClick: () => setPanel("monetize"),
-                    icon: (
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                        <rect
-                          x="4.5"
-                          y="6.5"
-                          width="15"
-                          height="11"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        />
-                        <path
-                          d="M8 12h8M10 9.5h4"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="square"
-                        />
-                      </svg>
-                    ),
-                  },
-                  {
-                    id: "offline",
-                    label: "오프라인·보관",
-                    hint: offlineSim ? "시뮬레이션 켜짐" : "판결 저장 · 목업",
-                    onClick: () => setPanel("offline"),
-                    icon: (
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                        <path
-                          d="M12 4.5v9M8.5 10.5 12 14l3.5-3.5M5.5 17.5h13"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="square"
-                          strokeLinejoin="miter"
-                        />
-                      </svg>
-                    ),
-                  },
-                  {
-                    id: "help",
-                    label: "도움말",
-                    hint: "규칙 · DOMA",
-                    onClick: () => setPanel("help"),
-                    icon: (
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                        <circle
-                          cx="12"
-                          cy="12"
-                          r="8.25"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        />
-                        <path
-                          d="M9.8 9.4a2.3 2.3 0 1 1 3.5 2c-.7.5-1.1.9-1.1 1.7V14"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                        />
-                        <circle cx="12.2" cy="16.6" r="0.9" fill="currentColor" />
-                      </svg>
-                    ),
+                    group: "도움말",
+                    rows: [
+                      {
+                        id: "help",
+                        label: "도움말·규칙",
+                        hint: "전장 규칙 · DOMA",
+                        onClick: () => setPanel("help"),
+                      },
+                    ],
                   },
                 ] as const
-              ).map((row) => (
-                <li key={row.id} className="border-b border-neutral-800">
+              ).map((section) => (
+                <div key={section.group}>
+                  <SectionLabel>{section.group}</SectionLabel>
+                  <ul>
+                    {section.rows.map((row) => (
+                      <li key={row.id} className="border-b border-neutral-800">
+                        <button
+                          type="button"
+                          onClick={row.onClick}
+                          className="flex w-full items-center gap-3 py-3.5 text-left active:opacity-70"
+                        >
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-[15px] text-white">
+                              {row.label}
+                            </span>
+                            <span className="mt-0.5 block text-[12px] leading-snug text-neutral-200">
+                              {row.hint}
+                            </span>
+                          </span>
+                          <span className="text-neutral-200">
+                            <Chevron />
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+              <ul className="mt-2">
+                <li className="border-b border-neutral-800">
                   <button
                     type="button"
-                    onClick={row.onClick}
-                    className="flex w-full items-center gap-3 py-4 text-left active:opacity-70"
+                    onClick={sessionUser ? logout : loginDefault}
+                    className="flex w-full items-center gap-3 py-3.5 text-left active:opacity-70"
                   >
-                    <RowIcon>{row.icon}</RowIcon>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-[15px] text-white">
-                        {row.label}
-                      </span>
-                      {row.hint ? (
-                        <span className="mt-0.5 block text-[12px] text-neutral-200">
-                          {row.hint}
-                        </span>
-                      ) : null}
-                    </span>
-                    <span className="text-neutral-200">
-                      <Chevron />
+                    <span className="text-[15px] text-white">
+                      {sessionUser ? "로그아웃" : "수한으로 로그인 (목업)"}
                     </span>
                   </button>
                 </li>
-              ))}
-              <li className="border-b border-neutral-800">
-                <button
-                  type="button"
-                  onClick={sessionUser ? logout : loginDefault}
-                  className="flex w-full items-center gap-3 py-4 text-left active:opacity-70"
-                >
-                  <RowIcon>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M10 5.5H6.5v13H10M13.5 12H20M17 8.5 20.5 12 17 15.5"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="square"
-                        strokeLinejoin="miter"
-                      />
-                    </svg>
-                  </RowIcon>
-                  <span className="text-[15px] text-white">
-                    {sessionUser ? "로그아웃" : "수한으로 로그인"}
-                  </span>
-                </button>
-              </li>
-            </ul>
+              </ul>
+            </div>
           ) : null}
 
           {panel === "account" ? (
             <div className="px-2" data-account-settings>
-              <p className="px-1 py-3 text-[13px] text-neutral-200">
+              <p className="px-1 py-3 text-center text-[13px] leading-relaxed text-neutral-200">
                 {sessionUser
                   ? `로그인 · @${sessionUser.handle}`
                   : "로그아웃 상태"}
               </p>
+              <p className="px-1 pb-3 text-center text-[12px] leading-relaxed text-neutral-200">
+                가입은 만 14세 이상. 카카오 연동은 준비 중 · 지금은 목업
+                계정 전환만 됩니다.
+              </p>
+              <SectionLabel>계정 전환 (목업)</SectionLabel>
               <ul aria-label="계정 전환">
                 {SWITCHABLE.map((handle) => {
                   const active = sessionUser?.handle === handle;
@@ -482,15 +426,94 @@ export function SettingsSheet({
                 })}
               </ul>
               {sessionUser ? (
-                <button
-                  type="button"
-                  onClick={() => setPanel("leave")}
-                  className="mt-8 w-full border border-neutral-700 py-3.5 text-[14px] text-neutral-200"
-                  data-leave-entry
-                >
-                  탈퇴
-                </button>
+                <>
+                  <SectionLabel>탈퇴</SectionLabel>
+                  <p className="px-1 pb-3 text-[12px] leading-relaxed text-neutral-200">
+                    탈퇴 후 글은 「탈퇴한 사용자」로 남습니다. 같은 계정
+                    재가입은 7일 뒤부터.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setPanel("leave")}
+                    className="w-full border border-neutral-700 py-3.5 text-[14px] text-neutral-200"
+                    data-leave-entry
+                  >
+                    탈퇴하기
+                  </button>
+                </>
               ) : null}
+            </div>
+          ) : null}
+
+          {panel === "notify" ? (
+            <div className="px-2" data-notify-settings>
+              <p className="px-1 py-3 text-center text-[12px] leading-relaxed text-neutral-200">
+                푸시·인앱 알림 분류 (로컬 저장 · 실서버 없음)
+              </p>
+              {(
+                [
+                  {
+                    key: "judgment" as const,
+                    label: "판결",
+                    hint: "전투 종료 · 승패 확정",
+                  },
+                  {
+                    key: "mine" as const,
+                    label: "내 글",
+                    hint: "좋아요 · 답글",
+                  },
+                  {
+                    key: "message" as const,
+                    label: "메시지",
+                    hint: "DM · 요청함",
+                  },
+                  {
+                    key: "mention" as const,
+                    label: "멘션",
+                    hint: "@언급 · 내 답글에 달린 답",
+                  },
+                ] as const
+              ).map((row) => (
+                <div
+                  key={row.key}
+                  className="flex items-center justify-between gap-3 border-b border-neutral-800 py-3.5"
+                >
+                  <div className="min-w-0">
+                    <p className="text-[14px] text-white">{row.label}</p>
+                    <p className="mt-0.5 text-[12px] text-neutral-200">
+                      {row.hint}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={notify[row.key]}
+                    aria-label={`${row.label} 알림`}
+                    onClick={() => {
+                      const next = saveNotifyPrefs({
+                        [row.key]: !notify[row.key],
+                      });
+                      setNotify(next);
+                      onToast?.(
+                        next[row.key]
+                          ? `${row.label} 알림을 켰습니다`
+                          : `${row.label} 알림을 껐습니다`,
+                      );
+                    }}
+                    className={`relative h-7 w-12 shrink-0 border transition-colors ${
+                      notify[row.key]
+                        ? "border-white bg-white"
+                        : "border-neutral-600 bg-neutral-900"
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 size-5 border border-neutral-800 bg-black transition-[left] ${
+                        notify[row.key] ? "left-[1.35rem]" : "left-0.5"
+                      }`}
+                    />
+                  </button>
+                </div>
+              ))}
             </div>
           ) : null}
 
@@ -560,9 +583,37 @@ export function SettingsSheet({
               <button
                 type="button"
                 className="flex w-full items-center justify-between border-b border-neutral-800 py-3.5 text-left"
-                onClick={() => onToast?.("차단 목록 — 곧 연결")}
+                onClick={() =>
+                  onToast?.(
+                    `차단 ${snap.blocks?.length ?? 0}명 · 목록 UI는 목업`,
+                  )
+                }
               >
-                <span className="text-[14px] text-white">차단 목록</span>
+                <div className="min-w-0">
+                  <p className="text-[14px] text-white">차단 목록</p>
+                  <p className="mt-0.5 text-[12px] text-neutral-200">
+                    DM·알림·검색 숨김 · 전투·제안은 보임
+                  </p>
+                </div>
+                <span className="text-neutral-200">
+                  <Chevron />
+                </span>
+              </button>
+              <button
+                type="button"
+                className="flex w-full items-center justify-between border-b border-neutral-800 py-3.5 text-left"
+                onClick={() =>
+                  onToast?.(
+                    "신고는 글·프로필 ··· 메뉴에서 · 정지 1→3→7→30→90→영구",
+                  )
+                }
+              >
+                <div className="min-w-0">
+                  <p className="text-[14px] text-white">신고·제재 안내</p>
+                  <p className="mt-0.5 text-[12px] text-neutral-200">
+                    피드·프로필 Safety 메뉴로 진입
+                  </p>
+                </div>
                 <span className="text-neutral-200">
                   <Chevron />
                 </span>

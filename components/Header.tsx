@@ -194,11 +194,14 @@ export function Header({
       <div className="relative mx-auto flex h-14 max-w-[560px] items-center px-3">
         {tab === "messages" ? (
           <>
-            <h1
-              className={`header-slot-fade min-w-0 flex-1 truncate font-[family-name:var(--font-syne)] text-[17px] font-bold tracking-tight ${ink}`}
-            >
-              메시지
-            </h1>
+            <Slot />
+            <div className="flex min-w-0 flex-1 flex-col items-center justify-center">
+              <h1
+                className={`header-slot-fade truncate text-center font-[family-name:var(--font-syne)] text-[17px] font-bold tracking-tight ${ink}`}
+              >
+                메시지
+              </h1>
+            </div>
             <Slot>
               <button
                 type="button"
@@ -212,11 +215,14 @@ export function Header({
           </>
         ) : tab === "alerts" ? (
           <>
-            <h1
-              className={`header-slot-fade min-w-0 flex-1 truncate font-[family-name:var(--font-syne)] text-[17px] font-bold tracking-tight ${ink}`}
-            >
-              알림
-            </h1>
+            <Slot />
+            <div className="flex min-w-0 flex-1 flex-col items-center justify-center">
+              <h1
+                className={`header-slot-fade truncate text-center font-[family-name:var(--font-syne)] text-[17px] font-bold tracking-tight ${ink}`}
+              >
+                알림
+              </h1>
+            </div>
             <Slot />
           </>
         ) : (

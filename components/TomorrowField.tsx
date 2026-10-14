@@ -126,13 +126,13 @@ export function TomorrowField({
       </div>
 
       <div
-        className="flex flex-col justify-center px-5 pb-6 pt-7"
+        className="flex flex-col items-center justify-center px-5 pb-6 pt-7 text-center"
         aria-label="내일 필드 안내"
       >
         <h2 className="font-[family-name:var(--font-syne)] text-[26px] font-bold leading-[1.28] tracking-tight sm:text-[28px]">
           내일의 주제 정하기
         </h2>
-        <p className="mt-4 max-w-[36em] text-[15px] leading-[1.7] text-white/78">
+        <p className="mx-auto mt-4 max-w-[36em] text-[15px] leading-[1.7] text-white/78">
           지지 1위가 자동으로 확정됩니다. 창/방패로 나뉠 수 있는 주제를
           올리고, 아래 실시간 의견을 관찰합니다.
         </p>
@@ -141,11 +141,11 @@ export function TomorrowField({
       {/* 위: TOP 토픽 */}
       <div aria-label="TOP 토픽" className="border-t border-white/12">
         <div className="flex items-center justify-between px-4 py-2.5">
-          <p className="text-[10px] font-bold tracking-[0.16em] text-muted">
+          <p className="w-full text-center text-[10px] font-bold tracking-[0.16em] text-muted">
             TOP 토픽
-          </p>
-          <p className="text-[11px] tabular-nums text-muted">
-            총 {total.toLocaleString("ko-KR")}표
+            <span className="ml-2 font-medium tabular-nums tracking-normal text-muted/80">
+              · 총 {total.toLocaleString("ko-KR")}표
+            </span>
           </p>
         </div>
         {uiDemo === "loading" ? (
@@ -264,12 +264,12 @@ export function TomorrowField({
         className="border-t border-white/15"
         aria-label="현재 올라오는 의견"
       >
-        <div className="sticky top-[5.75rem] z-20 flex items-center gap-2 border-b border-white/10 bg-black/96 px-4 py-2.5 backdrop-blur-md">
+        <div className="sticky top-[5.75rem] z-20 flex items-center justify-center gap-2 border-b border-white/10 bg-black/96 px-4 py-2.5 backdrop-blur-md">
           <span
             className="size-1.5 animate-pulse rounded-full bg-white"
             aria-hidden
           />
-          <p className="text-[10px] font-bold tracking-[0.16em] text-muted">
+          <p className="text-center text-[10px] font-bold tracking-[0.16em] text-muted">
             현재 올라오는 의견
           </p>
         </div>

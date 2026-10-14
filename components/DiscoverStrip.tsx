@@ -37,14 +37,12 @@ export function DiscoverStrip({ light, onSelect }: DiscoverStripProps) {
       aria-label="발견"
       data-discover-strip
     >
-      <div className="flex items-center gap-2 px-3 pt-2.5 pb-1">
-        <p
-          className={`shrink-0 text-[10px] font-bold tracking-[0.18em] ${soft}`}
-        >
+      <div className="px-3 pt-2.5 pb-1 text-center">
+        <p className={`text-[10px] font-bold tracking-[0.18em] ${soft}`}>
           발견
-        </p>
-        <p className={`truncate text-[10px] tracking-[0.06em] ${soft}`}>
-          지금 볼만한 전투·제안
+          <span className={`ml-2 font-medium tracking-[0.06em] ${soft}`}>
+            · 지금 볼만한 전투·제안
+          </span>
         </p>
       </div>
       <div

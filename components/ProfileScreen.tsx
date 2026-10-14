@@ -15,6 +15,7 @@ import { RecordDetailScreen } from "@/components/RecordDetailScreen";
 import type { EditableProfile } from "@/components/ProfileEditSheet";
 import { TierDetailScreen } from "@/components/TierDetailScreen";
 import {
+  PROFILE_AFFINITY,
   PROFILE_FOLLOWERS,
   PROFILE_FOLLOWING,
   PROFILE_GAMER,
@@ -198,6 +199,11 @@ export function ProfileScreen({
           <p className="mt-4 text-[14px] leading-[1.55] text-white">
             {display.bio}
           </p>
+          <p className="mt-2 text-[12px] tracking-[0.04em] text-neutral-200">
+            {PROFILE_USER.joinedLabel}
+            <span className="mx-1.5 text-neutral-700">·</span>
+            통산 {gamer.wins}승 {gamer.losses}패
+          </p>
 
           <p className="mt-3 text-[13px] text-neutral-200">
             <button
@@ -220,6 +226,42 @@ export function ProfileScreen({
               팔로워
             </button>
           </p>
+
+          <div
+            className="mt-4 border border-neutral-800 px-3 py-3"
+            aria-label="시즌·성향"
+            data-profile-season
+          >
+            <p className="text-center text-[10px] font-bold tracking-[0.16em] text-neutral-200">
+              이번 시즌
+            </p>
+            <p className="mt-2 text-center text-[13px] tabular-nums text-white">
+              승 {gamer.winsSeason ?? gamer.score}
+              <span className="mx-1.5 text-neutral-600">·</span>
+              최고 {gamer.tierPeakSeason ?? gamer.currentTier.code}
+              <span className="mx-1.5 text-neutral-600">·</span>
+              현재 {gamer.currentTier.display}
+            </p>
+            <div className="mt-3 flex h-1.5 w-full overflow-hidden border border-neutral-700">
+              <div
+                className="bg-white"
+                style={{ width: `${PROFILE_AFFINITY.challengerSupportPct}%` }}
+                title="도전자 성향"
+              />
+              <div
+                className="bg-neutral-600"
+                style={{ width: `${PROFILE_AFFINITY.defenderSupportPct}%` }}
+                title="방어자 성향"
+              />
+            </div>
+            <p className="mt-2 text-center text-[11px] tabular-nums text-neutral-200">
+              도전 {PROFILE_AFFINITY.challengerJoined}참
+              · {PROFILE_AFFINITY.challengerWins}승
+              <span className="mx-1.5 text-neutral-700">|</span>
+              방어 {PROFILE_AFFINITY.defenderJoined}참
+              · {PROFILE_AFFINITY.defenderWins}승
+            </p>
+          </div>
 
           {!isSelf && me && profileUser ? (
             <button
@@ -307,7 +349,7 @@ export function ProfileScreen({
                 : "text-neutral-200"
             }`}
           >
-            글
+            글 {PROFILE_POSTS.length}
           </button>
           {isSelf ? (
             <button
@@ -322,7 +364,7 @@ export function ProfileScreen({
               }`}
               data-scraps-self-only
             >
-              스크랩
+              스크랩 {profileScraps.length}
             </button>
           ) : null}
           <button
@@ -336,7 +378,7 @@ export function ProfileScreen({
                 : "text-neutral-200"
             }`}
           >
-            전투 기록
+            전투 {PROFILE_RECENT_BATTLES.length}
           </button>
         </div>
 

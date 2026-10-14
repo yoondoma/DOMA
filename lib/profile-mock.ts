@@ -114,6 +114,20 @@ export const PROFILE_POSTS: ProfilePost[] = [
     likes: 18,
     timeLabel: "3일",
   },
+  {
+    id: "pp-4",
+    side: "AEGIS",
+    text: "증거가 쌓이기 전에 ‘완전 대체’를 말하면, 그건 판결이 아니라 구호다.",
+    likes: 27,
+    timeLabel: "4일",
+  },
+  {
+    id: "pp-5",
+    side: "NEXUS",
+    text: "벤치마크가 흔들려도 질문은 남는다. 그 질문을 누가 붙드느냐가 전장이다.",
+    likes: 15,
+    timeLabel: "6일",
+  },
 ];
 
 /** 프로필용 최근 전투 요약 (목 — 이용자 관점 승/패) */

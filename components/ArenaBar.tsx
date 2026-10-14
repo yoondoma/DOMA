@@ -337,7 +337,7 @@ function CampFeedPage({
         </p>
       </div>
 
-      <div className="px-4 py-3 text-center">
+      <div className="px-4 py-3 text-left">
         {uiDemo === "loading" ? (
           <StatusBlock kind="loading" message="불러오는 중" light={light} />
         ) : uiDemo === "error" ? (
@@ -359,44 +359,40 @@ function CampFeedPage({
                 : undefined
             }
           >
-            <div className="mb-1.5 flex flex-col items-center gap-2">
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                <SmallAvatar
-                  name={top.authorLeft ? LEFT_USER_LABEL : top.author}
+            <div className="mb-1.5 flex flex-wrap items-center gap-2">
+              <SmallAvatar
+                name={top.authorLeft ? LEFT_USER_LABEL : top.author}
+                light={light}
+              />
+              <span
+                className={`text-[13px] font-semibold ${ink}`}
+                data-author-left={top.authorLeft ? "1" : undefined}
+              >
+                {top.authorLeft ? LEFT_USER_LABEL : `@${top.author}`}
+              </span>
+              <SideBadge side={top.side} />
+              <TrojanMark count={top.trojanCount ?? 0} light={light} />
+              {top.createdAtUtc ? (
+                <time
+                  className={`text-[11px] tabular-nums ${muted}`}
+                  dateTime={top.createdAtUtc}
+                >
+                  {formatPostTimeKst(top.createdAtUtc)}
+                </time>
+              ) : null}
+              {top.authorId && !top.authorLeft ? (
+                <SafetyMenu
+                  userId={top.authorId}
+                  reportKind="opinion"
+                  reportTargetId={top.id}
                   light={light}
                 />
-                <span
-                  className={`text-[13px] font-semibold ${ink}`}
-                  data-author-left={top.authorLeft ? "1" : undefined}
-                >
-                  {top.authorLeft ? LEFT_USER_LABEL : `@${top.author}`}
-                </span>
-                <SideBadge side={top.side} />
-                <TrojanMark count={top.trojanCount ?? 0} light={light} />
-                {top.createdAtUtc ? (
-                  <time
-                    className={`text-[11px] tabular-nums ${muted}`}
-                    dateTime={top.createdAtUtc}
-                  >
-                    {formatPostTimeKst(top.createdAtUtc)}
-                  </time>
-                ) : null}
-                {top.authorId && !top.authorLeft ? (
-                  <SafetyMenu
-                    userId={top.authorId}
-                    reportKind="opinion"
-                    reportTargetId={top.id}
-                    light={light}
-                  />
-                ) : null}
-              </div>
+              ) : null}
             </div>
-            <p
-              className={`mx-auto line-clamp-3 max-w-[36em] font-[family-name:var(--font-syne)] text-[14px] leading-[1.45] ${ink}`}
-            >
-              “{top.text}”
+            <p className={`text-[14px] leading-[1.5] ${ink}`}>
+              {top.text}
             </p>
-            <div className="mt-2 flex justify-center">
+            <div className="mt-2">
               <OpinionSocial
                 parentKind="opinion"
                 targetId={top.id}
