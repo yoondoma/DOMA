@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   AD_PREVIEW_EVENT,
+  defaultAdPreviewPrefs,
   loadAdPreviewPrefs,
   type AdSlotId,
 } from "@/lib/ad-preview";
@@ -18,7 +19,9 @@ type AdSlotProps = {
 
 function useAdPreview(): boolean {
   const [on, setOn] = useState(() =>
-    typeof window !== "undefined" ? loadAdPreviewPrefs().enabled : false,
+    typeof window !== "undefined"
+      ? loadAdPreviewPrefs().enabled
+      : defaultAdPreviewPrefs().enabled,
   );
   useEffect(() => {
     setOn(loadAdPreviewPrefs().enabled);
@@ -35,7 +38,7 @@ function useAdPreview(): boolean {
 
 /**
  * 콜로세움 주변 광고 슬롯 훅.
- * 기본 숨김 · 미리보기 ON일 때만 얇은 Sponsored 플레이스홀더.
+ * 기본 ON · 빈 Sponsored「광고 자리」플레이스홀더 (SDK/실광고 없음).
  * 지지/%/타이머/TOP 본문에 두지 말 것. 스펙: product-ops
  */
 export function AdSlot({ id, light, className = "", onSkip }: AdSlotProps) {
@@ -50,7 +53,7 @@ export function AdSlot({ id, light, className = "", onSkip }: AdSlotProps) {
     return (
       <aside
         data-ad-slot={id}
-        aria-label="Sponsored"
+        aria-label="광고 자리"
         className={`fixed inset-0 z-[75] flex flex-col items-center justify-center bg-black text-white ${className}`}
         role="dialog"
         aria-modal
@@ -58,8 +61,8 @@ export function AdSlot({ id, light, className = "", onSkip }: AdSlotProps) {
         <p className="text-[10px] font-bold tracking-[0.22em] text-white/45">
           Sponsored
         </p>
-        <p className="mt-4 text-[13px] tracking-[0.08em] text-white/70">
-          입장 게이트 · 슬롯 미리보기
+        <p className="mt-3 text-[12px] tracking-[0.1em] text-white/55">
+          광고 자리
         </p>
         <button
           type="button"
@@ -80,7 +83,7 @@ export function AdSlot({ id, light, className = "", onSkip }: AdSlotProps) {
   return (
     <aside
       data-ad-slot={id}
-      aria-label="Sponsored"
+      aria-label="광고 자리"
       className={`flex items-center justify-between gap-2 border-y px-3 ${
         tall ? "py-3" : "py-1.5"
       } ${border} ${bg} ${className}`}
@@ -91,7 +94,7 @@ export function AdSlot({ id, light, className = "", onSkip }: AdSlotProps) {
         Sponsored
       </p>
       <p className={`truncate text-[10px] tracking-[0.06em] ${ink}`}>
-        {id}
+        광고 자리
       </p>
     </aside>
   );

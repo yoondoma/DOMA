@@ -468,14 +468,14 @@ export function DomaHome() {
 
   return (
     <div
-      className={`shell-tone min-h-full ${
+      className={`shell-tone relative flex h-dvh max-h-dvh flex-col overflow-hidden ${
         lightShell ? "bg-white text-black" : "bg-black text-white"
       }`}
       data-shell={lightShell ? "light" : "dark"}
     >
-      {/* 스크롤 본문만 페이드 — fixed 하단바/시트는 밖에 둬 containing block 유지 */}
+      {/* 본문만 스크롤 — 하단 독(지지/%·네비)은 셸에 고정해 Try Live에서도 항상 노출 */}
       <div
-        className={`shell-tone arena-enter mx-auto min-h-full max-w-[560px] border-x ${
+        className={`shell-tone arena-enter mx-auto min-h-0 w-full max-w-[560px] flex-1 overflow-y-auto overscroll-y-contain border-x ${
           lightShell
             ? "border-black/10 bg-white"
             : "border-white/10 bg-black"
@@ -611,20 +611,11 @@ export function DomaHome() {
             onCompose={openCompose}
           />
         ) : null}
-
-        <div
-          className={
-            navTab === "home" && homeSurface === "today"
-              ? "h-[calc(84px+3.5rem+env(safe-area-inset-bottom))]"
-              : "h-[calc(3.5rem+env(safe-area-inset-bottom))]"
-          }
-          aria-hidden
-        />
       </div>
 
       {toast ? (
         <div
-          className="fixed inset-x-0 z-[55] flex justify-center px-4"
+          className="pointer-events-none absolute inset-x-0 z-[55] flex justify-center px-4"
           style={{
             bottom:
               navTab === "home" && homeSurface === "today"

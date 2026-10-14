@@ -171,11 +171,12 @@ function NavIcon({
   }
 }
 
-/** 심볼만 — 화면 라벨 없음 · aria-label로 접근성 유지 */
+/** 심볼만 — 화면 라벨 없음 · aria-label로 접근성 유지.
+ *  fixed 금지 — 셸 하단 독에 두어 Try Live/모바일에서 항상 보이게. */
 export function BottomNav({ active, onChange, light = false }: BottomNavProps) {
   return (
     <nav
-      className={`fixed inset-x-0 bottom-0 z-50 border-t backdrop-blur-md ${
+      className={`relative z-50 w-full shrink-0 border-t backdrop-blur-md ${
         light
           ? "border-black/15 bg-white/95"
           : "border-white/15 bg-black/95"

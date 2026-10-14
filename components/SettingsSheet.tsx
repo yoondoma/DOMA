@@ -623,7 +623,7 @@ export function SettingsSheet({
                 <div className="min-w-0">
                   <p className="text-[14px] text-white">광고 슬롯 미리보기</p>
                   <p className="mt-0.5 text-[12px] text-neutral-200">
-                    Sponsored 자리만 표시 · SDK 없음
+                    기본 켜짐 · 빈「광고 자리」만 · SDK 없음
                   </p>
                 </div>
                 <button

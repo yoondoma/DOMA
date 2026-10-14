@@ -37,8 +37,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={`${notoSerifKr.variable} h-full`}>
-      <body className="min-h-full bg-background font-sans text-foreground antialiased">
+    <html lang="ko" className={`${notoSerifKr.variable} h-full max-h-dvh overflow-hidden`}>
+      <body className="h-full max-h-dvh overflow-hidden bg-background font-sans text-foreground antialiased">
         {children}
       </body>
     </html>

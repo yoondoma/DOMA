@@ -39,7 +39,7 @@ function CrackDivider() {
   );
 }
 
-/** 스크롤과 무관하게 BottomNav 위에 고정되는 진영 지지 % */
+/** 셸 하단 독 — BottomNav 바로 위 (fixed 아님 · 뷰포트에 항상 노출) */
 export function SupportBar({
   nexusPercent,
   aegisPercent,
@@ -50,8 +50,7 @@ export function SupportBar({
 }: SupportBarProps) {
   return (
     <div
-      className="fixed inset-x-0 z-[45] border-t border-white/20"
-      style={{ bottom: "calc(3.5rem + env(safe-area-inset-bottom))" }}
+      className="relative z-[45] w-full shrink-0 border-t border-white/20"
       aria-label="진영 지지"
     >
       <div className="relative mx-auto flex min-h-[84px] max-w-[560px] overflow-hidden">

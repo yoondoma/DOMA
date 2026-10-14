@@ -528,12 +528,12 @@ function BattlefieldIntro({
             남음
           </span>
         </p>
-        <RulesHud light={light} className="mt-4" />
+        {/* 좋아요/진영이동 HUD — 접힌 첫 화면에서는 숨김 · 진영 펼침(sticky)에서만 */}
       </div>
 
-      {/* 오늘의 전장 — 여유 패딩·타이포로 주제가 숨 쉬게 */}
+      {/* 오늘의 전장 — 접힌 intro: 주제 직후 최고글이 보이도록 패딩 절제 */}
       <div
-        className="battlefield-rise battlefield-rise-delay px-6 pb-10 pt-10 text-center sm:px-8 sm:pb-12 sm:pt-12"
+        className="battlefield-rise battlefield-rise-delay px-6 pb-6 pt-7 text-center sm:px-8 sm:pb-7 sm:pt-8"
         aria-label="오늘 주제 영역"
       >
         <div className="flex items-center justify-center gap-1.5">
@@ -561,13 +561,13 @@ function BattlefieldIntro({
           ) : null}
         </div>
         <h2
-          className={`mx-auto mt-5 max-w-[18em] font-[family-name:var(--font-display)] text-[26px] font-bold leading-[1.4] tracking-[-0.01em] sm:mt-6 sm:text-[30px] sm:leading-[1.38] ${ink}`}
+          className={`mx-auto mt-4 max-w-[18em] font-[family-name:var(--font-display)] text-[24px] font-bold leading-[1.4] tracking-[-0.01em] sm:mt-5 sm:text-[28px] sm:leading-[1.38] ${ink}`}
         >
           {arena.topic}
         </h2>
         {arena.proposerHandle ? (
           <p
-            className={`mx-auto mt-5 inline-flex items-center justify-center gap-1.5 text-[12px] font-medium tracking-[0.08em] sm:mt-6 ${
+            className={`mx-auto mt-3.5 inline-flex items-center justify-center gap-1.5 text-[12px] font-medium tracking-[0.08em] sm:mt-4 ${
               light ? "text-black/55" : "text-white/55"
             }`}
             aria-label={`제안자 ${arena.proposerHandle}`}
@@ -579,7 +579,7 @@ function BattlefieldIntro({
           </p>
         ) : null}
         <p
-          className={`mx-auto mt-6 max-w-[28em] text-[15px] leading-[1.85] sm:mt-7 sm:text-[16px] sm:leading-[1.8] ${
+          className={`mx-auto mt-4 max-w-[28em] text-[14px] leading-[1.75] sm:mt-5 sm:text-[15px] sm:leading-[1.8] ${
             light ? "text-black/68" : "text-white/68"
           }`}
         >
@@ -587,42 +587,12 @@ function BattlefieldIntro({
         </p>
       </div>
 
-      {/* 사이드보드 — 주제 아래 · 진영/피드 위 · HUD/% 밖 */}
-      <AdSlot id="arena_rail" light={light} />
-
-      {/* 진영 — 창/방패 (셸과 별개로 흑|백 정체성) */}
+      {/* 최고 전투글 — 진영 진입 전 첫 화면에서 본문까지 보이게 */}
       <div
-        className={`grid grid-cols-2 gap-0 border-y ${
-          light ? "border-black/15" : "border-white/15"
-        }`}
-        role="tablist"
-        aria-label="진영 선택"
+        className={`border-y ${border}`}
+        aria-label="현재의 챔피언"
+        data-intro-top-opinion
       >
-        <button
-          type="button"
-          role="tab"
-          aria-selected={false}
-          aria-label="도전자"
-          onClick={() => onPickSide("NEXUS")}
-          className="camp-press flex min-h-[88px] flex-col items-center justify-center gap-1.5 border-r border-white/15 bg-black px-3 py-4 text-white active:bg-white/[0.04]"
-        >
-          <SpearMark size={24} />
-          <span className="text-[13px] font-bold tracking-[0.16em]">도전자</span>
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={false}
-          aria-label="방어자"
-          onClick={() => onPickSide("AEGIS")}
-          className="camp-press flex min-h-[88px] flex-col items-center justify-center gap-1.5 bg-white px-3 py-4 text-black active:bg-neutral-100"
-        >
-          <ShieldMark size={24} />
-          <span className="text-[13px] font-bold tracking-[0.16em]">방어자</span>
-        </button>
-      </div>
-
-      <div className={`border-t ${border}`} aria-label="현재의 챔피언">
         {uiDemo === "loading" ? (
           <StatusBlock kind="loading" message="불러오는 중" light={light} />
         ) : uiDemo === "error" ? (
@@ -642,15 +612,13 @@ function BattlefieldIntro({
             light={light}
           />
         ) : (
-          <div className="px-5 py-6 text-center">
-            <p
-              className={`text-[10px] font-bold tracking-[0.2em] ${faint}`}
-            >
+          <div className="px-5 py-5 text-center">
+            <p className={`text-[10px] font-bold tracking-[0.2em] ${faint}`}>
               TOP 의견 ·{" "}
               {champion.side === "NEXUS" ? "도전자" : "방어자"}
             </p>
-            <div className={`mt-3 border-t pt-4 ${border}`}>
-              <div className="flex flex-col items-center gap-2">
+            <div className={`mt-3 border-t pt-3.5 ${border}`}>
+              <div className="flex flex-col items-center gap-1.5">
                 <SmallAvatar name={champion.author} light={light} />
                 <div className="flex flex-wrap items-center justify-center gap-1.5">
                   <span className={`text-[14px] font-semibold ${ink}`}>
@@ -690,6 +658,41 @@ function BattlefieldIntro({
             </div>
           </div>
         )}
+      </div>
+
+      {/* 사이드보드 — TOP/%/타이머 밖 · 진영 위 */}
+      <AdSlot id="arena_rail" light={light} />
+
+      {/* 진영 — 창/방패 (셸과 별개로 흑|백 정체성) */}
+      <div
+        className={`grid grid-cols-2 gap-0 border-b ${
+          light ? "border-black/15" : "border-white/15"
+        }`}
+        role="tablist"
+        aria-label="진영 선택"
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={false}
+          aria-label="도전자"
+          onClick={() => onPickSide("NEXUS")}
+          className="camp-press flex min-h-[80px] flex-col items-center justify-center gap-1.5 border-r border-white/15 bg-black px-3 py-3.5 text-white active:bg-white/[0.04]"
+        >
+          <SpearMark size={24} />
+          <span className="text-[13px] font-bold tracking-[0.16em]">도전자</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={false}
+          aria-label="방어자"
+          onClick={() => onPickSide("AEGIS")}
+          className="camp-press flex min-h-[80px] flex-col items-center justify-center gap-1.5 bg-white px-3 py-3.5 text-black active:bg-neutral-100"
+        >
+          <ShieldMark size={24} />
+          <span className="text-[13px] font-bold tracking-[0.16em]">방어자</span>
+        </button>
       </div>
     </div>
   );
@@ -861,36 +864,11 @@ export function ArenaBar({
             light ? "bg-white/96" : "bg-black/96"
           }`}
           aria-label="오늘 주제 영역"
+          data-arena-detail-header
         >
-          <div
-            className="flex items-center justify-between gap-6"
-            data-date-battle-row
-          >
-            <p
-              className={`min-w-0 truncate text-left text-[10px] tracking-[0.08em] ${faint}`}
-              data-kst-today
-              aria-label="오늘 날짜"
-            >
-              <span className={light ? "text-black/35" : "text-white/35"}>
-                오늘
-              </span>
-              <span
-                className={`mx-1.5 ${light ? "text-black/20" : "text-white/20"}`}
-                aria-hidden
-              >
-                ·
-              </span>
-              <span className={soft}>{formatKstTodayImmersion()}</span>
-            </p>
-            <p
-              className={`shrink-0 text-right text-[12px] font-bold tracking-[0.12em] ${ink}`}
-              aria-label={`제 ${arena.round}회 전투`}
-            >
-              제 {arena.round}회 전투
-            </p>
-          </div>
+          {/* 상세(진영 펼침): 날짜·전투 횟수 행 숨김 — 주제·의견에 집중 */}
           <p
-            className={`mt-1 font-mono tabular-nums text-timer ${timerUrgencyClass(
+            className={`font-mono tabular-nums text-timer ${timerUrgencyClass(
               timer.stage,
               "sticky",
             )}`}
@@ -1010,8 +988,9 @@ export function ArenaBar({
             scrollBehavior: "auto",
             WebkitOverflowScrolling: "touch",
             touchAction: "pan-x pan-y",
+            /* 헤더·sticky 주제·지지독·하단네비 밖 남은 높이 */
             height:
-              "calc(100dvh - 3.5rem - 5.75rem - 10rem - 84px - 3.5rem - env(safe-area-inset-bottom, 0px))",
+              "calc(100dvh - 3.5rem - 7.5rem - 84px - 3.5rem - env(safe-area-inset-bottom, 0px))",
             maxHeight: "50dvh",
           }}
           onScroll={onScroll}

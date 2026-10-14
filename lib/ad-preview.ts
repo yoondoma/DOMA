@@ -1,6 +1,7 @@
 /**
  * 광고 슬롯 미리보기 — SDK/네트워크 없음.
- * 기본 OFF · 설정 토글 또는 `?ads=1` / NEXT_PUBLIC_AD_PREVIEW=1
+ * 기본 ON · 빈 Sponsored「광고 자리」플레이스홀더.
+ * 설정 토글·`?ads=0` / NEXT_PUBLIC_AD_PREVIEW=0 으로 끌 수 있음.
  */
 
 export type AdSlotId =
@@ -31,39 +32,49 @@ export type AdPreviewPrefs = {
 };
 
 export function defaultAdPreviewPrefs(): AdPreviewPrefs {
-  return { enabled: false };
+  return { enabled: true };
 }
 
-function envPreviewOn(): boolean {
+function envPreviewForce(): boolean | null {
   if (typeof process !== "undefined") {
     const v = process.env.NEXT_PUBLIC_AD_PREVIEW;
     if (v === "1" || v === "true") return true;
+    if (v === "0" || v === "false") return false;
   }
-  return false;
+  return null;
 }
 
-function queryPreviewOn(): boolean {
-  if (typeof window === "undefined") return false;
+function queryPreviewForce(): boolean | null {
+  if (typeof window === "undefined") return null;
   try {
     const q = new URLSearchParams(window.location.search).get("ads");
-    return q === "1" || q === "true" || q === "preview";
+    if (q === "1" || q === "true" || q === "preview") return true;
+    if (q === "0" || q === "false" || q === "off") return false;
   } catch {
-    return false;
+    /* ignore */
   }
+  return null;
 }
 
 export function loadAdPreviewPrefs(): AdPreviewPrefs {
+  const env = envPreviewForce();
+  if (env !== null) return { enabled: env };
+
   if (typeof window === "undefined") {
-    return { enabled: envPreviewOn() };
+    return defaultAdPreviewPrefs();
   }
-  if (envPreviewOn() || queryPreviewOn()) {
-    return { enabled: true };
-  }
+
+  const query = queryPreviewForce();
+  if (query !== null) return { enabled: query };
+
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultAdPreviewPrefs();
     const parsed = JSON.parse(raw) as Partial<AdPreviewPrefs>;
-    return { enabled: parsed.enabled === true };
+    if (typeof parsed.enabled === "boolean") {
+      return { enabled: parsed.enabled };
+    }
+    return defaultAdPreviewPrefs();
   } catch {
     return defaultAdPreviewPrefs();
   }
