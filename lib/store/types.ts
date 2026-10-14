@@ -21,6 +21,8 @@ export type ArenaMeta = {
   defenderShare: number;
   challengerVotes: number;
   defenderVotes: number;
+  /** 그날 주제를 제시한 유저 (제안자 칭호) */
+  proposerId: string;
 };
 
 export type StoreSnapshot = {

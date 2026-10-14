@@ -87,6 +87,64 @@ export function ShieldMark({ className = "", size = 14 }: MarkProps) {
   );
 }
 
+/**
+ * 제안자 — 성 토마스의 허리띠(girdle)
+ * 만져서 증명하는 DOMA 철학과 연결. Pure B&W 라인.
+ */
+export function GirdleMark({ className = "", size = 14 }: MarkProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={`shrink-0 ${className}`}
+      aria-hidden
+    >
+      {/* 허리띠 본체 — 둥근 띠 */}
+      <path
+        d="M2.5 6.2h11"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="square"
+      />
+      <path
+        d="M2.5 8.4h11"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="square"
+      />
+      {/* 버클/매듭 — 중앙 고리 */}
+      <rect
+        x="6.1"
+        y="5.35"
+        width="3.8"
+        height="3.9"
+        rx="0.35"
+        stroke="currentColor"
+        strokeWidth="1.25"
+      />
+      {/* 늘어진 끝 — 토마스의 띠 */}
+      <path
+        d="M8 9.25v4.4"
+        stroke="currentColor"
+        strokeWidth="1.35"
+        strokeLinecap="square"
+      />
+      <path
+        d="M6.7 13.65h2.6"
+        stroke="currentColor"
+        strokeWidth="1.25"
+        strokeLinecap="square"
+      />
+    </svg>
+  );
+}
+
+/** @deprecated 별칭 — GirdleMark 사용 */
+export const BeltMark = GirdleMark;
+
 export const SIDE_META: Record<
   Side,
   { label: string; Mark: typeof SpearMark }

@@ -17,6 +17,9 @@ export const INITIAL_ARENA: ArenaState = {
   aegisPercent: 42,
   nexusVotes: 4821,
   aegisVotes: 4519,
+  /** 오늘 주제 제안자 — 성 토마스의 허리띠 · 「제안자」 */
+  proposerId: "usr_soohan",
+  proposerHandle: "soohan",
 };
 
 export const INITIAL_OPINIONS: Opinion[] = [

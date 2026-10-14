@@ -28,9 +28,11 @@ type ViralShareCardProps = {
   onToast?: (message: string) => void;
 };
 
-/** 칭호 타입 → 각인 — FINGER 전용 / 그 외 VERIFIED OUTLIER */
+/** 칭호 타입 → 각인 — FINGER / PROPOSER / 그 외 VERIFIED OUTLIER */
 function stampForTitle(type: DailyTitleType): string {
-  return type === "FINGER" ? "[DOMA'S FINGER]" : "[VERIFIED OUTLIER]";
+  if (type === "FINGER") return "[DOMA'S FINGER]";
+  if (type === "PROPOSER") return "[PROPOSER · GIRDLE]";
+  return "[VERIFIED OUTLIER]";
 }
 
 /** 창+방패가 수직으로 겹쳐 펜 실루엣 */

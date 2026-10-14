@@ -53,6 +53,7 @@ export const PROFILE_GAMER: UserProfileType = withResolvedTier({
   wins: 160,
   losses: 30,
   dailyTitles: [
+    createDailyTitle("10.14", "PROPOSER"),
     createDailyTitle("10.24", "FINGER"),
     createDailyTitle("10.12", "SPEAR"),
     createDailyTitle("09.30", "VICTOR"),
@@ -187,6 +188,12 @@ export type TitleDetail = DailyTitle & {
 };
 
 export const PROFILE_TITLE_DETAILS: TitleDetail[] = [
+  {
+    ...createDailyTitle("10.14", "PROPOSER"),
+    round: 412,
+    topic: "인공지능은 인간의 지성을 완전히 대체할 것인가?",
+    note: "그날의 전장 주제를 제시한 제안자. 성 토마스의 허리띠 — 만져서 증명.",
+  },
   {
     ...createDailyTitle("10.24", "FINGER"),
     round: 412,

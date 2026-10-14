@@ -166,7 +166,7 @@ export function Header({
 
   return (
     <header
-      className={`sticky top-0 z-40 border-b backdrop-blur-md ${
+      className={`shell-tone sticky top-0 z-40 border-b backdrop-blur-md ${
         light
           ? "border-black/10 bg-white/95"
           : "border-white/12 bg-black/92"

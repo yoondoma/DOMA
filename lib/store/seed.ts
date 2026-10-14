@@ -174,6 +174,7 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
       defenderShare: 42,
       challengerVotes: 4821,
       defenderVotes: 4519,
+      proposerId: userIdFromHandle("soohan"),
     },
   };
 }

@@ -31,6 +31,9 @@ export type ArenaState = {
   aegisPercent: number;
   nexusVotes: number;
   aegisVotes: number;
+  /** 그날 주제 제안자 */
+  proposerId?: string;
+  proposerHandle?: string;
 };
 
 /** 홈 인트로 / 도전자 / 방어자 */

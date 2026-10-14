@@ -11,8 +11,14 @@ import {
 import { OpinionSocial } from "@/components/OpinionSocial";
 import { SafetyMenu } from "@/components/SafetyMenu";
 import { StatusBlock } from "@/components/StatusBlock";
-import { ShieldMark, SideBadge, SpearMark } from "@/components/SideMarks";
+import {
+  GirdleMark,
+  ShieldMark,
+  SideBadge,
+  SpearMark,
+} from "@/components/SideMarks";
 import { useDomaStore } from "@/lib/store";
+import { DAILY_TITLE_SHORT } from "@/lib/types/gamification";
 import type { UiDemo } from "@/lib/ui-demo";
 import type { ArenaState, ArenaView, Opinion, Side } from "@/lib/types";
 
@@ -229,8 +235,8 @@ function CampFeedPage({
     <div
       className="camp-swipe-page h-full"
       style={{
-        scrollSnapAlign: "center",
-        scrollSnapStop: "always",
+        scrollSnapAlign: "start",
+        scrollSnapStop: "normal",
         overflowY: "auto",
         overscrollBehaviorY: "contain",
         minWidth: 0,
@@ -417,6 +423,19 @@ function BattlefieldIntro({
         >
           {arena.topic}
         </h2>
+        {arena.proposerHandle ? (
+          <p
+            className={`mx-auto mt-5 inline-flex items-center justify-center gap-1.5 text-[12px] font-medium tracking-[0.08em] sm:mt-6 ${
+              light ? "text-black/55" : "text-white/55"
+            }`}
+            aria-label={`제안자 ${arena.proposerHandle}`}
+          >
+            <GirdleMark size={13} className="opacity-90" />
+            <span className={ink}>@{arena.proposerHandle}</span>
+            <span aria-hidden>·</span>
+            <span>{DAILY_TITLE_SHORT.PROPOSER}</span>
+          </p>
+        ) : null}
         <p
           className={`mx-auto mt-6 max-w-[28em] text-[15px] leading-[1.85] sm:mt-7 sm:text-[16px] sm:leading-[1.8] ${
             light ? "text-black/68" : "text-white/68"
@@ -553,46 +572,59 @@ export function ArenaBar({
   const remaining = useCountdown(arena.endsAt);
   const closingSoon = useClosingSoon();
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const ignoreScroll = useRef(false);
+  /** 버튼·포커스 등 프로그래매틱 스크롤 중 — 스크롤→view 반영 무시 */
+  const programmaticScroll = useRef(false);
+  /** view 변경이 스크롤에서 왔으면 강제 snap 금지 (瞬跳 방지) */
+  const viewFromScroll = useRef(false);
   const light = shellLight;
 
   const selected: Side | null =
     view === "NEXUS" || view === "AEGIS" ? view : null;
 
+  const sideFromScroll = (el: HTMLDivElement): Side => {
+    const w = Math.max(1, el.clientWidth);
+    return el.scrollLeft / w >= 0.5 ? "AEGIS" : "NEXUS";
+  };
+
   const scrollToSide = useCallback(
     (side: Side, behavior: ScrollBehavior = "smooth") => {
       const el = scrollerRef.current;
+      viewFromScroll.current = false;
       if (!el) {
         onChangeView(side);
         return;
       }
       const page = side === "AEGIS" ? 1 : 0;
-      ignoreScroll.current = true;
-      const w = el.clientWidth;
-      el.scrollTo({ left: page * w, behavior });
+      programmaticScroll.current = true;
+      el.scrollTo({ left: page * el.clientWidth, behavior });
+      onChangeView(side);
       window.setTimeout(
         () => {
-          ignoreScroll.current = false;
+          programmaticScroll.current = false;
         },
-        behavior === "smooth" ? 400 : 0,
+        behavior === "smooth" ? 420 : 80,
       );
-      onChangeView(side);
     },
     [onChangeView],
   );
 
+  /** 탭/외부에서 view만 바뀐 경우 위치 맞춤 — 스와이프 도중엔 건드리지 않음 */
   useEffect(() => {
     if (view !== "NEXUS" && view !== "AEGIS") return;
+    if (viewFromScroll.current) {
+      viewFromScroll.current = false;
+      return;
+    }
     const el = scrollerRef.current;
     if (!el) return;
     const page = view === "AEGIS" ? 1 : 0;
     const target = page * el.clientWidth;
-    if (Math.abs(el.scrollLeft - target) < 8) return;
-    ignoreScroll.current = true;
-    el.scrollTo({ left: target, behavior: "auto" });
+    if (Math.abs(el.scrollLeft - target) < 12) return;
+    programmaticScroll.current = true;
+    el.scrollTo({ left: target, behavior: "smooth" });
     window.setTimeout(() => {
-      ignoreScroll.current = false;
-    }, 60);
+      programmaticScroll.current = false;
+    }, 420);
   }, [view]);
 
   useEffect(() => {
@@ -600,7 +632,7 @@ export function ArenaBar({
     const side = opinions.find((o) => o.id === focusOpinionId)?.side;
     if (!side) return;
     if (view === "intro") onChangeView(side);
-    else scrollToSide(side, "auto");
+    else scrollToSide(side, "smooth");
     window.requestAnimationFrame(() => {
       document
         .querySelector<HTMLElement>(`[data-opinion-id="${focusOpinionId}"]`)
@@ -608,14 +640,34 @@ export function ArenaBar({
     });
   }, [focusOpinionId, opinions, view, onChangeView, scrollToSide]);
 
+  const commitSideFromScroll = useCallback(
+    (el: HTMLDivElement) => {
+      if (programmaticScroll.current) return;
+      const side = sideFromScroll(el);
+      if (side === selected) return;
+      viewFromScroll.current = true;
+      onChangeView(side);
+    },
+    [onChangeView, selected],
+  );
+
   const onScroll = (e: UIEvent<HTMLDivElement>) => {
-    if (ignoreScroll.current) return;
+    if (programmaticScroll.current) return;
     const el = e.currentTarget;
     const w = Math.max(1, el.clientWidth);
-    const page = Math.round(el.scrollLeft / w);
-    const side: Side = page >= 1 ? "AEGIS" : "NEXUS";
-    if (side !== selected) onChangeView(side);
+    const progress = el.scrollLeft / w;
+    /** 중간 구간에서는 셸을 바꾸지 않아 깜빡임·강제 snap을 줄임 */
+    if (progress > 0.38 && progress < 0.62) return;
+    commitSideFromScroll(el);
   };
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el || !selected) return;
+    const onScrollEnd = () => commitSideFromScroll(el);
+    el.addEventListener("scrollend", onScrollEnd);
+    return () => el.removeEventListener("scrollend", onScrollEnd);
+  }, [selected, commitSideFromScroll]);
 
   const ink = light ? "text-black" : "text-white";
   const soft = light ? "text-black/55" : "text-white/55";
@@ -627,7 +679,7 @@ export function ArenaBar({
     return (
       <section
         aria-label="아레나 기본창"
-        className={shellBg}
+        className={`shell-tone ${shellBg}`}
         data-shell={light ? "light" : "dark"}
         data-top-side={champion?.side ?? "none"}
       >
@@ -649,13 +701,13 @@ export function ArenaBar({
   return (
     <section
       aria-label="아레나 기본창"
-      className={shellBg}
+      className={`shell-tone ${shellBg}`}
       data-shell={light ? "light" : "dark"}
       data-top-side={champion?.side ?? "none"}
     >
       <div className="mx-auto max-w-[560px]">
         <div
-          className={`sticky top-[5.75rem] z-30 border-b px-5 pb-3 pt-3 text-center backdrop-blur-md ${border} ${
+          className={`shell-tone sticky top-[5.75rem] z-30 border-b px-5 pb-3 pt-3 text-center backdrop-blur-md ${border} ${
             light ? "bg-white/96" : "bg-black/96"
           }`}
           aria-label="오늘 주제 영역"
@@ -750,6 +802,7 @@ export function ArenaBar({
             overflowX: "auto",
             overscrollBehaviorX: "contain",
             scrollSnapType: "x mandatory",
+            scrollBehavior: "auto",
             WebkitOverflowScrolling: "touch",
             touchAction: "pan-x pan-y",
             height:

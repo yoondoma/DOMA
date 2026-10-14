@@ -162,6 +162,8 @@ export const DAILY_TITLE_TYPES = [
   "SHIELD",
   "VICTOR",
   "FINGER",
+  /** 그날 전장 주제를 제시한 사람 — 성 토마스의 허리띠 */
+  "PROPOSER",
 ] as const;
 
 export type DailyTitleType = (typeof DAILY_TITLE_TYPES)[number];
@@ -172,6 +174,16 @@ export const DAILY_TITLE_SUFFIX: Record<DailyTitleType, string> = {
   SHIELD: "의 방패",
   VICTOR: "의 승자",
   FINGER: "의 도마의 손가락",
+  PROPOSER: "의 제안자",
+};
+
+/** UI 짧은 표기 — 전장 주제 옆 */
+export const DAILY_TITLE_SHORT: Record<DailyTitleType, string> = {
+  SPEAR: "창",
+  SHIELD: "방패",
+  VICTOR: "승자",
+  FINGER: "손가락",
+  PROPOSER: "제안자",
 };
 
 export type DailyTitle = {

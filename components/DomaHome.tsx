@@ -330,12 +330,14 @@ export function DomaHome() {
 
   return (
     <div
-      className={`min-h-full ${lightShell ? "bg-white text-black" : "bg-black text-white"}`}
+      className={`shell-tone min-h-full ${
+        lightShell ? "bg-white text-black" : "bg-black text-white"
+      }`}
       data-shell={lightShell ? "light" : "dark"}
     >
       {/* 스크롤 본문만 페이드 — fixed 하단바/시트는 밖에 둬 containing block 유지 */}
       <div
-        className={`arena-enter mx-auto min-h-full max-w-[560px] border-x ${
+        className={`shell-tone arena-enter mx-auto min-h-full max-w-[560px] border-x ${
           lightShell
             ? "border-black/10 bg-white"
             : "border-white/10 bg-black"

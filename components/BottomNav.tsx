@@ -146,7 +146,7 @@ export function BottomNav({ active, onChange }: BottomNavProps) {
               key={tab.id}
               type="button"
               onClick={() => onChange(tab.id)}
-              className="flex min-h-14 items-center justify-center"
+              className="flex min-h-14 items-center justify-center opacity-90 transition-opacity duration-150 ease-out active:opacity-60"
               aria-current={isActive ? "page" : undefined}
               aria-label={tab.label}
             >

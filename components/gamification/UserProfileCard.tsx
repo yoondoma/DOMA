@@ -1,8 +1,9 @@
+import { GirdleMark } from "@/components/SideMarks";
+import { TierBadge } from "@/components/gamification/TierBadge";
 import type {
   DailyTitle,
   UserProfileType,
 } from "@/lib/types/gamification";
-import { TierBadge } from "@/components/gamification/TierBadge";
 
 type UserProfileCardProps = {
   user: UserProfileType;
@@ -59,9 +60,12 @@ export function UserProfileCard({
                   if (onOpenTitle) onOpenTitle(badge);
                   else onPropagateTitle?.(badge);
                 }}
-                className="text-left text-[13px] tracking-[0.02em] text-white transition-opacity active:opacity-60"
+                className="inline-flex items-center gap-1.5 text-left text-[13px] tracking-[0.02em] text-white transition-opacity active:opacity-60"
                 aria-label={`${badge.label} 상세`}
               >
+                {badge.type === "PROPOSER" ? (
+                  <GirdleMark size={12} className="text-white" />
+                ) : null}
                 {badge.label}
               </button>
             </li>
