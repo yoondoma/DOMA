@@ -162,8 +162,10 @@ export const DAILY_TITLE_TYPES = [
   "SHIELD",
   "VICTOR",
   "FINGER",
-  /** 그날 전장 주제를 제시한 사람 — 성 토마스의 허리띠 */
+  /** 확정 주제 원글 — 성 토마스의 허리띠(영구) */
   "PROPOSER",
+  /** 내일 후보 TOP5 — 부차 칭호 */
+  "AGENDA",
 ] as const;
 
 export type DailyTitleType = (typeof DAILY_TITLE_TYPES)[number];
@@ -175,6 +177,7 @@ export const DAILY_TITLE_SUFFIX: Record<DailyTitleType, string> = {
   VICTOR: "의 승자",
   FINGER: "의 도마의 손가락",
   PROPOSER: "의 제안자",
+  AGENDA: "의 안건자",
 };
 
 /** UI 짧은 표기 — 전장 주제 옆 */
@@ -184,6 +187,20 @@ export const DAILY_TITLE_SHORT: Record<DailyTitleType, string> = {
   VICTOR: "승자",
   FINGER: "손가락",
   PROPOSER: "제안자",
+  AGENDA: "안건자",
+};
+
+/**
+ * 칭호별 부차 포인트 — 스텁 상수 (테이블 추후)
+ * 제안자·일일 칭호 동시 보유 가능
+ */
+export const TITLE_POINT_BONUS: Record<DailyTitleType, number> = {
+  SPEAR: 2,
+  SHIELD: 2,
+  VICTOR: 5,
+  FINGER: 8,
+  PROPOSER: 10,
+  AGENDA: 3,
 };
 
 export type DailyTitle = {

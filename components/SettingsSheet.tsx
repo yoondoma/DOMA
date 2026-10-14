@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { domaStore, useSession } from "@/lib/store";
+import { domaStore, useDomaStore, useSession } from "@/lib/store";
+import {
+  DM_POLICY_LABEL,
+  type DmPolicy,
+  type PrivacyPrefs,
+} from "@/lib/types/privacy";
 
 export type EditableProfile = {
   name: string;
@@ -21,16 +26,11 @@ type SettingsSheetProps = {
 /** 목 전환용 시드 핸들 */
 const SWITCHABLE = ["soohan", "mira.k", "zero.nexus", "han.aegis"] as const;
 
-const ROWS: { id: string; label: string; hint?: string }[] = [
-  { id: "notify", label: "알림", hint: "전투·멘션" },
-  { id: "privacy", label: "공개 범위", hint: "프로필·글" },
-  { id: "blocked", label: "차단 목록" },
-  { id: "about", label: "DOMA 정보" },
-];
+const DM_OPTIONS: DmPolicy[] = ["everyone", "mutual", "off"];
 
 /**
  * 본인 프로필 설정 — 풀스크린 전환 (시트 아님)
- * Pure B&W · 넓은 입력 · 스크롤
+ * Pure B&W · 넓은 입력 · 스크롤 · 프라이버시 토글
  */
 export function SettingsSheet({
   open,
@@ -40,11 +40,18 @@ export function SettingsSheet({
   onToast,
 }: SettingsSheetProps) {
   const { user: sessionUser } = useSession();
+  const snap = useDomaStore();
   const [draft, setDraft] = useState<EditableProfile>(profile);
+  const [privacy, setPrivacyLocal] = useState<PrivacyPrefs>(() =>
+    domaStore.getPrivacy(),
+  );
 
   useEffect(() => {
-    if (open) setDraft(profile);
-  }, [open, profile]);
+    if (open) {
+      setDraft(profile);
+      setPrivacyLocal(domaStore.getPrivacy());
+    }
+  }, [open, profile, snap.privacyByUser, snap.session?.userId]);
 
   if (!open) return null;
 
@@ -63,6 +70,22 @@ export function SettingsSheet({
     onClose();
   };
 
+  const patchPrivacy = (patch: Partial<PrivacyPrefs>) => {
+    try {
+      const next = domaStore.setPrivacy(patch);
+      setPrivacyLocal(next);
+      onToast?.(
+        patch.scrapsPublic != null
+          ? next.scrapsPublic
+            ? "스크랩을 공개합니다"
+            : "스크랩을 숨겼습니다"
+          : `DM · ${DM_POLICY_LABEL[next.dmPolicy]}`,
+      );
+    } catch {
+      onToast?.("로그인이 필요합니다");
+    }
+  };
+
   const switchTo = (handle: string) => {
     try {
       const s = domaStore.switchUser(handle);
@@ -75,6 +98,7 @@ export function SettingsSheet({
           avatarChar: u.displayName.slice(0, 1),
         });
       }
+      setPrivacyLocal(domaStore.getPrivacy());
       onToast?.(`@${u?.handle ?? handle}로 전환 · ${s.userId.slice(0, 12)}…`);
     } catch {
       onToast?.("전환할 수 없는 유저입니다");
@@ -99,6 +123,7 @@ export function SettingsSheet({
           avatarChar: u.displayName.slice(0, 1),
         });
       }
+      setPrivacyLocal(domaStore.getPrivacy());
       onToast?.("수한으로 로그인했습니다");
     } catch {
       onToast?.("로그인에 실패했습니다");
@@ -215,6 +240,80 @@ export function SettingsSheet({
             </span>
           </label>
 
+          <div
+            className="mt-10 border-t border-neutral-800 pt-2"
+            aria-label="공개 범위"
+            data-privacy-settings
+          >
+            <p className="py-3 text-[11px] font-bold tracking-[0.16em] text-neutral-200">
+              공개 범위
+            </p>
+
+            <div className="flex items-center justify-between gap-3 border-b border-neutral-800 py-3.5">
+              <div className="min-w-0">
+                <p className="text-[14px] text-white">스크랩 공개</p>
+                <p className="mt-0.5 text-[12px] text-neutral-200">
+                  끄면 나만 볼 수 있습니다
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={privacy.scrapsPublic}
+                aria-label="스크랩 공개"
+                onClick={() =>
+                  patchPrivacy({ scrapsPublic: !privacy.scrapsPublic })
+                }
+                className={`relative h-7 w-12 shrink-0 border transition-colors ${
+                  privacy.scrapsPublic
+                    ? "border-white bg-white"
+                    : "border-neutral-600 bg-neutral-900"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 size-5 border border-neutral-800 bg-black transition-[left] ${
+                    privacy.scrapsPublic ? "left-[1.35rem]" : "left-0.5"
+                  }`}
+                />
+              </button>
+            </div>
+
+            <div className="border-b border-neutral-800 py-3.5">
+              <p className="text-[14px] text-white">DM 수신</p>
+              <p className="mt-0.5 text-[12px] text-neutral-200">
+                기본은 모두 · 비팔로워는 요청함
+              </p>
+              <ul className="mt-3 space-y-2" aria-label="DM 수신 정책">
+                {DM_OPTIONS.map((opt) => {
+                  const active = privacy.dmPolicy === opt;
+                  return (
+                    <li key={opt}>
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        onClick={() => patchPrivacy({ dmPolicy: opt })}
+                        className={`flex w-full items-center gap-2 border px-3 py-2.5 text-left text-[13px] ${
+                          active
+                            ? "border-white bg-white text-black"
+                            : "border-neutral-700 text-neutral-200"
+                        }`}
+                      >
+                        <span
+                          className={`size-2 shrink-0 ${
+                            active ? "bg-black" : "border border-neutral-500"
+                          }`}
+                          aria-hidden
+                        />
+                        {DM_POLICY_LABEL[opt]}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </div>
+
           <div className="mt-10 border-t border-neutral-800 pt-2">
             <p className="py-3 text-[11px] font-bold tracking-[0.16em] text-neutral-200">
               세션
@@ -274,22 +373,34 @@ export function SettingsSheet({
               일반
             </p>
             <ul>
-              {ROWS.map((row) => (
-                <li key={row.id} className="border-b border-neutral-800">
-                  <button
-                    type="button"
-                    className="flex w-full items-baseline justify-between gap-3 py-3.5 text-left"
-                    onClick={() => onToast?.(`${row.label} — 곧 연결`)}
-                  >
-                    <span className="text-[14px] text-white">{row.label}</span>
-                    {row.hint ? (
-                      <span className="text-[12px] text-neutral-200">
-                        {row.hint}
-                      </span>
-                    ) : null}
-                  </button>
-                </li>
-              ))}
+              <li className="border-b border-neutral-800">
+                <button
+                  type="button"
+                  className="flex w-full items-baseline justify-between gap-3 py-3.5 text-left"
+                  onClick={() => onToast?.("알림 — 곧 연결")}
+                >
+                  <span className="text-[14px] text-white">알림</span>
+                  <span className="text-[12px] text-neutral-200">전투·멘션</span>
+                </button>
+              </li>
+              <li className="border-b border-neutral-800">
+                <button
+                  type="button"
+                  className="flex w-full items-baseline justify-between gap-3 py-3.5 text-left"
+                  onClick={() => onToast?.("차단 목록 — 곧 연결")}
+                >
+                  <span className="text-[14px] text-white">차단 목록</span>
+                </button>
+              </li>
+              <li className="border-b border-neutral-800">
+                <button
+                  type="button"
+                  className="flex w-full items-baseline justify-between gap-3 py-3.5 text-left"
+                  onClick={() => onToast?.("DOMA — 24시간 의견 증명 전장")}
+                >
+                  <span className="text-[14px] text-white">DOMA 정보</span>
+                </button>
+              </li>
             </ul>
           </div>
         </div>

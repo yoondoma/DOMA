@@ -28,6 +28,7 @@ import {
   userIdFromHandle,
 } from "@/lib/types/ids";
 import type { StoreSnapshot } from "@/lib/store/types";
+import { defaultPrivacy } from "@/lib/types/privacy";
 import type { SessionQuota } from "@/lib/types/quota";
 
 const SEED_HANDLES = [
@@ -248,12 +249,10 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
     resolvedAtUtc: `${b.date}T14:00:00.000Z`,
   }));
 
-  /** 데모 HUD — 일부 소모된 남은 횟수 */
+  /** 데모 HUD — 투표·이동만 */
   const quota: SessionQuota = {
     likesUsed: 2,
     campMovesUsed: 1,
-    postsUsed: 0,
-    proposalsUsed: 0,
   };
 
   return {
@@ -296,6 +295,14 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
     reports: [],
     battleDays,
     quota,
+    privacyByUser: {
+      [me.id]: defaultPrivacy(),
+      [mira.id]: { scrapsPublic: false, dmPolicy: "mutual" },
+      [userIdFromHandle("pulse")]: {
+        scrapsPublic: true,
+        dmPolicy: "everyone",
+      },
+    },
     /** 홈 아레나 표시용 메타 (UI ArenaState와 병행) */
     arenaMeta: {
       round: 412,

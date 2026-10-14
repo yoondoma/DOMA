@@ -333,9 +333,16 @@ export function OpinionSocial({
             open ? active : muted
           }`}
           aria-expanded={open}
-          aria-label="댓글"
+          aria-label={
+            open
+              ? `댓글 접기 ${replyCount}`
+              : `댓글 ${replyCount} · 탭하여 펼치기`
+          }
+          title={open ? "댓글 접기" : "탭하여 댓글 펼치기"}
+          data-comment-toggle
         >
           <ReplyMark className={open ? active : muted} />
+          <span className="tracking-[0.02em]">댓글</span>
           {replyCount}
         </button>
         <button

@@ -232,8 +232,8 @@ export function DomaHome() {
         showToast("전장 셧다운 (23:00–08:00)");
         return;
       }
-      if (e instanceof Error && e.message === "QUOTA_POSTS") {
-        showToast("오늘 의견은 하루 1개입니다");
+      if (e instanceof Error && e.message === "CAMP_DAY_LOCKED") {
+        showToast("오늘은 한 진영에서만 글을 쓸 수 있습니다");
         return;
       }
       showToast("로그인이 필요합니다");
@@ -489,6 +489,7 @@ export function DomaHome() {
             onRetry={onRetry}
             composeOpen={newMessageOpen}
             onComposeClose={() => setNewMessageOpen(false)}
+            onToast={showToast}
           />
         ) : null}
 

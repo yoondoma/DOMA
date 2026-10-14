@@ -94,7 +94,7 @@ export function WieldBar({ open, side, onClose, onSubmit }: WieldBarProps) {
             role="note"
             aria-label="작성 규칙 팁"
           >
-            오늘 의견은 하루 1개
+            글은 여러 번 가능 · 하루 한 진영에서만
           </p>
           <div className="mb-2 flex items-center justify-between text-[11px] text-muted">
             <span>

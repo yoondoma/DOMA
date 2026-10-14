@@ -58,4 +58,7 @@ export type BattleDay = {
   winnerOpinion: string;
   opponentAuthor: string;
   opponentOpinion: string;
+  /** 확정 주제 원글 제안자 — 허리띠 영구 기록 */
+  proposerHandle?: string;
+  hasGirdle?: boolean;
 };

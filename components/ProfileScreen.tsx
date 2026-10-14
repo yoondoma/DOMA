@@ -116,13 +116,21 @@ export function ProfileScreen({
     setTitleDetail(found ?? { ...badge, round: 0, topic: "", note: "" });
   };
 
+  const scrapsPublic = useMemo(() => {
+    if (isSelf) return true;
+    const uid = profileUser?.id;
+    if (!uid) return true;
+    return domaStore.scrapsVisibleTo(uid, me?.id ?? null);
+  }, [isSelf, profileUser, me?.id, snap.privacyByUser]);
+
   const profileScraps = useMemo(() => {
     const uid = profileUser?.id;
     if (!uid) return isSelf ? domaStore.listScraps() : [];
+    if (!isSelf && !scrapsPublic) return [];
     return snap.scraps
       .filter((s) => s.userId === uid)
       .sort((a, b) => b.createdAtUtc.localeCompare(a.createdAtUtc));
-  }, [snap.scraps, profileUser, isSelf]);
+  }, [snap.scraps, profileUser, isSelf, scrapsPublic]);
 
   /** 작성자 합산 목마 — 타 진영에서 이 사람 의견을 지지하며 넘어온 수 */
   const profileTrojan = useMemo(() => {
@@ -358,7 +366,12 @@ export function ProfileScreen({
             </ul>
           )
         ) : tab === "scraps" ? (
-          uiDemo === "empty" || profileScraps.length === 0 ? (
+          !isSelf && !scrapsPublic ? (
+            <StatusBlock
+              kind="empty"
+              message="스크랩을 비공개로 설정했습니다."
+            />
+          ) : uiDemo === "empty" || profileScraps.length === 0 ? (
             <StatusBlock
               kind="empty"
               message="스크랩한 글이 없습니다."

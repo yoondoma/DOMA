@@ -9,7 +9,7 @@ import {
   type MessageThread,
   type SocialProfile,
 } from "@/lib/social-mock";
-import { useDomaStore } from "@/lib/store";
+import { domaStore, useDomaStore } from "@/lib/store";
 import { userIdFromHandle } from "@/lib/types/ids";
 import type { UiDemo } from "@/lib/ui-demo";
 
@@ -24,31 +24,61 @@ function Avatar({ name }: { name: string }) {
   );
 }
 
+type ThreadRow = MessageThread & {
+  peerId: string;
+  isRequest: boolean;
+};
+
 function ThreadList({
   onOpen,
   uiDemo,
   onRetry,
 }: {
-  onOpen: (t: MessageThread) => void;
+  onOpen: (t: ThreadRow) => void;
   uiDemo: UiDemo;
   onRetry?: () => void;
 }) {
   const snap = useDomaStore();
+  const myPrivacy = useMemo(
+    () => domaStore.getPrivacy(snap.session?.userId),
+    [snap.privacyByUser, snap.session?.userId],
+  );
+
   const threads = useMemo(() => {
-    if (uiDemo === "empty") return [];
+    if (uiDemo === "empty") return [] as ThreadRow[];
     const sid = snap.session?.userId;
+    if (!sid) return [] as ThreadRow[];
+
+    if (myPrivacy.dmPolicy === "off") return [] as ThreadRow[];
+
     const blocked = new Set(
       (snap.blocks ?? [])
         .filter((b) => b.blockerId === sid)
         .map((b) => b.blockedId),
     );
-    return MESSAGE_THREADS.filter((t) => {
-      const uid =
+
+    const rows: ThreadRow[] = [];
+    for (const t of MESSAGE_THREADS) {
+      const peerId =
         snap.users.find((u) => u.handle === t.handle)?.id ??
         userIdFromHandle(t.handle);
-      return !blocked.has(uid);
-    });
-  }, [snap, uiDemo]);
+      if (blocked.has(peerId)) continue;
+
+      const peerFollowsMe = snap.follows.some(
+        (f) => f.followerId === peerId && f.followeeId === sid,
+      );
+      const iFollow = snap.follows.some(
+        (f) => f.followerId === sid && f.followeeId === peerId,
+      );
+      const mutual = peerFollowsMe && iFollow;
+      const isRequest = !peerFollowsMe;
+
+      if (myPrivacy.dmPolicy === "mutual" && !mutual) continue;
+
+      rows.push({ ...t, peerId, isRequest });
+    }
+    return rows;
+  }, [snap, uiDemo, myPrivacy.dmPolicy]);
 
   if (uiDemo === "loading") {
     return <StatusBlock kind="loading" message="불러오는 중" />;
@@ -63,56 +93,90 @@ function ThreadList({
       />
     );
   }
+  if (myPrivacy.dmPolicy === "off") {
+    return (
+      <StatusBlock
+        kind="empty"
+        message="DM 수신이 꺼져 있습니다. 설정에서 켤 수 있습니다."
+      />
+    );
+  }
   if (threads.length === 0) {
     return (
-      <StatusBlock kind="empty" message="아직 대화가 없습니다." />
+      <StatusBlock
+        kind="empty"
+        message={
+          myPrivacy.dmPolicy === "mutual"
+            ? "맞팔 상대의 메시지가 없습니다."
+            : "아직 대화가 없습니다."
+        }
+      />
     );
   }
 
+  const requests = threads.filter((t) => t.isRequest);
+  const inbox = threads.filter((t) => !t.isRequest);
+
   return (
-    <ul aria-label="메시지 목록">
-      {threads.map((t) => (
-        <li key={t.id}>
-          <button
-            type="button"
-            onClick={() => onOpen(t)}
-            className="flex w-full items-start gap-3 border-b border-white/10 px-4 py-3.5 text-left active:bg-white/[0.04]"
-          >
-            <Avatar name={t.name} />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-baseline gap-1.5">
-                <span
-                  className={`truncate text-[14px] ${
-                    t.unread ? "font-bold text-white" : "font-semibold text-white"
+    <div>
+      {requests.length > 0 ? (
+        <div className="border-b border-white/10 px-4 py-2">
+          <p className="text-[11px] font-bold tracking-[0.14em] text-muted">
+            요청함 · {requests.length}
+          </p>
+        </div>
+      ) : null}
+      <ul aria-label="메시지 목록">
+        {[...requests, ...inbox].map((t) => (
+          <li key={t.id}>
+            <button
+              type="button"
+              onClick={() => onOpen(t)}
+              className="flex w-full items-start gap-3 border-b border-white/10 px-4 py-3.5 text-left active:bg-white/[0.04]"
+            >
+              <Avatar name={t.name} />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-baseline gap-1.5">
+                  <span
+                    className={`truncate text-[14px] ${
+                      t.unread
+                        ? "font-bold text-white"
+                        : "font-semibold text-white"
+                    }`}
+                  >
+                    {t.name}
+                  </span>
+                  <span className="truncate text-[12px] text-muted">
+                    @{t.handle}
+                  </span>
+                  {t.isRequest ? (
+                    <span className="shrink-0 text-[10px] tracking-[0.08em] text-white/70">
+                      요청함
+                    </span>
+                  ) : null}
+                  <span className="ml-auto shrink-0 text-[11px] text-muted">
+                    {t.timeLabel}
+                  </span>
+                </div>
+                <p
+                  className={`mt-0.5 truncate text-[13px] ${
+                    t.unread ? "text-white/90" : "text-muted"
                   }`}
                 >
-                  {t.name}
-                </span>
-                <span className="truncate text-[12px] text-muted">
-                  @{t.handle}
-                </span>
-                <span className="ml-auto shrink-0 text-[11px] text-muted">
-                  {t.timeLabel}
-                </span>
+                  {t.preview}
+                </p>
               </div>
-              <p
-                className={`mt-0.5 truncate text-[13px] ${
-                  t.unread ? "text-white/90" : "text-muted"
-                }`}
-              >
-                {t.preview}
-              </p>
-            </div>
-            {t.unread ? (
-              <span
-                className="mt-2 size-2 shrink-0 rounded-full bg-white"
-                aria-label="읽지 않음"
-              />
-            ) : null}
-          </button>
-        </li>
-      ))}
-    </ul>
+              {t.unread ? (
+                <span
+                  className="mt-2 size-2 shrink-0 rounded-full bg-white"
+                  aria-label="읽지 않음"
+                />
+              ) : null}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
@@ -121,14 +185,12 @@ function ChatView({
   onBack,
   onOpenProfile,
 }: {
-  thread: MessageThread;
+  thread: ThreadRow;
   onBack: () => void;
   onOpenProfile: (profile: SocialProfile) => void;
 }) {
   const snap = useDomaStore();
-  const peerId =
-    snap.users.find((u) => u.handle === thread.handle)?.id ??
-    userIdFromHandle(thread.handle);
+  const peerId = thread.peerId;
   const blocked = (snap.blocks ?? []).some(
     (b) => b.blockerId === snap.session?.userId && b.blockedId === peerId,
   );
@@ -160,7 +222,14 @@ function ChatView({
         >
           <Avatar name={thread.name} />
           <div className="min-w-0">
-            <p className="truncate text-[14px] font-semibold">{thread.name}</p>
+            <p className="truncate text-[14px] font-semibold">
+              {thread.name}
+              {thread.isRequest ? (
+                <span className="ml-1.5 text-[10px] font-normal tracking-[0.08em] text-muted">
+                  요청함
+                </span>
+              ) : null}
+            </p>
             <p className="truncate text-[12px] text-muted">@{thread.handle}</p>
           </div>
         </button>
@@ -209,6 +278,7 @@ type MessagesScreenProps = {
   /** 헤더 새 메시지 시트 */
   composeOpen?: boolean;
   onComposeClose?: () => void;
+  onToast?: (message: string) => void;
 };
 
 export function MessagesScreen({
@@ -217,12 +287,33 @@ export function MessagesScreen({
   onRetry,
   composeOpen = false,
   onComposeClose,
+  onToast,
 }: MessagesScreenProps) {
-  const [open, setOpen] = useState<MessageThread | null>(null);
+  const snap = useDomaStore();
+  const [open, setOpen] = useState<ThreadRow | null>(null);
 
   const startWith = (t: MessageThread) => {
+    const peerId =
+      snap.users.find((u) => u.handle === t.handle)?.id ??
+      userIdFromHandle(t.handle);
+    const gate = domaStore.canSendDm(peerId);
+    if (!gate.ok) {
+      onToast?.(
+        gate.reason === "off"
+          ? "상대가 DM을 받지 않습니다"
+          : gate.reason === "mutual_required"
+            ? "맞팔만 메시지를 받을 수 있습니다"
+            : "로그인이 필요합니다",
+      );
+      return;
+    }
     onComposeClose?.();
-    setOpen(t);
+    setOpen({
+      ...t,
+      peerId,
+      isRequest: gate.asRequest,
+    });
+    if (gate.asRequest) onToast?.("메시지 요청으로 보냅니다");
   };
 
   return (
@@ -267,25 +358,38 @@ export function MessagesScreen({
               </button>
             </div>
             <ul aria-label="대화 상대">
-              {MESSAGE_THREADS.map((t) => (
-                <li key={t.id}>
-                  <button
-                    type="button"
-                    onClick={() => startWith(t)}
-                    className="flex w-full items-center gap-3 border-b border-white/10 py-3 text-left active:bg-white/[0.04]"
-                  >
-                    <Avatar name={t.name} />
-                    <span className="min-w-0">
-                      <span className="block truncate text-[14px] font-semibold">
-                        {t.name}
+              {MESSAGE_THREADS.map((t) => {
+                const peerId =
+                  snap.users.find((u) => u.handle === t.handle)?.id ??
+                  userIdFromHandle(t.handle);
+                const gate = domaStore.canSendDm(peerId);
+                return (
+                  <li key={t.id}>
+                    <button
+                      type="button"
+                      onClick={() => startWith(t)}
+                      className="flex w-full items-center gap-3 border-b border-white/10 py-3 text-left active:bg-white/[0.04]"
+                    >
+                      <Avatar name={t.name} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[14px] font-semibold">
+                          {t.name}
+                        </span>
+                        <span className="block truncate text-[12px] text-muted">
+                          @{t.handle}
+                          {!gate.ok
+                            ? gate.reason === "off"
+                              ? " · DM 꺼짐"
+                              : " · 맞팔 필요"
+                            : gate.asRequest
+                              ? " · 요청"
+                              : ""}
+                        </span>
                       </span>
-                      <span className="block truncate text-[12px] text-muted">
-                        @{t.handle}
-                      </span>
-                    </span>
-                  </button>
-                </li>
-              ))}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </div>

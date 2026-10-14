@@ -14,6 +14,8 @@ export const BATTLE_HISTORY: BattleDay[] = [
       "경계는 법이 긋는다. 감정의 불쾌함으로 말을 묶으면 공론은 죽는다.",
     opponentAuthor: "mira.k",
     opponentOpinion: "해악이 명백한 말은 자유가 아니라 폭력이다.",
+    proposerHandle: "zero.nexus",
+    hasGirdle: true,
   },
   {
     date: "2026-10-02",
@@ -27,6 +29,8 @@ export const BATTLE_HISTORY: BattleDay[] = [
       "도시는 우연한 만남의 인프라다. 화면은 그 밀도를 복제하지 못한다.",
     opponentAuthor: "pulse",
     opponentOpinion: "출퇴근 비용이 사라지면 도시는 선택이 된다.",
+    proposerHandle: "mira.k",
+    hasGirdle: true,
   },
   {
     date: "2026-10-03",
@@ -40,6 +44,8 @@ export const BATTLE_HISTORY: BattleDay[] = [
       "생존이 보장될 때 비로소 위험한 일을 고른다. 의욕은 형태만 바뀐다.",
     opponentAuthor: "reed",
     opponentOpinion: "대가 없는 소득은 노력의 신호를 흐린다.",
+    proposerHandle: "nova",
+    hasGirdle: true,
   },
   {
     date: "2026-10-04",
@@ -52,6 +58,8 @@ export const BATTLE_HISTORY: BattleDay[] = [
     winnerOpinion: "폐기물과 리스크를 후대에 미루는 해법은 해법이 아니다.",
     opponentAuthor: "kiln",
     opponentOpinion: "간헐성 재생만으로 기저부하를 메울 수 없다.",
+    proposerHandle: "kiln",
+    hasGirdle: true,
   },
   {
     date: "2026-10-05",
@@ -64,6 +72,8 @@ export const BATTLE_HISTORY: BattleDay[] = [
     winnerOpinion: "익명은 약자의 방패다. 실명은 권력의 추적만 쉽게 한다.",
     opponentAuthor: "loom",
     opponentOpinion: "책임 없는 말은 공론이 아니라 소음이다.",
+    proposerHandle: "orbit",
+    hasGirdle: true,
   },
   {
     date: "2026-10-06",
@@ -77,6 +87,8 @@ export const BATTLE_HISTORY: BattleDay[] = [
       "치료와 강화의 경계가 무너지면 불평등은 피부 아래로 내려간다.",
     opponentAuthor: "zero.nexus",
     opponentOpinion: "고통 가능한 질병을 막지 않는 금지는 잔인하다.",
+    proposerHandle: "mira.k",
+    hasGirdle: true,
   },
   {
     date: "2026-10-07",
@@ -89,6 +101,8 @@ export const BATTLE_HISTORY: BattleDay[] = [
     winnerOpinion: "점수 경쟁은 스펙 인플레이션만 키운다. 추첨이 더 정직하다.",
     opponentAuthor: "han.aegis",
     opponentOpinion: "노력의 차등을 지우면 공정이 아니라 포기다.",
+    proposerHandle: "pulse",
+    hasGirdle: true,
   },
   {
     date: "2026-10-08",
@@ -101,6 +115,8 @@ export const BATTLE_HISTORY: BattleDay[] = [
     winnerOpinion: "지구를 버리는 서사는 책임을 궤도에 올려보낸다.",
     opponentAuthor: "nova",
     opponentOpinion: "다행성 생존은 보험이다. 도피가 아니라 확장이다.",
+    proposerHandle: "reed",
+    hasGirdle: true,
   },
   {
     date: "2026-10-09",
@@ -113,6 +129,8 @@ export const BATTLE_HISTORY: BattleDay[] = [
     winnerOpinion: "모든 거래가 기록되면 거부는 권한이 된다.",
     opponentAuthor: "slate",
     opponentOpinion: "현금의 익명은 범죄의 산소이기도 하다.",
+    proposerHandle: "kiln",
+    hasGirdle: true,
   },
   {
     date: "2026-10-10",
@@ -125,6 +143,8 @@ export const BATTLE_HISTORY: BattleDay[] = [
     winnerOpinion: "권리의 주체는 의도하는 인간이다. 모델은 도구다.",
     opponentAuthor: "orbit",
     opponentOpinion: "창작의 결과물에 인격이 필수라는 전제는 낡은다.",
+    proposerHandle: "loom",
+    hasGirdle: true,
   },
   {
     date: "2026-10-11",
@@ -137,6 +157,8 @@ export const BATTLE_HISTORY: BattleDay[] = [
     winnerOpinion: "미래에 가장 오래 살 사람이 결정에서 배제되어 있다.",
     opponentAuthor: "mira.k",
     opponentOpinion: "권리에는 판단의 성숙이 전제된다.",
+    proposerHandle: "soohan",
+    hasGirdle: true,
   },
   {
     date: "2026-10-12",
@@ -149,6 +171,8 @@ export const BATTLE_HISTORY: BattleDay[] = [
     winnerOpinion: "구경을 위한 감금은 교육이 아니라 전시 폭력이다.",
     opponentAuthor: "pulse",
     opponentOpinion: "보전과 교육의 현장 없이 야생만 외치면 공허하다.",
+    proposerHandle: "han.aegis",
+    hasGirdle: true,
   },
 ];
 

@@ -15,6 +15,7 @@ import type {
   TopicCandidate,
   User,
 } from "@/lib/types/domain";
+import type { PrivacyPrefs } from "@/lib/types/privacy";
 import type { SessionQuota } from "@/lib/types/quota";
 
 export type ArenaMeta = {
@@ -48,8 +49,10 @@ export type StoreSnapshot = {
   campSwitches: CampSwitch[];
   battleDays: BattleDay[];
   arenaMeta: ArenaMeta;
-  /** 세션 유저 일일 한도 (좋아요·진영이동·글) */
+  /** 세션 유저 일일 한도 (좋아요·진영이동) */
   quota: SessionQuota;
+  /** userId → 프라이버시 (스크랩 공개 · DM) */
+  privacyByUser: Record<string, PrivacyPrefs>;
 };
 
 export type CreateOpinionInput = {

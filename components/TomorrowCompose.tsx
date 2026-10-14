@@ -96,7 +96,7 @@ export function TomorrowCompose({
             role="note"
             aria-label="작성 규칙 팁"
           >
-            하루 1개 · 창/방패로 나뉠 수 있는 주제만 · 지지 1위 자동 확정
+            제안 여러 번 가능 · 창/방패로 나뉠 주제 · 지지 1위 자동 확정
           </p>
           <p className="mb-2 text-[11px] text-muted">
             내일 아레나 후보로 올릴 질문형 주제

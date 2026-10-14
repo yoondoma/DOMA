@@ -54,6 +54,7 @@ export const PROFILE_GAMER: UserProfileType = withResolvedTier({
   losses: 30,
   dailyTitles: [
     createDailyTitle("10.14", "PROPOSER"),
+    createDailyTitle("10.13", "AGENDA"),
     createDailyTitle("10.24", "FINGER"),
     createDailyTitle("10.12", "SPEAR"),
     createDailyTitle("09.30", "VICTOR"),
@@ -193,6 +194,12 @@ export const PROFILE_TITLE_DETAILS: TitleDetail[] = [
     round: 412,
     topic: "인공지능은 인간의 지성을 완전히 대체할 것인가?",
     note: "그날의 전장 주제를 제시한 제안자. 성 토마스의 허리띠 — 만져서 증명.",
+  },
+  {
+    ...createDailyTitle("10.13", "AGENDA"),
+    round: 0,
+    topic: "원격 근무는 도시의 중심을 끝낼 것인가?",
+    note: "내일 후보 TOP5 안건자. 확정 제안자와 별도 · 부차 포인트.",
   },
   {
     ...createDailyTitle("10.24", "FINGER"),

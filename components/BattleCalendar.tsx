@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ShieldMark, SpearMark } from "@/components/SideMarks";
+import { GirdleMark, ShieldMark, SpearMark } from "@/components/SideMarks";
 import {
   BATTLE_HISTORY,
   BATTLE_MONTH,
   BATTLE_YEAR,
   battleByDate,
 } from "@/lib/battle-history";
+import { DAILY_TITLE_SHORT } from "@/lib/types/gamification";
 import type { BattleDay } from "@/lib/types";
 
 type BattleCalendarProps = {
@@ -105,6 +106,25 @@ function DayDetail({
           <p className="mt-1.5 text-[12px] text-muted">@{battle.winnerAuthor}</p>
         </div>
 
+        {battle.proposerHandle ? (
+          <div className="mt-6 border-t border-white/12 pt-4">
+            <p className="text-[10px] font-bold tracking-[0.16em] text-muted">
+              그날의 제안자
+            </p>
+            <div className="mt-2 flex items-center gap-2">
+              {battle.hasGirdle !== false ? (
+                <GirdleMark size={14} className="text-white" />
+              ) : null}
+              <span className="text-[13px] font-semibold">
+                @{battle.proposerHandle}
+              </span>
+              <span className="text-[11px] tracking-[0.08em] text-muted">
+                {DAILY_TITLE_SHORT.PROPOSER} · 허리띠
+              </span>
+            </div>
+          </div>
+        ) : null}
+
         <div className="mt-6 border-t border-white/12 pt-4">
           <p className="text-[10px] font-bold tracking-[0.16em] text-muted">
             맞붙었던 상대
@@ -190,7 +210,7 @@ export function BattleCalendar({ open, onClose }: BattleCalendarProps) {
                 {BATTLE_YEAR}년 {BATTLE_MONTH}월
               </p>
               <p className="mt-1 text-center text-[10px] tracking-[0.14em] text-muted">
-                흑=도전자 승 · 백=방어자 승
+                흑=도전자 승 · 백=방어자 승 · 띠=제안자
               </p>
 
               <div className="mt-4 grid grid-cols-7 gap-px bg-white/15">
@@ -220,7 +240,9 @@ export function BattleCalendar({ open, onClose }: BattleCalendarProps) {
                       onClick={() => battle && setSelected(key)}
                       aria-label={
                         battle
-                          ? `${day}일, ${challengerWin ? "도전자" : "방어자"} 승리`
+                          ? `${day}일, ${challengerWin ? "도전자" : "방어자"} 승리${
+                              battle.hasGirdle ? ", 제안자 허리띠" : ""
+                            }`
                           : `${day}일`
                       }
                       className={`aspect-square border-0 p-0 text-[12px] font-semibold tabular-nums outline-none ${
@@ -234,12 +256,20 @@ export function BattleCalendar({ open, onClose }: BattleCalendarProps) {
                       <span className="flex h-full flex-col items-center justify-center gap-0.5">
                         {day}
                         {battle ? (
-                          <span className="scale-90">
+                          <span className="flex items-center gap-0.5 scale-90">
                             {challengerWin ? (
                               <SpearMark size={10} />
                             ) : (
                               <ShieldMark size={10} />
                             )}
+                            {battle.hasGirdle ? (
+                              <GirdleMark
+                                size={9}
+                                className={
+                                  challengerWin ? "text-white" : "text-black"
+                                }
+                              />
+                            ) : null}
                           </span>
                         ) : null}
                       </span>

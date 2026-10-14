@@ -9,14 +9,13 @@ type RulesHudProps = {
 };
 
 /**
- * 남은 횟수 HUD — 게임 피/목숨 톤, 과하지 않게
- * 좋아요 n/5 · 진영이동 n/3 · 글 n/1
+ * 남은 투표·이동 HUD — 좋아요 n/5 · 진영이동 n/3
+ * (글 횟수 HUD 없음 — 발언 제한 해제)
  */
 export function RulesHud({ light, className = "" }: RulesHudProps) {
   const quota = useDomaStore().quota;
   const likes = remainingOf(quota.likesUsed, QUOTA_LIMITS.likes);
   const moves = remainingOf(quota.campMovesUsed, QUOTA_LIMITS.campMoves);
-  const posts = remainingOf(quota.postsUsed, QUOTA_LIMITS.posts);
 
   const chip = light
     ? "border-black/20 bg-black/[0.04] text-black/75"
@@ -52,7 +51,6 @@ export function RulesHud({ light, className = "" }: RulesHudProps) {
     >
       <Cell label="좋아요" remaining={likes.remaining} max={likes.max} />
       <Cell label="진영이동" remaining={moves.remaining} max={moves.max} />
-      <Cell label="글" remaining={posts.remaining} max={posts.max} />
     </div>
   );
 }

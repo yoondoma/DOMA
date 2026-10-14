@@ -187,6 +187,9 @@ export function TomorrowField({
                     <span className="mt-1.5 block text-[12px] tabular-nums text-muted">
                       지지 {c.votes.toLocaleString("ko-KR")} · {pct}% · 이끔{" "}
                       {c.stewards}
+                      <span className="ml-1.5 tracking-[0.08em] text-white/55">
+                        · 안건자
+                      </span>
                     </span>
                   </span>
                 </button>

@@ -42,9 +42,14 @@ import type {
   CreateOpinionInput,
   StoreSnapshot,
 } from "@/lib/store/types";
+import {
+  defaultPrivacy,
+  type DmPolicy,
+  type PrivacyPrefs,
+} from "@/lib/types/privacy";
 import { emptyQuota, QUOTA_LIMITS } from "@/lib/types/quota";
 
-const STORAGE_KEY = "doma.store.v4";
+const STORAGE_KEY = "doma.store.v5";
 
 type Listener = () => void;
 
@@ -91,6 +96,7 @@ function normalizeSnap(parsed: StoreSnapshot): StoreSnapshot {
     campSwitches: parsed.campSwitches ?? [],
     follows: parsed.follows ?? [],
     quota: parsed.quota ?? emptyQuota(),
+    privacyByUser: parsed.privacyByUser ?? {},
     opinions: (parsed.opinions ?? []).map((o) => ({
       ...o,
       supportCount: o.supportCount ?? 0,
@@ -329,6 +335,80 @@ class MemoryStore {
     return this.snap.battleDays;
   }
 
+  /** 유저 프라이버시 — 없으면 기본값 */
+  getPrivacy(userId?: string): PrivacyPrefs {
+    const uid = userId ?? this.snap.session?.userId;
+    if (!uid) return defaultPrivacy();
+    return { ...defaultPrivacy(), ...this.snap.privacyByUser[uid] };
+  }
+
+  setPrivacy(patch: Partial<PrivacyPrefs>): PrivacyPrefs {
+    const next = clone(this.snap);
+    if (!next.session) throw new Error("SESSION_REQUIRED");
+    const uid = next.session.userId;
+    const merged: PrivacyPrefs = {
+      ...defaultPrivacy(),
+      ...next.privacyByUser[uid],
+      ...patch,
+    };
+    next.privacyByUser = { ...next.privacyByUser, [uid]: merged };
+    this.commit(next);
+    return merged;
+  }
+
+  isMutualFollow(a: string, b: string): boolean {
+    const ab = makeFollowId(a, b);
+    const ba = makeFollowId(b, a);
+    return (
+      this.snap.follows.some((f) => f.id === ab) &&
+      this.snap.follows.some((f) => f.id === ba)
+    );
+  }
+
+  /** peer가 나를 팔로우하는지 */
+  isFollowerOf(userId: string, ofUserId?: string): boolean {
+    const target = ofUserId ?? this.snap.session?.userId;
+    if (!target) return false;
+    return this.snap.follows.some(
+      (f) => f.followerId === userId && f.followeeId === target,
+    );
+  }
+
+  /**
+   * 상대에게 DM을 보낼 수 있는지.
+   * everyone → 비팔로워는 요청 / mutual → 맞팔만 / off → 불가
+   */
+  canSendDm(toUserId: string): {
+    ok: boolean;
+    asRequest: boolean;
+    reason?: "off" | "mutual_required" | "session";
+  } {
+    const sid = this.snap.session?.userId;
+    if (!sid) return { ok: false, asRequest: false, reason: "session" };
+    if (sid === toUserId) return { ok: false, asRequest: false };
+    const prefs = this.getPrivacy(toUserId);
+    if (prefs.dmPolicy === "off") {
+      return { ok: false, asRequest: false, reason: "off" };
+    }
+    if (prefs.dmPolicy === "mutual") {
+      if (!this.isMutualFollow(sid, toUserId)) {
+        return { ok: false, asRequest: false, reason: "mutual_required" };
+      }
+      return { ok: true, asRequest: false };
+    }
+    /** everyone — 내가 상대의 팔로워가 아니면 요청 */
+    const iFollow = this.snap.follows.some(
+      (f) => f.followerId === sid && f.followeeId === toUserId,
+    );
+    return { ok: true, asRequest: !iFollow };
+  }
+
+  /** 스크랩 탭을 viewer에게 공개할지 */
+  scrapsVisibleTo(ownerId: string, viewerId?: string | null): boolean {
+    if (viewerId && viewerId === ownerId) return true;
+    return this.getPrivacy(ownerId).scrapsPublic;
+  }
+
   // ── writes ─────────────────────────────────────────
 
   refreshClock(now: Date = new Date()) {
@@ -379,11 +459,16 @@ class MemoryStore {
     this.assertArenaOpen();
     const next = clone(this.snap);
     if (!next.session) throw new Error("SESSION_REQUIRED");
-    if (next.quota.postsUsed >= QUOTA_LIMITS.posts) {
-      throw new Error("QUOTA_POSTS");
-    }
     const dayId = next.clock.dayId;
     const authorId = next.session.userId;
+
+    /** 하루 한 진영에서만 작성 */
+    const dayMine = next.opinions.filter(
+      (o) => o.dayId === dayId && o.authorId === authorId,
+    );
+    if (dayMine.length > 0 && dayMine[0].camp !== input.camp) {
+      throw new Error("CAMP_DAY_LOCKED");
+    }
 
     const op: Opinion = {
       id: makeOpinionId(dayId),
@@ -397,7 +482,6 @@ class MemoryStore {
       createdAtUtc: new Date().toISOString(),
     };
     next.opinions = [...next.opinions, op];
-    next.quota = { ...next.quota, postsUsed: next.quota.postsUsed + 1 };
     this.commit(next);
     return op;
   }
@@ -410,9 +494,6 @@ class MemoryStore {
     this.assertArenaOpen();
     const next = clone(this.snap);
     if (!next.session) throw new Error("SESSION_REQUIRED");
-    if (next.quota.proposalsUsed >= QUOTA_LIMITS.proposals) {
-      throw new Error("QUOTA_PROPOSALS");
-    }
     const tc: TopicCandidate = {
       id: makeTopicCandidateId(input.targetDayId),
       targetDayId: input.targetDayId,
@@ -424,10 +505,6 @@ class MemoryStore {
       createdAtUtc: new Date().toISOString(),
     };
     next.topicCandidates = [tc, ...next.topicCandidates];
-    next.quota = {
-      ...next.quota,
-      proposalsUsed: next.quota.proposalsUsed + 1,
-    };
     this.commit(next);
     return tc;
   }

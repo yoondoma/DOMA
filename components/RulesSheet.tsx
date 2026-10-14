@@ -6,16 +6,15 @@ type RulesSheetProps = {
 };
 
 const ROWS: { act: string; limit: string }[] = [
-  { act: "오늘 의견", limit: "하루 1개" },
-  { act: "내일 주제 제안", limit: "하루 1개" },
+  { act: "글·제안·댓글", limit: "여러 번 가능" },
   { act: "의견 지지", limit: "1개 · 그 진영으로 이동" },
   { act: "진영 이동", limit: "타 진영 지지 시 · 최대 3회" },
   { act: "좋아요", limit: "하루 5개 · 승패 무관" },
+  { act: "글 진영", limit: "하루 한 진영만" },
 ];
 
 /**
  * 전투 규칙 — 짧은 B&W 시트. 의지 있는 사람만 열람.
- * 첫 진입 광고형 팝업 아님.
  */
 export function RulesSheet({ open, onClose }: RulesSheetProps) {
   if (!open) return null;
@@ -70,15 +69,20 @@ export function RulesSheet({ open, onClose }: RulesSheetProps) {
         </ul>
 
         <p className="mt-4 text-[12px] leading-[1.55] text-white/70">
+          <span className="text-white">제안자</span>(허리띠·영구)는 확정 주제
+          원글만. 후보 TOP5는{" "}
+          <span className="text-white">안건자</span>. 일일 칭호와 동시 가능.
+        </p>
+
+        <p className="mt-3 text-[12px] leading-[1.55] text-white/70">
           내일 주제는{" "}
-          <span className="text-white">지지 1위가 자동 확정</span>됩니다.
-          제안은{" "}
+          <span className="text-white">지지 1위 자동 확정</span> ·{" "}
           <span className="text-white">창/방패로 나뉠 수 있는 주제</span>
-          여야 합니다.
+          만 제안하세요.
         </p>
 
         <p className="mt-3 text-[11px] leading-[1.5] tracking-[0.04em] text-white/45">
-          23:00–08:00 셧다운 · 전장 활동 불가 · DM·공유·스크랩만 가능
+          23:00–08:00 셧다운 · DM·공유·스크랩만 가능
         </p>
       </div>
     </div>
