@@ -9,9 +9,9 @@ type DomaMarkProps = {
 };
 
 /**
- * preferred 마크: 사각·삼각·원 = 한 심볼
- * - 삼각 윗변(seam) 한 줄 + 사각은 밑변 없이 그 위에 앉음 (이중 선 없음)
- * - tip이 원 상단에 살짝 진입, 가려진 원 호는 그리지 않음
+ * preferred 마크 — 한 심볼
+ * - 삼각 윗변(seam) 한 줄 + 사각은 밑변 없이 안착
+ * - tip이 원 상단 스트로크에 밀착(살짝 진입). 가려진 호만 미표기
  */
 export function DomaMark({
   size = 56,
@@ -23,16 +23,19 @@ export function DomaMark({
   const width = Math.round(size * (48 / 72));
 
   const seamY = 23;
+  /** 타원 상단 */
   const ellipseTop = 44.5;
-  const tipY = 46.5;
+  /**
+   * tip을 원 상단 선에 맞춤(+스트로크 반 정도 진입).
+   * tip을 깊게 넣으면 속이 빈 간격처럼 보임 → 테두리에 안착.
+   */
+  const tipY = 45.3;
 
-  /** 삼각 전체(윗변=seam 포함) */
   const tri = `M6 ${seamY}H42L24 ${tipY}Z`;
-  /** 사각: 좌·상·우만 — 밑변은 seam이 담당 */
   const rect = `M15.75 ${seamY}V1H32.25V${seamY}`;
-  /** tip 아래 상단 호 제외 · 하단 경유 */
+  /** tip 폭만큼만 상단 절단 · 하단 경유 */
   const ellipseOpen =
-    "M23.37 44.51A20.5 12 0 0 1 24 68.5A20.5 12 0 0 1 24.63 44.51";
+    "M22.9 44.5A20.5 12 0 0 1 24 68.5A20.5 12 0 0 1 25.1 44.5";
 
   return (
     <svg
@@ -55,7 +58,6 @@ export function DomaMark({
         strokeLinecap="butt"
         fill="none"
       />
-
       <path d={tri} fill={bg} stroke="none" />
       <path
         d={tri}
@@ -64,7 +66,6 @@ export function DomaMark({
         strokeWidth="1.45"
         strokeLinejoin="miter"
       />
-
       <path
         d={rect}
         fill="none"
