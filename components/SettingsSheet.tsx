@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  loadSoundPrefs,
+  saveSoundPrefs,
+  type SoundPrefs,
+} from "@/lib/sound/doma-sound";
 import { domaStore, useDomaStore, useSession } from "@/lib/store";
 import {
   DM_POLICY_LABEL,
@@ -45,11 +50,13 @@ export function SettingsSheet({
   const [privacy, setPrivacyLocal] = useState<PrivacyPrefs>(() =>
     domaStore.getPrivacy(),
   );
+  const [sound, setSoundLocal] = useState<SoundPrefs>(() => loadSoundPrefs());
 
   useEffect(() => {
     if (open) {
       setDraft(profile);
       setPrivacyLocal(domaStore.getPrivacy());
+      setSoundLocal(loadSoundPrefs());
     }
   }, [open, profile, snap.privacyByUser, snap.session?.userId]);
 
@@ -239,6 +246,50 @@ export function SettingsSheet({
               {draft.bio.length}/160
             </span>
           </label>
+
+          <div
+            className="mt-10 border-t border-neutral-800 pt-2"
+            aria-label="사운드"
+            data-sound-settings
+          >
+            <p className="py-3 text-[11px] font-bold tracking-[0.16em] text-neutral-200">
+              사운드
+            </p>
+            <div className="flex items-center justify-between gap-3 border-b border-neutral-800 py-3.5">
+              <div className="min-w-0">
+                <p className="text-[14px] text-white">DOMA 소리</p>
+                <p className="mt-0.5 text-[12px] text-neutral-200">
+                  끄면 앱 이벤트 음만 멈춤 · 기기 볼륨은 OS
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={sound.enabled}
+                aria-label="DOMA 소리"
+                onClick={() => {
+                  const next = saveSoundPrefs({ enabled: !sound.enabled });
+                  setSoundLocal(next);
+                  onToast?.(
+                    next.enabled
+                      ? "DOMA 소리를 켰습니다"
+                      : "DOMA 소리를 껐습니다",
+                  );
+                }}
+                className={`relative h-7 w-12 shrink-0 border transition-colors ${
+                  sound.enabled
+                    ? "border-white bg-white"
+                    : "border-neutral-600 bg-neutral-900"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 size-5 border border-neutral-800 bg-black transition-[left] ${
+                    sound.enabled ? "left-[1.35rem]" : "left-0.5"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
 
           <div
             className="mt-10 border-t border-neutral-800 pt-2"

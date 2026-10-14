@@ -5,6 +5,8 @@ export type NavTab = "home" | "messages" | "compose" | "alerts" | "profile";
 type BottomNavProps = {
   active: NavTab;
   onChange: (tab: NavTab) => void;
+  /** 방어(화이트) 셸 — 내비도 화이트 · 아이콘 검정 대비 */
+  light?: boolean;
 };
 
 const TABS: {
@@ -19,28 +21,43 @@ const TABS: {
   { id: "profile", label: "프로필" },
 ];
 
-function NavIcon({ id, active }: { id: NavTab; active: boolean }) {
-  const stroke = active ? "#fff" : "#737373";
+function NavIcon({
+  id,
+  active,
+  light,
+}: {
+  id: NavTab;
+  active: boolean;
+  light: boolean;
+}) {
+  const stroke = light
+    ? active
+      ? "#0a0a0a"
+      : "#737373"
+    : active
+      ? "#fff"
+      : "#737373";
 
   switch (id) {
     case "home": {
       /**
        * 아레나 = 바른 정육각형 · 세로 반분
-       * 왼(흑 진영): 솔리드 실루엣 — 검정 내비 대비용 밝은 fill
-       * 오른(흰 진영): 외곽만 · 빗금 없음
+       * 왼(흑 진영): 솔리드 실루엣
+       * 오른(흰 진영): 외곽만
        */
-      // 중심(12,12) r=8.2 · 22px 박스 — 다른 탭과 동일
       const hex =
         "M12 3.8L19.1 7.9L19.1 16.1L12 20.2L4.9 16.1L4.9 7.9Z";
-      const leftHalf =
-        "M12 3.8L4.9 7.9L4.9 16.1L12 20.2Z";
-      // 흑 진영 무게감: 활성=순백 채움, 비활성=회색 채움 (검정 배경에서 반드시 보임)
-      const solid = active ? "#ffffff" : "#a3a3a3";
+      const leftHalf = "M12 3.8L4.9 7.9L4.9 16.1L12 20.2Z";
+      const solid = light
+        ? active
+          ? "#0a0a0a"
+          : "#a3a3a3"
+        : active
+          ? "#ffffff"
+          : "#a3a3a3";
       return (
         <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
-          {/* 왼 솔리드 — svg fill=none 상속을 피해 명시적 fill */}
           <path d={leftHalf} fill={solid} stroke="none" />
-          {/* 전체 외곽 + 가운데 세로선으로 흑|백 반분 강조 */}
           <path
             d={hex}
             fill="none"
@@ -63,7 +80,13 @@ function NavIcon({ id, active }: { id: NavTab; active: boolean }) {
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
           <path
             d="M4.5 6.5h15v9.5H9.2L5.5 19.2V6.5Z"
-            fill={active ? "rgba(255,255,255,0.12)" : "none"}
+            fill={
+              active
+                ? light
+                  ? "rgba(0,0,0,0.08)"
+                  : "rgba(255,255,255,0.12)"
+                : "none"
+            }
             stroke={stroke}
             strokeWidth="1.75"
             strokeLinejoin="round"
@@ -78,7 +101,13 @@ function NavIcon({ id, active }: { id: NavTab; active: boolean }) {
       );
     case "compose":
       return (
-        <span className="flex size-9 items-center justify-center rounded-full border border-white bg-white text-black">
+        <span
+          className={`flex size-9 items-center justify-center rounded-full border ${
+            light
+              ? "border-neutral-900 bg-neutral-900 text-white"
+              : "border-white bg-white text-black"
+          }`}
+        >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
             <path
               d="M12 5v14M5 12h14"
@@ -94,7 +123,13 @@ function NavIcon({ id, active }: { id: NavTab; active: boolean }) {
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
           <path
             d="M6 17h12l-1.2-2.1V10a4.8 4.8 0 1 0-9.6 0v4.9L6 17Z"
-            fill={active ? "rgba(255,255,255,0.15)" : "none"}
+            fill={
+              active
+                ? light
+                  ? "rgba(0,0,0,0.1)"
+                  : "rgba(255,255,255,0.15)"
+                : "none"
+            }
             stroke={stroke}
             strokeWidth="1.75"
             strokeLinejoin="round"
@@ -114,7 +149,13 @@ function NavIcon({ id, active }: { id: NavTab; active: boolean }) {
             cx="12"
             cy="8"
             r="3.25"
-            fill={active ? "rgba(255,255,255,0.2)" : "none"}
+            fill={
+              active
+                ? light
+                  ? "rgba(0,0,0,0.12)"
+                  : "rgba(255,255,255,0.2)"
+                : "none"
+            }
             stroke={stroke}
             strokeWidth="1.75"
           />
@@ -131,12 +172,17 @@ function NavIcon({ id, active }: { id: NavTab; active: boolean }) {
 }
 
 /** 심볼만 — 화면 라벨 없음 · aria-label로 접근성 유지 */
-export function BottomNav({ active, onChange }: BottomNavProps) {
+export function BottomNav({ active, onChange, light = false }: BottomNavProps) {
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-white/15 bg-black/95 backdrop-blur-md"
+      className={`fixed inset-x-0 bottom-0 z-50 border-t backdrop-blur-md ${
+        light
+          ? "border-black/15 bg-white/95"
+          : "border-white/15 bg-black/95"
+      }`}
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-label="하단 내비게이션"
+      data-nav-tone={light ? "light" : "dark"}
     >
       <div className="mx-auto grid h-14 max-w-[560px] grid-cols-5">
         {TABS.map((tab) => {
@@ -150,7 +196,11 @@ export function BottomNav({ active, onChange }: BottomNavProps) {
               aria-current={isActive ? "page" : undefined}
               aria-label={tab.label}
             >
-              <NavIcon id={tab.id} active={isActive || Boolean(tab.compose)} />
+              <NavIcon
+                id={tab.id}
+                active={isActive || Boolean(tab.compose)}
+                light={light}
+              />
             </button>
           );
         })}

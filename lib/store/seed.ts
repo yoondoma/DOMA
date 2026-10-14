@@ -234,6 +234,28 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
       createdAtUtc: "2026-09-01T00:00:00.000Z",
     });
   }
+  /** DM 데모 — mira/zero/han은 팔로워(일반 수신), pulse는 비팔로워(요청함) */
+  for (const handle of ["mira.k", "zero.nexus", "han.aegis"] as const) {
+    const u = byHandle.get(handle)!;
+    const id = makeFollowId(u.id, me.id);
+    if (!follows.some((f) => f.id === id)) {
+      follows.push({
+        id,
+        followerId: u.id,
+        followeeId: me.id,
+        createdAtUtc: "2026-09-01T00:00:00.000Z",
+      });
+    }
+    const back = makeFollowId(me.id, u.id);
+    if (!follows.some((f) => f.id === back)) {
+      follows.push({
+        id: back,
+        followerId: me.id,
+        followeeId: u.id,
+        createdAtUtc: "2026-09-01T00:00:00.000Z",
+      });
+    }
+  }
 
   const battleDays: BattleDay[] = BATTLE_HISTORY.map((b) => ({
     dayId: b.date,

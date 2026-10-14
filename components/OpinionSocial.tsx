@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { sharePost } from "@/lib/share-post";
+import { playDomaSound } from "@/lib/sound/doma-sound";
 import { domaStore, useDomaStore } from "@/lib/store";
 import type { LikeTargetKind, ReplyParentKind, ScrapTargetKind } from "@/lib/types/domain";
 
@@ -208,7 +209,9 @@ export function OpinionSocial({
     if (!targetId || parentKind !== "opinion") return;
     try {
       const { supported, campMoved } = domaStore.toggleSupport(targetId);
+      if (supported) playDomaSound("support");
       if (campMoved) {
+        playDomaSound("campSwitch");
         onToast?.("지지 · 진영이 이동했습니다");
         onCampMoved?.();
       } else {
