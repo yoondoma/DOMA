@@ -579,7 +579,7 @@ export function SettingsSheet({
                 <div className="min-w-0">
                   <p className="text-[14px] text-white">DOMA 소리</p>
                   <p className="mt-0.5 text-[12px] text-neutral-200">
-                    끄면 앱 이벤트 음만 멈춤 · 기기 볼륨은 OS
+                    입장·판결 스팅만 · 브금 없음 · 기기 볼륨은 OS
                   </p>
                 </div>
                 <button

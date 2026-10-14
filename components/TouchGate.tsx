@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { DomaMark } from "@/components/DomaMark";
 import { DomaWordmark } from "@/components/DomaWordmark";
-import { playDomaSound, unlockDomaSound } from "@/lib/sound/doma-sound";
+import { playDomaSting, unlockDomaSound } from "@/lib/sound/doma-sound";
 
 type TouchGateProps = {
   onEnter: () => void;
@@ -19,9 +19,9 @@ export function TouchGate({ onEnter }: TouchGateProps) {
   const handleEnter = () => {
     if (pressing) return;
     setPressing(true);
-    /** 유저 제스처 — 웹 Audio unlock + pierce 톤 */
+    /** 유저 제스처 — 웹 Audio unlock + 시그니처 스팅 (입장) */
     unlockDomaSound();
-    playDomaSound("pierce");
+    playDomaSting();
     window.setTimeout(() => {
       onEnter();
     }, ENTER_MS);

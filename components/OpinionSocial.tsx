@@ -6,7 +6,6 @@ import { formatPostTimeKst } from "@/lib/format-time";
 import { LEFT_USER_LABEL, publicAuthorLabel } from "@/lib/account-display";
 import type { ContextualSharePayload } from "@/lib/contextual-share";
 import { sharePost } from "@/lib/share-post";
-import { playDomaSound } from "@/lib/sound/doma-sound";
 import { domaStore, useDomaStore } from "@/lib/store";
 import {
   CONTENT_LIMITS,
@@ -245,9 +244,8 @@ export function OpinionSocial({
     if (!targetId || parentKind !== "opinion") return;
     try {
       const { supported, campMoved } = domaStore.toggleSupport(targetId);
-      if (supported) playDomaSound("support");
+      /** 지지·진영전환 SFX 없음 (수한 · sense-brand) */
       if (campMoved) {
-        playDomaSound("campSwitch");
         onToast?.("지지 · 진영이 이동했습니다");
         onCampMoved?.();
       } else {

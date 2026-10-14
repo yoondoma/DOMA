@@ -513,11 +513,20 @@ function BattlefieldIntro({
         className={`battlefield-rise border-b px-5 pb-4 pt-5 text-center ${border}`}
         data-arena-timer-block
       >
+        {/* 제 N회 — 「최후의 판결」카피 직상위 */}
         <p
-          className={`text-[11px] tracking-[0.18em] ${
+          className={`text-[12px] font-bold tracking-[0.14em] ${ink}`}
+          aria-label={`제 ${arena.round}회 전투`}
+          data-battle-round
+        >
+          제 {arena.round}회 전투
+        </p>
+        <p
+          className={`mt-2 text-[11px] tracking-[0.18em] ${
             timer.stage ? "text-timer" : soft
           }`}
           data-urgency-label={timer.stage ?? "calm"}
+          data-verdict-label
         >
           {timer.label}
         </p>
@@ -554,19 +563,12 @@ function BattlefieldIntro({
         {/* 좋아요/진영이동 HUD — 접힌 첫 화면에서는 숨김 · 진영 펼침(sticky)에서만 */}
       </div>
 
-      {/* 오늘의 전장 — 제 N회를 주제(최후의 판결) 바로 위 */}
+      {/* 오늘의 전장 — 주제 본문 */}
       <div
         className="battlefield-rise battlefield-rise-delay px-6 pb-6 pt-7 text-center sm:px-8 sm:pb-7 sm:pt-8"
         aria-label="오늘 주제 영역"
       >
-        <p
-          className={`text-[12px] font-bold tracking-[0.14em] ${ink}`}
-          aria-label={`제 ${arena.round}회 전투`}
-          data-battle-round
-        >
-          제 {arena.round}회 전투
-        </p>
-        <div className="mt-3 flex items-center justify-center gap-1.5">
+        <div className="flex items-center justify-center gap-1.5">
           <p
             className={`text-[12px] font-bold tracking-[0.22em] ${
               light ? "text-black/50" : "text-white/50"

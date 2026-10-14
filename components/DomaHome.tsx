@@ -45,7 +45,7 @@ import {
   type NotificationTarget,
   type SocialProfile,
 } from "@/lib/social-mock";
-import { playDomaSound } from "@/lib/sound/doma-sound";
+import { playDomaSting } from "@/lib/sound/doma-sound";
 import {
   formatComposeMediaSuffix,
   formatCooldownToast,
@@ -76,7 +76,6 @@ export function DomaHome() {
   const storeSnap = useDomaStore();
   const storeOpinions = useUiOpinions();
   const judgmentPlayed = useRef<string | null>(null);
-  const prevClockState = useRef<string | null>(null);
   const [nexusPercent, setNexusPercent] = useState(INITIAL_ARENA.nexusPercent);
   const [aegisPercent, setAegisPercent] = useState(INITIAL_ARENA.aegisPercent);
   const [joined, setJoined] = useState<Side | null>(null);
@@ -180,7 +179,7 @@ export function DomaHome() {
     };
   }, []);
 
-  /** 판결 훅 — LOCKED 진입 시 1회 */
+  /** 판결 훅 — LOCKED 진입 시 시그니처 스팅 1회 (입장과 동일) */
   useEffect(() => {
     if (!entered) return;
     const { state, dayId } = storeSnap.clock;
@@ -188,22 +187,8 @@ export function DomaHome() {
     const key = `j:${dayId}`;
     if (judgmentPlayed.current === key) return;
     judgmentPlayed.current = key;
-    playDomaSound("judgment");
+    playDomaSting();
   }, [entered, storeSnap.clock.state, storeSnap.clock.dayId]);
-
-  /** 안건 확정 훅 — COOLDOWN/LOCKED → OPEN 전환 시 */
-  useEffect(() => {
-    const { state } = storeSnap.clock;
-    const prev = prevClockState.current;
-    prevClockState.current = state;
-    if (!entered || !prev) return;
-    if (
-      state === "OPEN" &&
-      (prev === "COOLDOWN" || prev === "LOCKED")
-    ) {
-      playDomaSound("agendaConfirm");
-    }
-  }, [entered, storeSnap.clock.state]);
 
   const showToast = useCallback((message: string) => {
     setToast(message);
@@ -241,7 +226,6 @@ export function DomaHome() {
     }
     if (joined === side) return;
 
-    const prev = joined;
     try {
       domaStore.setJoinedCamp(campFromSide(side));
     } catch (e) {
@@ -256,7 +240,6 @@ export function DomaHome() {
       showToast("로그인이 필요합니다");
       return;
     }
-    if (prev && prev !== side) playDomaSound("campSwitch");
     setJoined(side);
     setNexusPercent((prev) => {
       const next =
