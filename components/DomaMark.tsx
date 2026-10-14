@@ -1,5 +1,7 @@
 "use client";
 
+import { useId } from "react";
+
 type DomaMarkProps = {
   /** 세로 기준 높이 */
   size?: number;
@@ -9,9 +11,8 @@ type DomaMarkProps = {
 };
 
 /**
- * doma-logo-preferred 비율.
- * 삼각이 위 레이어 — 원과 겹치는 구간의 원 스트로크는
- * 확장 삼각으로 지운 뒤 삼각 스트로크를 올린다.
+ * 삼각이 위 레이어. 원은 evenodd 클립으로 삼각(확장) 구간 스트로크 0.
+ * 그 위 삼각 fill(bg)+stroke로 겹침을 다시 막는다.
  */
 export function DomaMark({
   size = 56,
@@ -20,14 +21,13 @@ export function DomaMark({
 }: DomaMarkProps) {
   const stroke = light ? "#000000" : "#ffffff";
   const bg = light ? "#ffffff" : "#000000";
+  const uid = useId().replace(/:/g, "");
+  const clipId = `doma-ell-clip-${uid}`;
   const width = Math.round(size * (48 / 72));
 
-  // tip y≈52 · ellipse top≈44.5
   const tri = "M6 23.2h36L24 52Z";
-  // 원 스트로크(1.45)까지 덮는 지우개 — 삼각보다 크게
-  const triErase = "M2 20.2h44L24 57.2Z";
-  // 사각 하단이 삼각에 가려지도록
-  const rectErase = "M14.2 20.4h19.6v5.2H14.2Z";
+  // 스트로크 두께 포함해 원을 잘라낼 구멍
+  const triHole = "M0.8 18.8h46.4L24 60.2Z";
 
   return (
     <svg
@@ -39,7 +39,17 @@ export function DomaMark({
       className={`shrink-0 ${className}`}
       aria-hidden
     >
-      {/* 원 전체 */}
+      <defs>
+        <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
+          {/* 전체 − 삼각 구멍 → 겹침 구간 원 페인트 0 */}
+          <path
+            fillRule="evenodd"
+            clipRule="evenodd"
+            d={`M0 0H48V72H0Z ${triHole}`}
+          />
+        </clipPath>
+      </defs>
+
       <ellipse
         cx="24"
         cy="56.5"
@@ -47,13 +57,11 @@ export function DomaMark({
         ry="12"
         stroke={stroke}
         strokeWidth="1.45"
+        clipPath={`url(#${clipId})`}
       />
 
-      {/* 겹침 구간의 원·사각 선을 배경색으로 지움 */}
-      <path d={triErase} fill={bg} stroke="none" />
-      <path d={rectErase} fill={bg} stroke="none" />
-
-      {/* 삼각 위 레이어 */}
+      {/* 삼각 위 레이어: 내부 bg로 잔여 픽셀까지 덮고 스트로크 */}
+      <path d={tri} fill={bg} stroke="none" />
       <path
         d={tri}
         fill="none"
@@ -69,6 +77,14 @@ export function DomaMark({
         height="22"
         stroke={stroke}
         strokeWidth="1.45"
+      />
+      {/* 사각 하단이 삼각에 가려지게 */}
+      <path d="M14.5 21h19v4.5h-19Z" fill={bg} />
+      <path
+        d="M6 23.2h36"
+        stroke={stroke}
+        strokeWidth="1.45"
+        strokeLinecap="square"
       />
     </svg>
   );
