@@ -1,23 +1,14 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Space_Grotesk, Syne } from "next/font/google";
+import { Noto_Serif_KR } from "next/font/google";
+import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
-const syne = Syne({
-  variable: "--font-syne",
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
-});
-
-const brandSerif = Cormorant_Garamond({
-  variable: "--font-brand",
+/** 큰 주제·디스플레이 · 워드마크 조화 (OFL) */
+const notoSerifKr = Noto_Serif_KR({
+  variable: "--font-noto-serif-kr",
   subsets: ["latin"],
   weight: ["500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -41,11 +32,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="ko"
-      className={`${spaceGrotesk.variable} ${syne.variable} ${brandSerif.variable} h-full`}
-    >
-      <body className="min-h-full bg-background text-foreground antialiased">
+    <html lang="ko" className={`${notoSerifKr.variable} h-full`}>
+      <body className="min-h-full bg-background font-sans text-foreground antialiased">
         {children}
       </body>
     </html>

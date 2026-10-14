@@ -10,6 +10,21 @@
   --surface-raised: #111111;
   /* 박진감용 — 카운트다운 선에만 사용 */
   --timer: #e10600;
+
+  /* 본문·UI — Pretendard (OFL) */
+  --font-sans-stack:
+    "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic",
+    "Noto Sans KR", sans-serif;
+  /* 큰 주제·디스플레이 — Noto Serif KR (OFL) */
+  --font-display-stack:
+    var(--font-noto-serif-kr), "Noto Serif KR", "Apple SD Gothic Neo",
+    "Malgun Gothic", serif;
+  --font-sans: var(--font-sans-stack);
+  --font-display: var(--font-display-stack);
+  /* 워드마크 — 디스플레이와 조화 */
+  --font-brand: var(--font-display-stack);
+  /* 레거시 별칭 (기존 Syne 참조) */
+  --font-syne: var(--font-display-stack);
 }
 
 @theme inline {
@@ -21,8 +36,8 @@
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
   --color-timer: var(--timer);
-  --font-sans: var(--font-space-grotesk);
-  --font-display: var(--font-syne);
+  --font-sans: var(--font-sans-stack);
+  --font-display: var(--font-display-stack);
 }
 
 * {
@@ -41,7 +56,7 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-space-grotesk), ui-sans-serif, sans-serif;
+  font-family: var(--font-sans);
   margin: 0;
   -webkit-font-smoothing: antialiased;
 }

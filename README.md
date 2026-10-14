@@ -8,6 +8,16 @@
 - 목 데이터만 사용 (인증·DB·비밀키 없음)
 - 결과 카드 캡처: `html2canvas`
 
+## 폰트
+
+| 용도 | 서체 | 라이선스 |
+|---|---|---|
+| 본문·UI | **Pretendard** (`pretendard` npm) | SIL OFL 1.1 |
+| 주제·디스플레이·워드마크 | **Noto Serif KR** (`next/font`) | SIL OFL 1.1 |
+
+폴백: `Apple SD Gothic Neo`, `Malgun Gothic`, `Noto Sans KR`, sans-serif / serif.  
+고지: [`public/fonts/NOTICE`](public/fonts/NOTICE)
+
 ## 화면 구성
 
 1. **Header** — `DOMA`(절제) · 빨간 카운트다운 · **[오늘 | 내일]** 1급 전환 · 달력/검색
