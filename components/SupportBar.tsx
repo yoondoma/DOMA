@@ -13,34 +13,40 @@ type SupportBarProps = {
   onJoin: (side: Side) => void;
 };
 
+/** 슬림 게이지 높이 — ArenaBar·토스트 오프셋과 동기 */
+export const SUPPORT_BAR_HEIGHT_PX = 32;
+
 function CrackDivider() {
   return (
     <svg
-      className="pointer-events-none absolute inset-y-0 left-1/2 z-10 h-full w-5 -translate-x-1/2"
-      viewBox="0 0 20 100"
+      className="pointer-events-none absolute inset-y-0 left-1/2 z-10 h-full w-3 -translate-x-1/2"
+      viewBox="0 0 12 32"
       preserveAspectRatio="none"
       aria-hidden
     >
       <path
-        d="M10 0 7 12 12 22 6 38 13 52 8 68 14 82 10 100"
+        d="M6 0 4 6 7 12 3 18 8 24 5 28 6 32"
         fill="none"
         stroke="#ffffff"
-        strokeWidth="1.6"
+        strokeWidth="1.2"
         vectorEffect="non-scaling-stroke"
       />
       <path
-        d="M10 0 8 12 13 22 7 38 14 52 9 68 15 82 10 100"
+        d="M6 0 5 6 8 12 4 18 9 24 6 28 6 32"
         fill="none"
         stroke="#a3a3a3"
-        strokeWidth="0.8"
+        strokeWidth="0.6"
         vectorEffect="non-scaling-stroke"
-        opacity="0.7"
+        opacity="0.65"
       />
     </svg>
   );
 }
 
-/** 셸 하단 독 — 지지 · 돌격/방어 보조 카피 · 짧은 충격 피드백 */
+/**
+ * 하단 슬림 게이지 — 심볼 + % + 명수만.
+ * 두꺼운 독·「지지 · 돌격/방어」라벨 없음.
+ */
 export function SupportBar({
   nexusPercent,
   aegisPercent,
@@ -59,59 +65,53 @@ export function SupportBar({
 
   return (
     <div
-      className="relative z-[45] w-full shrink-0 border-t border-white/20"
+      className="relative z-[45] w-full shrink-0 border-t border-white/15"
       aria-label="진영 지지"
       data-support-bar
+      data-slim="true"
     >
-      <div className="relative mx-auto flex min-h-[84px] max-w-[560px] overflow-hidden">
+      <div
+        className="relative mx-auto flex max-w-[560px] overflow-hidden"
+        style={{ height: SUPPORT_BAR_HEIGHT_PX }}
+      >
         <CrackDivider />
         <button
           type="button"
           onClick={() => strike("NEXUS")}
-          aria-label="도전자 진영 지지"
+          aria-label={`도전자 ${nexusPercent}% ${nexusVotes.toLocaleString("ko-KR")}명`}
           data-support-side="NEXUS"
-          className={`relative flex flex-1 flex-col items-start justify-center gap-0.5 bg-black px-3 py-2.5 text-left text-white ${
-            joined === "NEXUS" ? "opacity-100" : "active:opacity-80"
+          aria-pressed={joined === "NEXUS"}
+          className={`relative flex h-full flex-1 items-center gap-1.5 bg-black px-2.5 text-white ${
+            joined === "NEXUS" ? "opacity-100" : "opacity-90 active:opacity-100"
           } ${flash === "NEXUS" ? "support-strike-nexus" : ""}`}
           style={{ flexBasis: `${nexusPercent}%` }}
         >
-          <span className="inline-flex items-center gap-1.5">
-            <SpearMark size={15} />
-            <span className="text-[15px] font-bold tabular-nums">
-              {nexusPercent}%
-            </span>
+          <SpearMark size={12} />
+          <span className="text-[12px] font-bold tabular-nums leading-none">
+            {nexusPercent}%
           </span>
-          <span className="text-[11px] font-medium tracking-[0.04em]">
-            지지 · 돌격
-          </span>
-          <span className="text-[10px] text-muted">
-            {joined === "NEXUS" ? "참전 중 · " : ""}
-            {nexusVotes.toLocaleString("ko-KR")}명
+          <span className="truncate text-[10px] tabular-nums leading-none text-white/55">
+            {nexusVotes.toLocaleString("ko-KR")}
           </span>
         </button>
         <button
           type="button"
           onClick={() => strike("AEGIS")}
-          aria-label="방어자 진영 지지"
+          aria-label={`방어자 ${aegisPercent}% ${aegisVotes.toLocaleString("ko-KR")}명`}
           data-support-side="AEGIS"
-          className={`relative flex flex-1 flex-col items-end justify-center gap-0.5 bg-white px-3 py-2.5 text-right text-black ${
-            joined === "AEGIS" ? "opacity-100" : "active:opacity-80"
+          aria-pressed={joined === "AEGIS"}
+          className={`relative flex h-full flex-1 items-center justify-end gap-1.5 bg-white px-2.5 text-black ${
+            joined === "AEGIS" ? "opacity-100" : "opacity-90 active:opacity-100"
           } ${flash === "AEGIS" ? "support-strike-aegis" : ""}`}
           style={{ flexBasis: `${aegisPercent}%` }}
         >
-          <span className="inline-flex items-center gap-1.5">
-            <span className="text-[15px] font-bold tabular-nums">
-              {aegisPercent}%
-            </span>
-            <ShieldMark size={15} />
+          <span className="truncate text-[10px] tabular-nums leading-none text-black/45">
+            {aegisVotes.toLocaleString("ko-KR")}
           </span>
-          <span className="text-[11px] font-medium tracking-[0.04em]">
-            지지 · 방어
+          <span className="text-[12px] font-bold tabular-nums leading-none">
+            {aegisPercent}%
           </span>
-          <span className="text-[10px] text-neutral-500">
-            {joined === "AEGIS" ? "참전 중 · " : ""}
-            {aegisVotes.toLocaleString("ko-KR")}명
-          </span>
+          <ShieldMark size={12} />
         </button>
       </div>
     </div>

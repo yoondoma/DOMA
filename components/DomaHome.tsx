@@ -80,6 +80,9 @@ export function DomaHome() {
   const [joined, setJoined] = useState<Side | null>(null);
   const [arenaView, setArenaView] = useState<ArenaView>("intro");
   const [navTab, setNavTab] = useState<NavTab>("home");
+  const [profileTab, setProfileTab] = useState<"posts" | "scraps" | "battles">(
+    "posts",
+  );
   const [choiceOpen, setChoiceOpen] = useState(false);
   const [todayComposeOpen, setTodayComposeOpen] = useState(false);
   const [tomorrowComposeOpen, setTomorrowComposeOpen] = useState(false);
@@ -254,9 +257,7 @@ export function DomaHome() {
       return next;
     });
     showToast(
-      side === "NEXUS"
-        ? "지지 · 돌격 — 도전자 진영"
-        : "지지 · 방어 — 방어자 진영",
+      side === "NEXUS" ? "도전자 진영 지지" : "방어자 진영 지지",
     );
   };
 
@@ -397,6 +398,7 @@ export function DomaHome() {
       setHomeSurface("today");
       setFocusOpinionId(null);
     }
+    if (tab === "profile") setProfileTab("posts");
     setNavTab(tab);
   };
 
@@ -543,6 +545,9 @@ export function DomaHome() {
               onToast={showToast}
               onOpenShareCard={setContextualShare}
               onOpenVerdictShare={() => setShareOpen(true)}
+              onOpenAuthor={(handle) => {
+                openGuestProfile(profileForHandle(handle), "home");
+              }}
               onDiscoverSelect={(item: DiscoverItem) => {
                 if (item.kind === "proposal") {
                   setHomeSurface("tomorrow");
@@ -606,11 +611,21 @@ export function DomaHome() {
           <ProfileScreen
             isSelf
             profile={editableProfile}
+            initialTab={profileTab}
+            onTabChange={setProfileTab}
             onOpenProfileEdit={() => setProfileEditOpen(true)}
             onOpenShareCard={() => setShareOpen(true)}
             uiDemo={uiDemo}
             onRetry={onRetry}
             onCompose={openCompose}
+            onOpenArenaOpinion={(opinionId, side) => {
+              setGuestProfile(null);
+              setHomeSurface("today");
+              setArenaView(side);
+              setFocusOpinionId(opinionId);
+              setNavTab("home");
+              showToast("해당 글로 이동했습니다");
+            }}
           />
         ) : null}
       </div>
@@ -620,7 +635,7 @@ export function DomaHome() {
           className="pointer-events-none absolute inset-x-0 z-[55] flex justify-center px-4"
           style={{
             bottom: campSupportOpen
-              ? "calc(84px + 3.5rem + env(safe-area-inset-bottom) + 8px)"
+              ? "calc(32px + 3.5rem + env(safe-area-inset-bottom) + 8px)"
               : "calc(3.5rem + env(safe-area-inset-bottom) + 8px)",
           }}
           role="status"
@@ -652,12 +667,45 @@ export function DomaHome() {
         open={calendarOpen}
         onClose={() => setCalendarOpen(false)}
         onToast={showToast}
+        onOpenProfile={(handle) => {
+          openGuestProfile(profileForHandle(handle), "home");
+        }}
       />
       <SearchSheet
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
         uiDemo={uiDemo}
         onRetry={onRetry}
+        onSelect={(item) => {
+          setSearchOpen(false);
+          const nav = item.nav;
+          if (!nav) {
+            showToast("이동할 수 없는 항목입니다");
+            return;
+          }
+          if (nav.surface === "calendar") {
+            setCalendarOpen(true);
+            showToast("전투 기록으로 이동했습니다");
+            return;
+          }
+          if (nav.surface === "tomorrow") {
+            setGuestProfile(null);
+            setHomeSurface("tomorrow");
+            setNavTab("home");
+            showToast("내일의 주제로 이동했습니다");
+            return;
+          }
+          setGuestProfile(null);
+          setHomeSurface("today");
+          setArenaView(nav.side ?? "intro");
+          setFocusOpinionId(nav.opinionId ?? null);
+          setNavTab("home");
+          showToast(
+            nav.opinionId
+              ? "해당 글로 이동했습니다"
+              : "오늘 전장으로 이동했습니다",
+          );
+        }}
       />
       <SettingsSheet
         open={settingsOpen}
@@ -666,6 +714,13 @@ export function DomaHome() {
           setLeftSocialId(socialId);
           setAuthOpen(true);
         }}
+        onOpenScraps={() => {
+          setGuestProfile(null);
+          setProfileTab("scraps");
+          setNavTab("profile");
+          showToast("스크랩 탭");
+        }}
+        onOpenRules={() => setRulesOpen(true)}
         onClose={() => setSettingsOpen(false)}
         onToast={showToast}
       />

@@ -34,9 +34,9 @@ import { useDomaStore } from "@/lib/store";
 import {
   formatCountdownMs,
   parseClosingQuery,
+  timerPhaseLabel,
   timerUrgencyClass,
   urgencyFromRemainingMs,
-  urgencyLabel,
   type UrgencyStage,
 } from "@/lib/timer-urgency";
 import { DAILY_TITLE_SHORT } from "@/lib/types/gamification";
@@ -51,12 +51,15 @@ function byJudgmentDesc(a: Opinion, b: Opinion): number {
 type TimerUrgency = {
   remaining: string;
   stage: UrgencyStage | null;
-  label: string;
+  /** 타이머 위 상시 — 전투 시작/종료까지 */
+  phaseLabel: string;
+  phase: "before" | "during" | "after";
 };
 
 /**
- * 판결까지 카운트다운 + 압박 단계.
- * 목업: `?closing=3h|1h|30m|10m|5m|1m|1|soon` 또는 초 단위 숫자
+ * KST 시계 기준 카운트다운 + 압박 단계.
+ * 위 문구: COOLDOWN→전투 시작까지 · OPEN→전투 종료까지 · LOCKED→판결.
+ * 목업: `?closing=` 은 전투 중 압박만.
  */
 function useTimerUrgency(endsAt: string): TimerUrgency {
   const clock = useDomaStore().clock;
@@ -79,24 +82,36 @@ function useTimerUrgency(endsAt: string): TimerUrgency {
         setRemainingMs(mockMs);
         return;
       }
-      setRemainingMs(Math.max(0, new Date(endsAt).getTime() - Date.now()));
+      /** 쿨다운: 다음 OPEN / 그 외: endsAt(lock) */
+      const target =
+        clock.state === "COOLDOWN" && clock.nextOpenAtUtc
+          ? clock.nextOpenAtUtc
+          : endsAt;
+      setRemainingMs(Math.max(0, new Date(target).getTime() - Date.now()));
     };
     tick();
     const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
-  }, [endsAt, mockMs]);
+  }, [endsAt, mockMs, clock.state, clock.nextOpenAtUtc]);
+
+  const phaseInfo = timerPhaseLabel(
+    mockMs != null ? "OPEN" : clock.state,
+  );
 
   const stage =
-    mockMs != null
-      ? urgencyFromRemainingMs(remainingMs)
-      : clock.state === "CLOSING_SOON" || clock.goldenHour
-        ? urgencyFromRemainingMs(remainingMs) ?? "10m"
-        : urgencyFromRemainingMs(remainingMs);
+    phaseInfo.phase === "before" || phaseInfo.phase === "after"
+      ? null
+      : mockMs != null
+        ? urgencyFromRemainingMs(remainingMs)
+        : clock.state === "CLOSING_SOON" || clock.goldenHour
+          ? urgencyFromRemainingMs(remainingMs) ?? "10m"
+          : urgencyFromRemainingMs(remainingMs);
 
   return {
     remaining: formatCountdownMs(remainingMs),
     stage,
-    label: urgencyLabel(stage),
+    phaseLabel: phaseInfo.label,
+    phase: phaseInfo.phase,
   };
 }
 
@@ -159,6 +174,8 @@ type ArenaBarProps = {
   onOpenVerdictShare?: () => void;
   /** 진영 피드 하단 SupportBar 독 여부 (높이 보정) */
   campSupportDock?: boolean;
+  /** 작성자 핸들 → 프로필 */
+  onOpenAuthor?: (handle: string) => void;
   /** 발견 스트립 탭 → 홈 표면 전환 등 */
   onDiscoverSelect?: (item: DiscoverItem) => void;
 };
@@ -191,6 +208,7 @@ function OpinionRow({
   light,
   onToast,
   onOpenShareCard,
+  onOpenAuthor,
   shareTopic,
 }: {
   op: Opinion;
@@ -199,6 +217,7 @@ function OpinionRow({
   light: boolean;
   onToast?: (message: string) => void;
   onOpenShareCard?: (payload: ContextualSharePayload) => void;
+  onOpenAuthor?: (handle: string) => void;
   shareTopic?: { round: number; topic: string };
 }) {
   const authorLabel = op.authorLeft ? LEFT_USER_LABEL : op.author;
@@ -220,14 +239,28 @@ function OpinionRow({
         <SmallAvatar name={authorLabel} light={light} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span
-              className={`truncate text-[13px] font-semibold ${
-                light ? "text-black" : "text-white"
-              }`}
-              data-author-left={op.authorLeft ? "1" : undefined}
-            >
-              {op.authorLeft ? authorLabel : `@${authorLabel}`}
-            </span>
+            {op.authorLeft || !onOpenAuthor ? (
+              <span
+                className={`truncate text-[13px] font-semibold ${
+                  light ? "text-black" : "text-white"
+                }`}
+                data-author-left={op.authorLeft ? "1" : undefined}
+              >
+                {op.authorLeft ? authorLabel : `@${authorLabel}`}
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onOpenAuthor(op.author)}
+                className={`truncate text-[13px] font-semibold ${
+                  light ? "text-black" : "text-white"
+                }`}
+                aria-label={`@${authorLabel} 프로필`}
+                data-author-open
+              >
+                @{authorLabel}
+              </button>
+            )}
             <SideBadge side={op.side} />
             <TrojanMark count={op.trojanCount ?? 0} light={light} />
             {op.createdAtUtc ? (
@@ -291,6 +324,7 @@ function CampFeedPage({
   light,
   onToast,
   onOpenShareCard,
+  onOpenAuthor,
   shareTopic,
 }: {
   side: Side;
@@ -304,6 +338,7 @@ function CampFeedPage({
   light: boolean;
   onToast?: (message: string) => void;
   onOpenShareCard?: (payload: ContextualSharePayload) => void;
+  onOpenAuthor?: (handle: string) => void;
   shareTopic?: { round: number; topic: string };
 }) {
   const top = useMemo(
@@ -370,12 +405,24 @@ function CampFeedPage({
                 name={top.authorLeft ? LEFT_USER_LABEL : top.author}
                 light={light}
               />
-              <span
-                className={`text-[13px] font-semibold ${ink}`}
-                data-author-left={top.authorLeft ? "1" : undefined}
-              >
-                {top.authorLeft ? LEFT_USER_LABEL : `@${top.author}`}
-              </span>
+              {top.authorLeft || !onOpenAuthor ? (
+                <span
+                  className={`text-[13px] font-semibold ${ink}`}
+                  data-author-left={top.authorLeft ? "1" : undefined}
+                >
+                  {top.authorLeft ? LEFT_USER_LABEL : `@${top.author}`}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => onOpenAuthor(top.author)}
+                  className={`text-[13px] font-semibold ${ink}`}
+                  aria-label={`@${top.author} 프로필`}
+                  data-author-open
+                >
+                  @{top.author}
+                </button>
+              )}
               <SideBadge side={top.side} />
               <TrojanMark count={top.trojanCount ?? 0} light={light} />
               {top.createdAtUtc ? (
@@ -456,6 +503,7 @@ function CampFeedPage({
               light={light}
               onToast={onToast}
               onOpenShareCard={onOpenShareCard}
+              onOpenAuthor={onOpenAuthor}
               shareTopic={shareTopic}
             />
           ))
@@ -504,7 +552,7 @@ function BattlefieldIntro({
         className={`battlefield-rise border-b px-5 pb-4 pt-5 text-center ${border}`}
         data-arena-timer-block
       >
-        {/* 제 N회 — 「최후의 판결」카피 직상위 */}
+        {/* 제 N회 → 상태(시작/종료까지) → 카운트다운 */}
         <p
           className={`text-[12px] font-bold tracking-[0.14em] ${ink}`}
           aria-label={`제 ${arena.round}회 전투`}
@@ -514,35 +562,36 @@ function BattlefieldIntro({
         </p>
         <p
           className={`mt-2 text-[11px] tracking-[0.18em] ${
-            timer.stage ? "text-timer" : soft
+            timer.phase === "after" || timer.stage ? "text-timer" : soft
           }`}
+          data-timer-phase={timer.phase}
           data-urgency-label={timer.stage ?? "calm"}
           data-verdict-label
         >
-          {timer.label}
+          {timer.phaseLabel}
         </p>
-        <p
-          className={`mt-2 font-mono leading-none tabular-nums text-timer ${timerUrgencyClass(
-            timer.stage,
-            "hero",
-          )}`}
-          aria-label={`남은 시간 ${timer.remaining}${
-            timer.stage ? ` · ${timer.label}` : ""
-          }`}
-          data-urgency={timer.stage ?? "calm"}
-          data-closing={
-            timer.stage === "10m" ||
-            timer.stage === "5m" ||
-            timer.stage === "1m"
-              ? "soon"
-              : undefined
-          }
-        >
-          {timer.remaining}
-          <span className="ml-2 align-middle text-[13px] font-medium tracking-[0.14em] text-timer/90">
-            남음
-          </span>
-        </p>
+        {timer.phase === "after" ? null : (
+          <p
+            className={`mt-2 font-mono leading-none tabular-nums text-timer ${timerUrgencyClass(
+              timer.stage,
+              "hero",
+            )}`}
+            aria-label={`${timer.phaseLabel} ${timer.remaining}`}
+            data-urgency={timer.stage ?? "calm"}
+            data-closing={
+              timer.stage === "10m" ||
+              timer.stage === "5m" ||
+              timer.stage === "1m"
+                ? "soon"
+                : undefined
+            }
+          >
+            {timer.remaining}
+            <span className="ml-2 align-middle text-[13px] font-medium tracking-[0.14em] text-timer/90">
+              남음
+            </span>
+          </p>
+        )}
         {/* 날짜 — 타이머 아래 · 빨간 액센트 · 「오늘」문구 없음 */}
         <p
           className="mt-2.5 text-[12px] font-medium tracking-[0.08em] text-timer"
@@ -727,6 +776,7 @@ export function ArenaBar({
   onOpenShareCard,
   onOpenVerdictShare,
   campSupportDock = false,
+  onOpenAuthor,
   onDiscoverSelect,
 }: ArenaBarProps) {
   const clock = useDomaStore().clock;
@@ -882,26 +932,34 @@ export function ArenaBar({
           aria-label="오늘 주제 영역"
           data-arena-detail-header
         >
-          {/* 상세(진영 펼침): 날짜·전투 횟수 행 숨김 — 주제·의견에 집중 */}
+          {/* 상세: 상태 문구 → 카운트다운 */}
           <p
-            className={`font-mono tabular-nums text-timer ${timerUrgencyClass(
-              timer.stage,
-              "sticky",
-            )}`}
-            aria-label={`남은 시간 ${timer.remaining}${
-              timer.stage ? ` · ${timer.label}` : ""
+            className={`text-[10px] tracking-[0.16em] ${
+              timer.phase === "after" || timer.stage ? "text-timer" : soft
             }`}
-            data-urgency={timer.stage ?? "calm"}
-            data-closing={
-              timer.stage === "10m" ||
-              timer.stage === "5m" ||
-              timer.stage === "1m"
-                ? "soon"
-                : undefined
-            }
+            data-timer-phase={timer.phase}
           >
-            {timer.remaining}
+            {timer.phaseLabel}
           </p>
+          {timer.phase === "after" ? null : (
+            <p
+              className={`mt-1 font-mono tabular-nums text-timer ${timerUrgencyClass(
+                timer.stage,
+                "sticky",
+              )}`}
+              aria-label={`${timer.phaseLabel} ${timer.remaining}`}
+              data-urgency={timer.stage ?? "calm"}
+              data-closing={
+                timer.stage === "10m" ||
+                timer.stage === "5m" ||
+                timer.stage === "1m"
+                  ? "soon"
+                  : undefined
+              }
+            >
+              {timer.remaining}
+            </p>
+          )}
           <div className="mt-2 flex items-start justify-center gap-1.5">
             <h2
               className={`font-[family-name:var(--font-syne)] text-[18px] font-bold leading-[1.4] tracking-[-0.01em] sm:text-[19px] ${ink}`}
@@ -1037,7 +1095,7 @@ export function ArenaBar({
             touchAction: "pan-x pan-y",
             /* 헤더·sticky 주제·하단네비(+진영 SupportBar) 밖 남은 높이 */
             height: campSupportDock
-              ? "calc(100dvh - 3.5rem - 7.5rem - 3.5rem - 84px - env(safe-area-inset-bottom, 0px))"
+              ? "calc(100dvh - 3.5rem - 7.5rem - 3.5rem - 32px - env(safe-area-inset-bottom, 0px))"
               : "calc(100dvh - 3.5rem - 7.5rem - 3.5rem - env(safe-area-inset-bottom, 0px))",
             maxHeight: "50dvh",
           }}
@@ -1056,6 +1114,7 @@ export function ArenaBar({
             light={light}
             onToast={onToast}
             onOpenShareCard={onOpenShareCard}
+            onOpenAuthor={onOpenAuthor}
             shareTopic={{ round: arena.round, topic: arena.topic }}
           />
           <CampFeedPage
@@ -1070,6 +1129,7 @@ export function ArenaBar({
             light={light}
             onToast={onToast}
             onOpenShareCard={onOpenShareCard}
+            onOpenAuthor={onOpenAuthor}
             shareTopic={{ round: arena.round, topic: arena.topic }}
           />
         </div>
