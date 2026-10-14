@@ -23,32 +23,52 @@ function NavIcon({ id, active }: { id: NavTab; active: boolean }) {
   const stroke = active ? "#fff" : "#737373";
 
   switch (id) {
-    case "home":
-      // 아레나(결투장): 흑/백 분할 원 + 중앙 균열 — 결투가 짧게 읽힘
+    case "home": {
+      /**
+       * 아레나 육각 (arena-hex-ref.jpg):
+       * 위·아래 꼭짓점 세로 육각 · 가운데 세로선 이등분
+       * 왼: 대각 해칭 / 오른: 비움(외곽만) · Strict B&W
+       */
+      const hex =
+        "M12 1.6 19.6 6.4v11.2L12 22.4 4.4 17.6V6.4Z";
+      const leftHalf = "M12 1.6 4.4 6.4v11.2L12 22.4Z";
+      const hatchId = active ? "arena-hatch-on" : "arena-hatch-off";
       return (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <circle cx="12" cy="12" r="8.25" stroke={stroke} strokeWidth="1.7" />
+          <defs>
+            <pattern
+              id={hatchId}
+              patternUnits="userSpaceOnUse"
+              width="3"
+              height="3"
+              patternTransform="rotate(-40)"
+            >
+              <path d="M0 0v3" stroke={stroke} strokeWidth="1.15" />
+            </pattern>
+            <clipPath id={`${hatchId}-clip`}>
+              <path d={leftHalf} />
+            </clipPath>
+          </defs>
           <path
-            d="M12 3.75v16.5"
+            d={hex}
+            fill={`url(#${hatchId})`}
+            clipPath={`url(#${hatchId}-clip)`}
+          />
+          <path
+            d={hex}
             stroke={stroke}
-            strokeWidth="1.7"
-            strokeLinecap="square"
+            strokeWidth="1.55"
+            strokeLinejoin="miter"
           />
-          {/* 좌 흑면 느낌 — 채움 */}
           <path
-            d="M12 4.1A7.9 7.9 0 0 0 4.1 12 7.9 7.9 0 0 0 12 19.9V4.1Z"
-            fill={active ? "#fff" : "#737373"}
-          />
-          {/* 균열 */}
-          <path
-            d="M12 3.75 10.2 7.5 13.2 10.2 10.5 13.5 13 16.2 12 20.25"
-            stroke={active ? "#000" : "#0a0a0a"}
-            strokeWidth="1.35"
-            strokeLinejoin="round"
+            d="M12 1.6v20.8"
+            stroke={stroke}
+            strokeWidth="1.4"
             strokeLinecap="square"
           />
         </svg>
       );
+    }
     case "messages":
       return (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
