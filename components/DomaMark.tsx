@@ -35,8 +35,8 @@ export function DomaMark({
    * tipY=50 빗변·원 교차 ≈ (20.45,44.68)-(27.55,44.68)
    * 끝점을 교차보다 살짝 안쪽 → tip 밑 원 호 미작성, 어깨 갭 최소
    */
-  const ellipseOpen =
-    "M20.7 44.75A20.5 12 0 0 1 24 68.5A20.5 12 0 0 1 27.3 44.75";
+  /** large-arc 한 방 → tip 구간만 비우고 하단 노치 없음 */
+  const ellipseOpen = "M20.7 44.75A20.5 12 0 1 1 27.3 44.75";
 
   return (
     <svg
