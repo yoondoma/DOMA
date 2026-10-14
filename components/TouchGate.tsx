@@ -7,7 +7,7 @@ type TouchGateProps = {
   onEnter: () => void;
 };
 
-/** 진입 — 화면 어디든 터치하면 입장. 로고 형태/비율 유지 */
+/** 진입 — 만져서 증명(도마/토마스). 화면 어디든 터치. 로고 형태 유지 */
 export function TouchGate({ onEnter }: TouchGateProps) {
   const [pressing, setPressing] = useState(false);
 
@@ -23,7 +23,7 @@ export function TouchGate({ onEnter }: TouchGateProps) {
     <button
       type="button"
       onClick={handleEnter}
-      aria-label="터치하여 입장"
+      aria-label="터치하여 증명"
       className={`flex min-h-dvh w-full flex-col items-center justify-center border-0 bg-black px-6 text-white outline-none transition-opacity duration-200 focus-visible:outline-none ${
         pressing ? "touch-press" : "active:opacity-90"
       }`}
@@ -42,7 +42,7 @@ export function TouchGate({ onEnter }: TouchGateProps) {
             pressing ? "opacity-40" : "opacity-100"
           }`}
         >
-          {pressing ? "확인됨" : "터치하여 입장"}
+          {pressing ? "증명됨" : "터치하여 증명"}
         </span>
       </span>
     </button>

@@ -214,10 +214,14 @@ export function DomaHome() {
           }
           onOpenSearch={() => setSearchOpen(true)}
           surface={homeSurface}
-          onSurfaceChange={(s) => {
-            setHomeSurface(s);
-            if (s === "today") setArenaView("intro");
-          }}
+          onSurfaceChange={
+            navTab === "home"
+              ? (s) => {
+                  setHomeSurface(s);
+                  if (s === "today") setArenaView("intro");
+                }
+              : undefined
+          }
         />
 
         {navTab === "home" && homeSurface === "today" ? (
