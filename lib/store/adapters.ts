@@ -1,3 +1,7 @@
+import {
+  isLeftUser,
+  publicAuthorLabel,
+} from "@/lib/account-display";
 import type {
   CampSwitch,
   Like,
@@ -20,8 +24,9 @@ export function toUiOpinion(
   return {
     id: op.id,
     side: sideFromCamp(op.camp),
-    author: user?.handle ?? op.authorId.replace(/^usr_/, ""),
+    author: publicAuthorLabel(user) || op.authorId.replace(/^usr_/, ""),
     authorId: op.authorId,
+    authorLeft: isLeftUser(user),
     text: op.body,
     likes: op.likeCount,
     supports: op.supportCount,

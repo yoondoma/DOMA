@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { domaStore, useDomaStore } from "@/lib/store";
-import type { PrivacyPrefs } from "@/lib/types/privacy";
 
 export type EditableProfile = {
   name: string;
@@ -20,8 +18,8 @@ type ProfileEditSheetProps = {
 };
 
 /**
- * 프로필 편집 — 핸들·소개·아바타·스크랩 공개 등 프로필 고유 항목.
- * 앱 설정(톱니)과 분리. 스펙: sense-brand
+ * 프로필 편집 — 핸들·소개·아바타.
+ * 스크랩은 본인만(공개 토글 없음). 앱 설정(톱니)과 분리.
  */
 export function ProfileEditSheet({
   open,
@@ -30,18 +28,11 @@ export function ProfileEditSheet({
   onSave,
   onToast,
 }: ProfileEditSheetProps) {
-  const snap = useDomaStore();
   const [draft, setDraft] = useState<EditableProfile>(profile);
-  const [privacy, setPrivacyLocal] = useState<PrivacyPrefs>(() =>
-    domaStore.getPrivacy(),
-  );
 
   useEffect(() => {
-    if (open) {
-      setDraft(profile);
-      setPrivacyLocal(domaStore.getPrivacy());
-    }
-  }, [open, profile, snap.privacyByUser, snap.session?.userId]);
+    if (open) setDraft(profile);
+  }, [open, profile]);
 
   if (!open) return null;
 
@@ -58,20 +49,6 @@ export function ProfileEditSheet({
     onSave(next);
     onToast?.("프로필을 저장했습니다");
     onClose();
-  };
-
-  const toggleScraps = () => {
-    try {
-      const next = domaStore.setPrivacy({
-        scrapsPublic: !privacy.scrapsPublic,
-      });
-      setPrivacyLocal(next);
-      onToast?.(
-        next.scrapsPublic ? "스크랩을 공개합니다" : "스크랩을 숨겼습니다",
-      );
-    } catch {
-      onToast?.("로그인이 필요합니다");
-    }
   };
 
   return (
@@ -181,41 +158,9 @@ export function ProfileEditSheet({
             </span>
           </label>
 
-          <div
-            className="mt-10 border-t border-neutral-800 pt-2"
-            aria-label="프로필 공개"
-            data-privacy-settings
-          >
-            <p className="py-3 text-[11px] font-bold tracking-[0.16em] text-neutral-200">
-              프로필 공개
-            </p>
-            <div className="flex items-center justify-between gap-3 border-b border-neutral-800 py-3.5">
-              <div className="min-w-0">
-                <p className="text-[14px] text-white">스크랩 공개</p>
-                <p className="mt-0.5 text-[12px] text-neutral-200">
-                  끄면 나만 볼 수 있습니다
-                </p>
-              </div>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={privacy.scrapsPublic}
-                aria-label="스크랩 공개"
-                onClick={toggleScraps}
-                className={`relative h-7 w-12 shrink-0 border transition-colors ${
-                  privacy.scrapsPublic
-                    ? "border-white bg-white"
-                    : "border-neutral-600 bg-neutral-900"
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 size-5 border border-neutral-800 bg-black transition-[left] ${
-                    privacy.scrapsPublic ? "left-[1.35rem]" : "left-0.5"
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
+          <p className="mt-10 text-[12px] leading-relaxed text-neutral-200">
+            스크랩은 나만 볼 수 있습니다. 프로필에 공개되지 않습니다.
+          </p>
         </div>
       </div>
     </div>

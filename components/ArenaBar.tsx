@@ -11,6 +11,8 @@ import {
 } from "react";
 import { AdSlot } from "@/components/AdSlot";
 import { OpinionSocial } from "@/components/OpinionSocial";
+import type { ContextualSharePayload } from "@/lib/contextual-share";
+import { LEFT_USER_LABEL } from "@/lib/account-display";
 import { SafetyMenu } from "@/components/SafetyMenu";
 import { StatusBlock } from "@/components/StatusBlock";
 import {
@@ -149,6 +151,8 @@ type ArenaBarProps = {
   onCompose?: () => void;
   onOpenRules?: () => void;
   onToast?: (message: string) => void;
+  /** 주제·창·방패 맥락 공유 카드 */
+  onOpenShareCard?: (payload: ContextualSharePayload) => void;
 };
 
 function topOpinionForSide(opinions: Opinion[], side: Side): Opinion | null {
@@ -178,13 +182,18 @@ function OpinionRow({
   focused,
   light,
   onToast,
+  onOpenShareCard,
+  shareTopic,
 }: {
   op: Opinion;
   index: number;
   focused?: boolean;
   light: boolean;
   onToast?: (message: string) => void;
+  onOpenShareCard?: (payload: ContextualSharePayload) => void;
+  shareTopic?: { round: number; topic: string };
 }) {
+  const authorLabel = op.authorLeft ? LEFT_USER_LABEL : op.author;
   return (
     <li
       data-opinion-id={op.id}
@@ -200,15 +209,16 @@ function OpinionRow({
       style={{ animationDelay: `${index * 30}ms` }}
     >
       <div className="mb-0.5 flex items-center gap-2">
-        <SmallAvatar name={op.author} light={light} />
+        <SmallAvatar name={authorLabel} light={light} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <span
               className={`truncate text-[13px] font-semibold ${
                 light ? "text-black" : "text-white"
               }`}
+              data-author-left={op.authorLeft ? "1" : undefined}
             >
-              @{op.author}
+              {op.authorLeft ? authorLabel : `@${authorLabel}`}
             </span>
             <SideBadge side={op.side} />
             <TrojanMark count={op.trojanCount ?? 0} light={light} />
@@ -224,7 +234,7 @@ function OpinionRow({
             ) : null}
           </div>
         </div>
-        {op.authorId ? (
+        {op.authorId && !op.authorLeft ? (
           <SafetyMenu
             userId={op.authorId}
             reportKind="opinion"
@@ -249,9 +259,13 @@ function OpinionRow({
         likedByMe={op.likedByMe}
         supportedByMe={op.supportedByMe}
         previewText={op.text}
-        authorHandle={op.author}
+        authorHandle={op.authorLeft ? undefined : op.author}
+        authorLeft={op.authorLeft}
+        side={op.side}
         light={light}
         onToast={onToast}
+        onOpenShareCard={onOpenShareCard}
+        shareTopic={shareTopic}
       />
     </li>
   );
@@ -268,6 +282,8 @@ function CampFeedPage({
   focusOpinionId,
   light,
   onToast,
+  onOpenShareCard,
+  shareTopic,
 }: {
   side: Side;
   label: string;
@@ -279,6 +295,8 @@ function CampFeedPage({
   focusOpinionId?: string | null;
   light: boolean;
   onToast?: (message: string) => void;
+  onOpenShareCard?: (payload: ContextualSharePayload) => void;
+  shareTopic?: { round: number; topic: string };
 }) {
   const top = useMemo(
     () => topOpinionForSide(opinions, side),
@@ -341,9 +359,15 @@ function CampFeedPage({
           >
             <div className="mb-1.5 flex flex-col items-center gap-2">
               <div className="flex flex-wrap items-center justify-center gap-2">
-                <SmallAvatar name={top.author} light={light} />
-                <span className={`text-[13px] font-semibold ${ink}`}>
-                  @{top.author}
+                <SmallAvatar
+                  name={top.authorLeft ? LEFT_USER_LABEL : top.author}
+                  light={light}
+                />
+                <span
+                  className={`text-[13px] font-semibold ${ink}`}
+                  data-author-left={top.authorLeft ? "1" : undefined}
+                >
+                  {top.authorLeft ? LEFT_USER_LABEL : `@${top.author}`}
                 </span>
                 <SideBadge side={top.side} />
                 <TrojanMark count={top.trojanCount ?? 0} light={light} />
@@ -355,7 +379,7 @@ function CampFeedPage({
                     {formatPostTimeKst(top.createdAtUtc)}
                   </time>
                 ) : null}
-                {top.authorId ? (
+                {top.authorId && !top.authorLeft ? (
                   <SafetyMenu
                     userId={top.authorId}
                     reportKind="opinion"
@@ -380,10 +404,14 @@ function CampFeedPage({
                 likedByMe={top.likedByMe}
                 supportedByMe={top.supportedByMe}
                 previewText={top.text}
-                authorHandle={top.author}
+                authorHandle={top.authorLeft ? undefined : top.author}
+                authorLeft={top.authorLeft}
+                side={top.side}
+                shareTopic={shareTopic}
                 light={light}
                 indent={false}
                 onToast={onToast}
+                onOpenShareCard={onOpenShareCard}
               />
             </div>
           </article>
@@ -423,6 +451,8 @@ function CampFeedPage({
                 focused={focusOpinionId === op.id}
                 light={light}
                 onToast={onToast}
+                onOpenShareCard={onOpenShareCard}
+                shareTopic={shareTopic}
               />
               {/* 의견 N개마다 1 · 지지/TOP 본문 밖 */}
               {(i + 1) % 3 === 0 ? (
@@ -447,6 +477,7 @@ function BattlefieldIntro({
   onRetry,
   onCompose,
   onOpenRules,
+  onOpenShareCard,
   light,
 }: {
   arena: ArenaState;
@@ -456,6 +487,7 @@ function BattlefieldIntro({
   onRetry?: () => void;
   onCompose?: () => void;
   onOpenRules?: () => void;
+  onOpenShareCard?: (payload: ContextualSharePayload) => void;
   light: boolean;
 }) {
   const timer = useTimerUrgency(arena.endsAt);
@@ -585,6 +617,26 @@ function BattlefieldIntro({
         >
           {arena.description}
         </p>
+        {onOpenShareCard ? (
+          <button
+            type="button"
+            onClick={() =>
+              onOpenShareCard({
+                kind: "topic",
+                round: arena.round,
+                topic: arena.topic,
+                description: arena.description,
+              })
+            }
+            className={`mt-4 text-[12px] font-medium tracking-[0.1em] underline-offset-4 hover:underline ${
+              light ? "text-black/55" : "text-white/55"
+            }`}
+            aria-label="주제 공유"
+            data-share-topic
+          >
+            주제 공유
+          </button>
+        ) : null}
       </div>
 
       {/* 최고 전투글 — 진영 진입 전 첫 화면에서 본문까지 보이게 */}
@@ -619,10 +671,20 @@ function BattlefieldIntro({
             </p>
             <div className={`mt-3 border-t pt-3.5 ${border}`}>
               <div className="flex flex-col items-center gap-1.5">
-                <SmallAvatar name={champion.author} light={light} />
+                <SmallAvatar
+                  name={
+                    champion.authorLeft ? LEFT_USER_LABEL : champion.author
+                  }
+                  light={light}
+                />
                 <div className="flex flex-wrap items-center justify-center gap-1.5">
-                  <span className={`text-[14px] font-semibold ${ink}`}>
-                    @{champion.author}
+                  <span
+                    className={`text-[14px] font-semibold ${ink}`}
+                    data-author-left={champion.authorLeft ? "1" : undefined}
+                  >
+                    {champion.authorLeft
+                      ? LEFT_USER_LABEL
+                      : `@${champion.author}`}
                   </span>
                   <SideBadge side={champion.side} />
                   <TrojanMark
@@ -655,6 +717,29 @@ function BattlefieldIntro({
                 <span className="mx-1.5 opacity-40">·</span>
                 좋아요 {champion.likes}
               </p>
+              {onOpenShareCard ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    onOpenShareCard({
+                      kind: "opinion",
+                      side: champion.side,
+                      round: arena.round,
+                      topic: arena.topic,
+                      opinionText: champion.text,
+                      authorHandle: champion.authorLeft
+                        ? undefined
+                        : champion.author,
+                      authorLeft: champion.authorLeft,
+                    })
+                  }
+                  className={`mt-3 text-[12px] tracking-[0.08em] underline-offset-4 hover:underline ${soft}`}
+                  aria-label="TOP 의견 공유"
+                  data-share-top-opinion
+                >
+                  이 의견 공유
+                </button>
+              ) : null}
             </div>
           </div>
         )}
@@ -716,6 +801,7 @@ export function ArenaBar({
   onCompose,
   onOpenRules,
   onToast,
+  onOpenShareCard,
 }: ArenaBarProps) {
   const forcedTop = useForcedTopSide();
   const champion = useMemo(
@@ -844,6 +930,7 @@ export function ArenaBar({
             onRetry={onRetry}
             onCompose={onCompose}
             onOpenRules={onOpenRules}
+            onOpenShareCard={onOpenShareCard}
             light={light}
           />
         </div>
@@ -1007,6 +1094,8 @@ export function ArenaBar({
             focusOpinionId={focusOpinionId}
             light={light}
             onToast={onToast}
+            onOpenShareCard={onOpenShareCard}
+            shareTopic={{ round: arena.round, topic: arena.topic }}
           />
           <CampFeedPage
             side="AEGIS"
@@ -1019,6 +1108,8 @@ export function ArenaBar({
             focusOpinionId={focusOpinionId}
             light={light}
             onToast={onToast}
+            onOpenShareCard={onOpenShareCard}
+            shareTopic={{ round: arena.round, topic: arena.topic }}
           />
         </div>
       </div>

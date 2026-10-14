@@ -12,6 +12,8 @@ export type Opinion = {
   side: Side;
   author: string;
   authorId?: string;
+  /** 탈퇴 A안 — 표시명 「탈퇴한 사용자」 */
+  authorLeft?: boolean;
   text: string;
   /** 호응 (승패 무관) */
   likes: number;

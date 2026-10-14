@@ -524,6 +524,8 @@ class MemoryStore {
       ...defaultPrivacy(),
       ...next.privacyByUser[uid],
       ...patch,
+      /** 수한 확정: 스크랩은 항상 본인만 */
+      scrapsPublic: false,
     };
     next.privacyByUser = { ...next.privacyByUser, [uid]: merged };
     this.commit(next);
@@ -577,10 +579,9 @@ class MemoryStore {
     return { ok: true, asRequest: !iFollow };
   }
 
-  /** 스크랩 탭을 viewer에게 공개할지 */
+  /** 스크랩은 본인만 — 타인에게 칸/목록 노출 금지 */
   scrapsVisibleTo(ownerId: string, viewerId?: string | null): boolean {
-    if (viewerId && viewerId === ownerId) return true;
-    return this.getPrivacy(ownerId).scrapsPublic;
+    return Boolean(viewerId && viewerId === ownerId);
   }
 
   // ── writes ─────────────────────────────────────────

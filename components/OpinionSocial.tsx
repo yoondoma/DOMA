@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import { isShutdownState } from "@/lib/arena-gate";
 import { formatPostTimeKst } from "@/lib/format-time";
+import { LEFT_USER_LABEL, publicAuthorLabel } from "@/lib/account-display";
+import type { ContextualSharePayload } from "@/lib/contextual-share";
 import { sharePost } from "@/lib/share-post";
 import { playDomaSound } from "@/lib/sound/doma-sound";
 import { domaStore, useDomaStore } from "@/lib/store";
@@ -11,6 +13,7 @@ import {
   formatCooldownToast,
 } from "@/lib/types/content";
 import type { LikeTargetKind, ReplyParentKind, ScrapTargetKind } from "@/lib/types/domain";
+import type { Side } from "@/lib/types";
 
 /** 판결 후(LOCKED)·쿨다운 — 좋아요·지지·댓글 불가 */
 function ringClosedToast(): string {
@@ -128,6 +131,11 @@ type OpinionSocialProps = {
   /** 공유·스크랩 미리보기 */
   previewText?: string;
   authorHandle?: string;
+  authorLeft?: boolean;
+  /** 의견 공유 카드용 진영 */
+  side?: Side;
+  /** 주제 round·topic — 의견 공유 카드 */
+  shareTopic?: { round: number; topic: string };
   light?: boolean;
   /** 피드 행 아바타 정렬용 왼쪽 패딩 */
   indent?: boolean;
@@ -135,6 +143,8 @@ type OpinionSocialProps = {
   onToast?: (message: string) => void;
   /** 지지 후 진영 동기화 */
   onCampMoved?: () => void;
+  /** 맥락 공유 카드 (의견) */
+  onOpenShareCard?: (payload: ContextualSharePayload) => void;
 };
 
 /** Threads/X 톤 · 좋아요(호응) · 지지(판결) · 댓글 · 공유 · 스크랩 */
@@ -149,11 +159,15 @@ export function OpinionSocial({
   supportedByMe,
   previewText = "",
   authorHandle,
+  authorLeft,
+  side,
+  shareTopic,
   light,
   indent = true,
   onNeedLogin,
   onToast,
   onCampMoved,
+  onOpenShareCard,
 }: OpinionSocialProps) {
   const parentKind: ReplyParentKind = parentKindProp ?? "opinion";
   const targetId = targetIdProp ?? opinionId ?? "";
@@ -188,18 +202,22 @@ export function OpinionSocial({
           r.parentId === targetId &&
           !blocked.has(r.authorId),
       )
-      .map((r) => ({
-        ...r,
-        handle: users.get(r.authorId)?.handle ?? "user",
-        likedByMe: sid
-          ? snap.likes.some(
-              (l) =>
-                l.userId === sid &&
-                l.targetKind === "reply" &&
-                l.targetId === r.id,
-            )
-          : false,
-      }));
+      .map((r) => {
+        const u = users.get(r.authorId);
+        return {
+          ...r,
+          handle: publicAuthorLabel(u),
+          authorLeft: Boolean(u?.leftAtUtc),
+          likedByMe: sid
+            ? snap.likes.some(
+                (l) =>
+                  l.userId === sid &&
+                  l.targetKind === "reply" &&
+                  l.targetId === r.id,
+              )
+            : false,
+        };
+      });
   }, [snap, parentKind, targetId]);
 
   const replyCount = Math.max(replies, thread.length);
@@ -262,9 +280,26 @@ export function OpinionSocial({
   };
 
   const onShare = async () => {
+    if (onOpenShareCard && parentKind === "opinion" && side) {
+      const arena = domaStore.getArenaMeta();
+      const meta = shareTopic ?? {
+        round: arena.round,
+        topic: arena.topicTitle,
+      };
+      onOpenShareCard({
+        kind: "opinion",
+        side,
+        round: meta.round,
+        topic: meta.topic,
+        opinionText: previewText || "DOMA",
+        authorHandle: authorLeft ? undefined : authorHandle,
+        authorLeft,
+      });
+      return;
+    }
     const result = await sharePost({
       text: previewText || "DOMA",
-      authorHandle,
+      authorHandle: authorLeft ? LEFT_USER_LABEL : authorHandle,
       title: "DOMA",
     });
     if (result === "shared") onToast?.("공유 시트를 열었습니다");
@@ -488,8 +523,11 @@ export function OpinionSocial({
                     ) : (
                       <div>
                         <p>
-                          <span className={`font-semibold ${active}`}>
-                            @{r.handle}
+                          <span
+                            className={`font-semibold ${active}`}
+                            data-author-left={r.authorLeft ? "1" : undefined}
+                          >
+                            {r.authorLeft ? r.handle : `@${r.handle}`}
                           </span>
                           <time
                             className={`ml-1.5 text-[11px] tabular-nums ${muted}`}

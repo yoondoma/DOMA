@@ -80,6 +80,14 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
   for (const u of SEED_HANDLES) {
     ensureUser(byHandle, u.handle, u.displayName, u.bio);
   }
+  /** 탈퇴 A안 목업 — 글은 남기고 표시명만 「탈퇴한 사용자」 */
+  const leftDemo = byHandle.get("reed");
+  if (leftDemo) {
+    byHandle.set("reed", {
+      ...leftDemo,
+      leftAtUtc: "2026-10-10T12:00:00.000Z",
+    });
+  }
   for (const f of [...PROFILE_FOLLOWING, ...PROFILE_FOLLOWERS]) {
     ensureUser(byHandle, f.handle, f.name, f.bio);
   }

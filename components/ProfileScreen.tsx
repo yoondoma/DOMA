@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FollowListScreen } from "@/components/FollowListScreen";
 import { SafetyMenu } from "@/components/SafetyMenu";
 import { StatusBlock } from "@/components/StatusBlock";
@@ -124,21 +124,19 @@ export function ProfileScreen({
     setTitleDetail(found ?? { ...badge, round: 0, topic: "", note: "" });
   };
 
-  const scrapsPublic = useMemo(() => {
-    if (isSelf) return true;
-    const uid = profileUser?.id;
-    if (!uid) return true;
-    return domaStore.scrapsVisibleTo(uid, me?.id ?? null);
-  }, [isSelf, profileUser, me?.id, snap.privacyByUser]);
-
+  /** 스크랩은 본인만 (수한 확정) */
   const profileScraps = useMemo(() => {
-    const uid = profileUser?.id;
-    if (!uid) return isSelf ? domaStore.listScraps() : [];
-    if (!isSelf && !scrapsPublic) return [];
+    if (!isSelf) return [];
+    const uid = profileUser?.id ?? me?.id;
+    if (!uid) return [];
     return snap.scraps
       .filter((s) => s.userId === uid)
       .sort((a, b) => b.createdAtUtc.localeCompare(a.createdAtUtc));
-  }, [snap.scraps, profileUser, isSelf, scrapsPublic]);
+  }, [snap.scraps, profileUser, isSelf, me?.id]);
+
+  useEffect(() => {
+    if (!isSelf && tab === "scraps") setTab("posts");
+  }, [isSelf, tab]);
 
   /** 작성자 합산 목마 — 타 진영에서 이 사람 의견을 지지하며 넘어온 수 */
   const profileTrojan = useMemo(() => {
@@ -273,7 +271,7 @@ export function ProfileScreen({
                 </button>
               </div>
               <p className="mt-2 text-[13px] leading-[1.5] text-neutral-200">
-                핸들 · 소개 · 스크랩 공개 등 프로필을 고칩니다.
+                핸들 · 소개를 고칩니다. 스크랩은 나만 봅니다.
               </p>
               <dl className="mt-3 space-y-2 text-[13px]">
                 <div className="flex justify-between gap-3 border-b border-neutral-800 py-2">
@@ -292,7 +290,9 @@ export function ProfileScreen({
         </div>
 
         <div
-          className="grid grid-cols-3 border-y border-neutral-800"
+          className={`grid border-y border-neutral-800 ${
+            isSelf ? "grid-cols-3" : "grid-cols-2"
+          }`}
           role="tablist"
           aria-label="프로필 탭"
         >
@@ -309,19 +309,22 @@ export function ProfileScreen({
           >
             글
           </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === "scraps"}
-            onClick={() => setTab("scraps")}
-            className={`py-2.5 text-[13px] tracking-[0.06em] ${
-              tab === "scraps"
-                ? "border-b border-white text-white"
-                : "text-neutral-200"
-            }`}
-          >
-            스크랩
-          </button>
+          {isSelf ? (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === "scraps"}
+              onClick={() => setTab("scraps")}
+              className={`py-2.5 text-[13px] tracking-[0.06em] ${
+                tab === "scraps"
+                  ? "border-b border-white text-white"
+                  : "text-neutral-200"
+              }`}
+              data-scraps-self-only
+            >
+              스크랩
+            </button>
+          ) : null}
           <button
             type="button"
             role="tab"
@@ -387,19 +390,14 @@ export function ProfileScreen({
               ))}
             </ul>
           )
-        ) : tab === "scraps" ? (
-          !isSelf && !scrapsPublic ? (
-            <StatusBlock
-              kind="empty"
-              message="스크랩을 비공개로 설정했습니다."
-            />
-          ) : uiDemo === "empty" || profileScraps.length === 0 ? (
+        ) : tab === "scraps" && isSelf ? (
+          uiDemo === "empty" || profileScraps.length === 0 ? (
             <StatusBlock
               kind="empty"
               message="스크랩한 글이 없습니다."
             />
           ) : (
-            <ul aria-label="스크랩" className="pb-4">
+            <ul aria-label="스크랩" className="pb-4" data-scraps-private>
               {profileScraps.map((s) => (
                 <li
                   key={s.id}

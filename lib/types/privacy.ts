@@ -3,7 +3,10 @@
 export type DmPolicy = "everyone" | "mutual" | "off";
 
 export type PrivacyPrefs = {
-  /** 프로필 스크랩 공개 — 기본 true */
+  /**
+   * @deprecated 수한 확정: 스크랩은 본인만. 토글 제거 · 항상 false.
+   * 필드만 호환 유지.
+   */
   scrapsPublic: boolean;
   /** DM 수신 — 기본 everyone (비팔로워는 요청) */
   dmPolicy: DmPolicy;
@@ -11,7 +14,7 @@ export type PrivacyPrefs = {
 
 export function defaultPrivacy(): PrivacyPrefs {
   return {
-    scrapsPublic: true,
+    scrapsPublic: false,
     dmPolicy: "everyone",
   };
 }

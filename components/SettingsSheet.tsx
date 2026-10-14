@@ -568,7 +568,7 @@ export function SettingsSheet({
                 </span>
               </button>
               <p className="mt-3 px-1 text-[12px] leading-relaxed text-neutral-200">
-                스크랩 공개는 프로필 편집에서 바꿉니다.
+                스크랩은 나만 봅니다. 타인 프로필에는 안 보입니다.
               </p>
             </div>
           ) : null}

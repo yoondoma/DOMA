@@ -29,12 +29,14 @@ import {
 import { SettingsSheet } from "@/components/SettingsSheet";
 import { isAdPreviewEnabled } from "@/lib/ad-preview";
 import { PROFILE_USER } from "@/lib/profile-mock";
+import { ContextualShareCard } from "@/components/ContextualShareCard";
 import { ShareResultCard } from "@/components/ShareResultCard";
 import { SupportBar } from "@/components/SupportBar";
 import { TomorrowCompose } from "@/components/TomorrowCompose";
 import { TomorrowField } from "@/components/TomorrowField";
 import { TouchGate } from "@/components/TouchGate";
 import { WieldBar } from "@/components/WieldBar";
+import type { ContextualSharePayload } from "@/lib/contextual-share";
 import { INITIAL_ARENA } from "@/lib/mock-data";
 import { MOCK_SHARE_RESULT } from "@/lib/share-result-mock";
 import {
@@ -100,6 +102,8 @@ export function DomaHome() {
   const [authOpen, setAuthOpen] = useState(false);
   const [leftSocialId, setLeftSocialId] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
+  const [contextualShare, setContextualShare] =
+    useState<ContextualSharePayload | null>(null);
   const [editableProfile, setEditableProfile] = useState<EditableProfile>({
     name: PROFILE_USER.name,
     handle: PROFILE_USER.handle,
@@ -560,6 +564,7 @@ export function DomaHome() {
               onCompose={openCompose}
               onOpenRules={() => setRulesOpen(true)}
               onToast={showToast}
+              onOpenShareCard={setContextualShare}
             />
           </PullRefresh>
         ) : null}
@@ -713,6 +718,12 @@ export function DomaHome() {
         open={shareOpen}
         result={MOCK_SHARE_RESULT}
         onClose={() => setShareOpen(false)}
+        onToast={showToast}
+      />
+      <ContextualShareCard
+        open={Boolean(contextualShare)}
+        payload={contextualShare}
+        onClose={() => setContextualShare(null)}
         onToast={showToast}
       />
       <RulesSheet open={rulesOpen} onClose={() => setRulesOpen(false)} />
