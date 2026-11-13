@@ -38,12 +38,19 @@ npm run dev -- -p 43123 -H 127.0.0.1
 
 브라우저에서 [http://127.0.0.1:43123](http://127.0.0.1:43123) 을 엽니다.
 
+## 체험판 (공개 HTTPS)
+
+모바일 Safari/Chrome에서 주소만 열면 됩니다. 목 계정 `@doma.guest` · 카카오/실서버 없음.
+
+**체험:** [https://snappy-vega-u1n4o7m.tmp.now](https://snappy-vega-u1n4o7m.tmp.now)  
+(임시 배포 — 영구화 Claim: [claim-deployment](https://vercel.com/claim-deployment?code=f4cf03be-92d1-4cf0-aeaa-70704bb1a3c7))
+
 ## 베타 배포 (Vercel)
 
 목 계정만 · 환경 변수·카카오 불필요. 프로덕션 빌드 후 정적/서버리스로 올리면 됩니다.
 
 ```bash
-npm run build && npx vercel --prod --yes
+npm run build && npx vercel deploy --temporary --yes
 ```
 
 피드백: `feedback@doma.kr` (입장 화면·설정 도움말에도 동일).
