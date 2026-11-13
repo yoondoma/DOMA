@@ -707,6 +707,8 @@ class MemoryStore {
       createdAtUtc: new Date().toISOString(),
     };
     next.opinions = [...next.opinions, op];
+    /** 글 진영 = 참전 진영 (지지 바 선택이 쓰기를 가로채지 않음) */
+    next.session = { ...next.session, joinedCamp: input.camp };
     this.markCompose(next, authorId);
     this.commit(next);
     return op;

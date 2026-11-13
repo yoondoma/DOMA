@@ -2,26 +2,20 @@
 
 type EmptyArenaProps = {
   message?: string;
+  /** @deprecated 카피 「터치하여 증명」 자체가 CTA — 별도 라벨 쓰지 않음 */
   actionLabel?: string;
   onAction?: () => void;
   className?: string;
 };
 
-/** Empty — 모노크롬 그래픽 + 「터치하여 증명」만 */
+/** Empty — 모노크롬 그래픽 + 「터치하여 증명」만 (탭하면 작성) */
 export function EmptyArena({
   message = "터치하여 증명",
-  actionLabel,
   onAction,
   className = "",
 }: EmptyArenaProps) {
-  return (
-    <div
-      className={`flex flex-col items-center justify-center px-6 py-16 text-center ${className}`}
-      role="status"
-      aria-live="polite"
-      data-status="empty"
-      data-empty-arena
-    >
+  const graphic = (
+    <>
       <svg
         width="72"
         height="72"
@@ -63,15 +57,37 @@ export function EmptyArena({
       <p className="max-w-[18rem] font-[family-name:var(--font-display)] text-[18px] leading-snug tracking-[-0.02em] text-paper/85">
         {message}
       </p>
-      {actionLabel && onAction ? (
-        <button
-          type="button"
-          onClick={onAction}
-          className="thumb-press r-md mt-6 border border-edge bg-card px-4 py-2.5 text-[12px] font-medium tracking-[0.12em] text-paper"
-        >
-          {actionLabel}
-        </button>
-      ) : null}
+    </>
+  );
+
+  const shell =
+    `flex flex-col items-center justify-center px-6 py-16 text-center ${className}`;
+
+  if (onAction) {
+    return (
+      <button
+        type="button"
+        onClick={onAction}
+        className={`thumb-press ${shell}`}
+        aria-label={message}
+        data-status="empty"
+        data-empty-arena
+        data-empty-cta
+      >
+        {graphic}
+      </button>
+    );
+  }
+
+  return (
+    <div
+      className={shell}
+      role="status"
+      aria-live="polite"
+      data-status="empty"
+      data-empty-arena
+    >
+      {graphic}
     </div>
   );
 }

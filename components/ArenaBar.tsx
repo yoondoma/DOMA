@@ -176,7 +176,8 @@ type ArenaBarProps = {
   focusOpinionId?: string | null;
   uiDemo?: UiDemo;
   onRetry?: () => void;
-  onCompose?: () => void;
+  /** 진영 피드 Empty CTA — 해당 진영으로 작성 */
+  onCompose?: (side?: Side) => void;
   onOpenRules?: () => void;
   onToast?: (message: string) => void;
   /** 주제·창·방패 맥락 공유 카드 */
@@ -327,7 +328,7 @@ function CampFeedPage({
   opinions: Opinion[];
   uiDemo: UiDemo;
   onRetry?: () => void;
-  onCompose?: () => void;
+  onCompose?: (side?: Side) => void;
   focusOpinionId?: string | null;
   light: boolean;
   onToast?: (message: string) => void;
@@ -335,6 +336,9 @@ function CampFeedPage({
   onOpenAuthor?: (handle: string) => void;
   shareTopic?: { round: number; topic: string };
 }) {
+  const openComposeHere = onCompose
+    ? () => onCompose(side)
+    : undefined;
   const top = useMemo(
     () => topOpinionForSide(opinions, side),
     [opinions, side],
@@ -455,11 +459,7 @@ function CampFeedPage({
             </div>
           </PostCard>
         ) : (
-          <EmptyArena
-            actionLabel={onCompose ? "글쓰기" : undefined}
-            onAction={onCompose}
-            className="py-10"
-          />
+          <EmptyArena onAction={openComposeHere} className="py-10" />
         )}
       </div>
 
@@ -471,7 +471,7 @@ function CampFeedPage({
       {uiDemo === "loading" ? (
         <FeedSkeleton count={3} />
       ) : rising.length === 0 && uiDemo !== "error" ? (
-        <EmptyArena />
+        <EmptyArena onAction={openComposeHere} />
       ) : rising.length === 0 ? null : (
         <ul className="feed-list" aria-label={`${label} 피드`}>
           {rising.map((op, i) => (

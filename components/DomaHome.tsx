@@ -82,6 +82,8 @@ export function DomaHome() {
   );
   const [choiceOpen, setChoiceOpen] = useState(false);
   const [todayComposeOpen, setTodayComposeOpen] = useState(false);
+  /** 진영 피드 Empty CTA에서 연 작성 — joined보다 우선 */
+  const [composeSide, setComposeSide] = useState<Side | null>(null);
   const [tomorrowComposeOpen, setTomorrowComposeOpen] = useState(false);
   const [tomorrowCandidates, setTomorrowCandidates] = useState<
     TomorrowCandidate[]
@@ -184,13 +186,29 @@ export function DomaHome() {
     window.setTimeout(() => setToast(null), 2200);
   }, []);
 
-  const openCompose = useCallback(() => {
-    if (!domaStore.getSession()) {
-      showToast("로그인이 필요합니다");
-      return;
-    }
-    setChoiceOpen(true);
-  }, [showToast]);
+  const resolveComposeSide = useCallback((): Side => {
+    if (composeSide) return composeSide;
+    if (arenaView === "NEXUS" || arenaView === "AEGIS") return arenaView;
+    if (joined) return joined;
+    return "NEXUS";
+  }, [composeSide, arenaView, joined]);
+
+  const openCompose = useCallback(
+    (side?: Side) => {
+      if (!domaStore.getSession()) {
+        showToast("로그인이 필요합니다");
+        return;
+      }
+      if (side === "NEXUS" || side === "AEGIS") {
+        setComposeSide(side);
+        setArenaView(side);
+      } else {
+        setComposeSide(null);
+      }
+      setChoiceOpen(true);
+    },
+    [showToast],
+  );
 
   const handleRefresh = useCallback(() => {
     if (refreshLock.current) return;
@@ -252,8 +270,8 @@ export function DomaHome() {
       showToast("로그인이 필요합니다");
       return;
     }
-    const side: Side =
-      joined ?? (arenaView === "AEGIS" ? "AEGIS" : "NEXUS");
+    /** 보고 있는(또는 Empty로 연) 진영 우선 — SupportBar joined가 쓰기를 가로채지 않음 */
+    const side = resolveComposeSide();
     const body = `${text}${formatComposeMediaSuffix(media)}`;
     try {
       domaStore.createOpinion({
@@ -279,8 +297,10 @@ export function DomaHome() {
       showToast("로그인이 필요합니다");
       return;
     }
+    setJoined(side);
+    setComposeSide(null);
     setNavTab("home");
-    setArenaView("intro");
+    setArenaView(side);
     showToast(
       media?.imageNames?.length || media?.link
         ? "진술·첨부가 피드에 추가되었습니다"
@@ -370,11 +390,9 @@ export function DomaHome() {
 
   const handleNavChange = (tab: NavTab) => {
     if (tab === "compose") {
-      if (!domaStore.getSession()) {
-        showToast("로그인이 필요합니다");
-        return;
-      }
-      setChoiceOpen(true);
+      openCompose(
+        arenaView === "NEXUS" || arenaView === "AEGIS" ? arenaView : undefined,
+      );
       return;
     }
     setGuestProfile(null);
@@ -711,11 +729,15 @@ export function DomaHome() {
 
       <ComposeChoice
         open={choiceOpen}
-        onClose={() => setChoiceOpen(false)}
+        onClose={() => {
+          setChoiceOpen(false);
+          setComposeSide(null);
+        }}
         onPick={(kind) => {
           setChoiceOpen(false);
           if (kind === "today") setTodayComposeOpen(true);
           else {
+            setComposeSide(null);
             setHomeSurface("tomorrow");
             setTomorrowComposeOpen(true);
           }
@@ -723,8 +745,11 @@ export function DomaHome() {
       />
       <WieldBar
         open={todayComposeOpen}
-        side={joined}
-        onClose={() => setTodayComposeOpen(false)}
+        side={resolveComposeSide()}
+        onClose={() => {
+          setTodayComposeOpen(false);
+          setComposeSide(null);
+        }}
         onSubmit={handleSubmitToday}
       />
       <TomorrowCompose
