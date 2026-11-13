@@ -9,41 +9,28 @@ import {
 } from "@/lib/kst";
 import type {
   BattleDay,
-  CampSwitch,
   Follow,
   Opinion,
-  Reply,
-  Scrap,
   Session,
   TopicCandidate,
   User,
 } from "@/lib/types/domain";
 import {
   campFromSide,
-  makeCampSwitchId,
   makeFollowId,
-  makeReplyId,
-  makeScrapId,
   makeSessionId,
   userIdFromHandle,
 } from "@/lib/types/ids";
 import type { StoreSnapshot } from "@/lib/store/types";
 import { defaultPrivacy } from "@/lib/types/privacy";
-import type { SessionQuota } from "@/lib/types/quota";
+import { emptyQuota, type SessionQuota } from "@/lib/types/quota";
 
 const SEED_HANDLES = [
-  { handle: "doma.guest", displayName: "게스트", bio: "판결을 겨루는 사람. 증거 없으면 말하지 않는다." },
-  { handle: "you", displayName: "you", bio: "" },
-  { handle: "mira.k", displayName: "mira.k", bio: "" },
-  { handle: "zero.nexus", displayName: "zero.nexus", bio: "" },
-  { handle: "han.aegis", displayName: "han.aegis", bio: "" },
-  { handle: "pulse", displayName: "pulse", bio: "" },
-  { handle: "nova", displayName: "nova", bio: "" },
-  { handle: "reed", displayName: "reed", bio: "" },
-  { handle: "kiln", displayName: "kiln", bio: "" },
-  { handle: "slate", displayName: "slate", bio: "" },
-  { handle: "orbit", displayName: "orbit", bio: "" },
-  { handle: "loom", displayName: "loom", bio: "" },
+  {
+    handle: "doma.guest",
+    displayName: "게스트",
+    bio: "판결을 겨루는 사람. 증거 없으면 말하지 않는다.",
+  },
 ] as const;
 
 function ensureUser(
@@ -70,7 +57,7 @@ function ensureUser(
   return user;
 }
 
-/** 기존 목 배열 → 도메인 시드 스냅샷 */
+/** 실공유 시드 — 제 1회 주제만, 예시 글·댓글·채터 없음 */
 export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
   const clock = resolveTimelineClock(now);
   const dayId = clock.dayId || arenaDayId(now);
@@ -79,14 +66,6 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
 
   for (const u of SEED_HANDLES) {
     ensureUser(byHandle, u.handle, u.displayName, u.bio);
-  }
-  /** 탈퇴 A안 목업 — 글은 남기고 표시명만 「탈퇴한 사용자」 */
-  const leftDemo = byHandle.get("reed");
-  if (leftDemo) {
-    byHandle.set("reed", {
-      ...leftDemo,
-      leftAtUtc: "2026-10-10T12:00:00.000Z",
-    });
   }
   for (const f of [...PROFILE_FOLLOWING, ...PROFILE_FOLLOWERS]) {
     ensureUser(byHandle, f.handle, f.name, f.bio);
@@ -105,21 +84,6 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
     createdAtUtc: clock.serverNowUtc,
   };
 
-  /** 지지 ≠ 좋아요 증명 — TOP은 supportCount (op-4), 좋아요 최다는 op-2 */
-  const supportById: Record<string, number> = {
-    "op-you-1": 12,
-    "op-1": 96,
-    "op-2": 48,
-    "op-3": 70,
-    "op-4": 210,
-    "op-5": 22,
-    "op-6": 55,
-    "op-7": 18,
-    "op-8": 40,
-    "op-9": 15,
-    "op-10": 33,
-  };
-
   const opinions: Opinion[] = INITIAL_OPINIONS.map((op, i) => {
     const author = ensureUser(byHandle, op.author);
     return {
@@ -129,26 +93,14 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
       camp: campFromSide(op.side),
       body: op.text,
       likeCount: op.likes,
-      supportCount: supportById[op.id] ?? Math.max(1, Math.floor(op.likes / 4)),
+      supportCount: Math.max(0, Math.floor(op.likes / 4)),
       replyCount: 0,
       createdAtUtc: new Date(
-        new Date(clock.serverNowUtc).getTime() - (INITIAL_OPINIONS.length - i) * 60_000,
+        new Date(clock.serverNowUtc).getTime() -
+          (INITIAL_OPINIONS.length - i) * 60_000,
       ).toISOString(),
       isTopMinority: op.isTopMinority,
     };
-  });
-
-  /** 프로필 목마 데모 — 게스트 글 + 타 진영 전환 */
-  opinions.unshift({
-    id: "op-guest-1",
-    dayId,
-    authorId: me.id,
-    camp: "challenger",
-    body: "증거 없는 ‘완전 대체’는 판결이 아니다. 기준을 먼저 박자.",
-    likeCount: 36,
-    supportCount: 88,
-    replyCount: 0,
-    createdAtUtc: clock.serverNowUtc,
   });
 
   const topicCandidates: TopicCandidate[] = INITIAL_TOMORROW_TOPICS.map(
@@ -165,81 +117,6 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
       ).toISOString(),
     }),
   );
-
-  const seedOpinion = opinions.find((o) => o.id === "op-2") ?? opinions[0];
-  const seedFieldPreview =
-    "도심이 끝나는 게 아니라 ‘우연한 밀도의 도시’가 끝난다. 주제를 여기로 이끌자.";
-  const replies: Reply[] = seedOpinion
-    ? [
-        {
-          id: makeReplyId("opinion", seedOpinion.id),
-          parentKind: "opinion",
-          parentId: seedOpinion.id,
-          authorId: userIdFromHandle("mira.k"),
-          body: "기준을 벤치마크로만 두면 책임 문제가 비게 된다. 같이 보자.",
-          likeCount: 3,
-          createdAtUtc: new Date(
-            new Date(clock.serverNowUtc).getTime() - 8 * 60_000,
-          ).toISOString(),
-        },
-        {
-          id: `${makeReplyId("opinion", seedOpinion.id)}_self`,
-          parentKind: "opinion",
-          parentId: seedOpinion.id,
-          authorId: me.id,
-          body: "증거 없는 단정은 전장에 올리지 말자.",
-          likeCount: 1,
-          createdAtUtc: new Date(
-            new Date(clock.serverNowUtc).getTime() - 2 * 60_000,
-          ).toISOString(),
-          editedAtUtc: null,
-        },
-      ]
-    : [];
-  if (seedOpinion) {
-    seedOpinion.replyCount = replies.length;
-  }
-
-  const mira = byHandle.get("mira.k")!;
-  const scraps: Scrap[] = [
-    {
-      id: makeScrapId(me.id, "opinion", seedOpinion?.id ?? "op-2"),
-      userId: me.id,
-      targetKind: "opinion",
-      targetId: seedOpinion?.id ?? "op-2",
-      preview: seedOpinion?.body ?? "",
-      authorHandle: "zero.nexus",
-      createdAtUtc: clock.serverNowUtc,
-    },
-    {
-      id: makeScrapId(me.id, "field", "fo-1"),
-      userId: me.id,
-      targetKind: "field",
-      targetId: "fo-1",
-      preview: seedFieldPreview,
-      authorHandle: "mira.k",
-      createdAtUtc: clock.serverNowUtc,
-    },
-    {
-      id: makeScrapId(me.id, "topic", "tm-1"),
-      userId: me.id,
-      targetKind: "topic",
-      targetId: "tm-1",
-      preview: "원격 근무는 도시의 중심을 끝낼 것인가?",
-      authorHandle: "doma.guest",
-      createdAtUtc: clock.serverNowUtc,
-    },
-    {
-      id: makeScrapId(mira.id, "opinion", "op-1"),
-      userId: mira.id,
-      targetKind: "opinion",
-      targetId: "op-1",
-      preview:
-        "대체는 '완전'이 아니라 '재배치'다. AI는 계산과 검색을 삼키지만, 책임·맥락·가치 판단은 인간에게 남는다.",
-      authorHandle: "mira.k",
-      createdAtUtc: clock.serverNowUtc,
-    },
-  ];
 
   const follows: Follow[] = [];
   for (const f of PROFILE_FOLLOWING) {
@@ -260,36 +137,6 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
       createdAtUtc: "2026-09-01T00:00:00.000Z",
     });
   }
-  /** DM 데모 — 상호 팔로=일반 수신, pulse만 비팔로워(요청함) */
-  for (const handle of [
-    "mira.k",
-    "zero.nexus",
-    "han.aegis",
-    "nova",
-    "reed",
-    "kiln",
-    "slate",
-  ] as const) {
-    const u = byHandle.get(handle)!;
-    const id = makeFollowId(u.id, me.id);
-    if (!follows.some((f) => f.id === id)) {
-      follows.push({
-        id,
-        followerId: u.id,
-        followeeId: me.id,
-        createdAtUtc: "2026-09-01T00:00:00.000Z",
-      });
-    }
-    const back = makeFollowId(me.id, u.id);
-    if (!follows.some((f) => f.id === back)) {
-      follows.push({
-        id: back,
-        followerId: me.id,
-        followeeId: u.id,
-        createdAtUtc: "2026-09-01T00:00:00.000Z",
-      });
-    }
-  }
 
   const battleDays: BattleDay[] = BATTLE_HISTORY.map((b) => ({
     dayId: b.date,
@@ -306,11 +153,7 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
     resolvedAtUtc: `${b.date}T14:00:00.000Z`,
   }));
 
-  /** 데모 HUD — 투표·이동만 */
-  const quota: SessionQuota = {
-    likesUsed: 2,
-    campMovesUsed: 1,
-  };
+  const quota: SessionQuota = emptyQuota();
 
   return {
     version: 1,
@@ -321,55 +164,26 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
     topicCandidates,
     follows,
     likes: [],
-    replies,
-    scraps,
+    replies: [],
+    scraps: [],
     supports: [],
-    campSwitches: (() => {
-      const switches: CampSwitch[] = [];
-      const pulseOp = opinions.find((o) => o.id === "op-4");
-      const myOp = opinions.find((o) => o.id === "op-guest-1");
-      const add = (
-        opinionId: string,
-        toCamp: "challenger" | "defender",
-        handles: string[],
-      ) => {
-        for (const handle of handles) {
-          switches.push({
-            id: makeCampSwitchId(),
-            userId: userIdFromHandle(handle),
-            fromCamp: toCamp === "challenger" ? "defender" : "challenger",
-            toCamp,
-            opinionId,
-            createdAtUtc: clock.serverNowUtc,
-          });
-        }
-      };
-      if (pulseOp) add(pulseOp.id, pulseOp.camp, ["han.aegis", "reed", "slate", "mira.k"]);
-      if (myOp) add(myOp.id, myOp.camp, ["han.aegis", "reed", "loom"]);
-      return switches;
-    })(),
+    campSwitches: [],
     blocks: [],
     reports: [],
     battleDays,
     quota,
     privacyByUser: {
       [me.id]: defaultPrivacy(),
-      [mira.id]: { scrapsPublic: false, dmPolicy: "mutual" },
-      [userIdFromHandle("pulse")]: {
-        scrapsPublic: true,
-        dmPolicy: "everyone",
-      },
     },
     lastComposeAtByUser: {},
-    /** 홈 아레나 표시용 메타 (UI ArenaState와 병행) */
     arenaMeta: {
       round: 1,
-      topicTitle: "AI는 인간 지성을 대체하는가?",
+      topicTitle: "의대 정원 확대는 필요하다",
       description: "",
-      challengerShare: 58,
-      defenderShare: 42,
-      challengerVotes: 4821,
-      defenderVotes: 4519,
+      challengerShare: 50,
+      defenderShare: 50,
+      challengerVotes: 0,
+      defenderVotes: 0,
       proposerId: userIdFromHandle("doma.guest"),
     },
   };

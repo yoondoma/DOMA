@@ -131,7 +131,7 @@ export function TomorrowCompose({
             onChange={(e) => setText(e.target.value.slice(0, MAX_CHARS))}
             rows={5}
             maxLength={MAX_CHARS}
-            placeholder="예: AI는 인간 지성을 대체하는가?"
+            placeholder="예: 의대 정원 확대는 필요하다"
             className="w-full resize-none border border-white/25 bg-black px-3 py-3 text-[15px] leading-relaxed text-white placeholder:text-dim focus:border-white focus:outline-none"
             aria-label="내일 주제 입력"
           />

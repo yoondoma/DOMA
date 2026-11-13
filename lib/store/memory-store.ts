@@ -68,8 +68,8 @@ import {
   snapshotNeedsIdentityReseed,
 } from "@/lib/public-identity";
 
-/** v7 — 체험판 제 1회 리셋. 레거시 키는 로드 시 폐기 */
-const STORAGE_KEY = "doma.store.v7";
+/** v8 — 실공유 제 1회. 예시 글·채터 시드 폐기 */
+const STORAGE_KEY = "doma.store.v8";
 
 type Listener = () => void;
 

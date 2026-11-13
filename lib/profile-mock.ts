@@ -39,99 +39,40 @@ export const PROFILE_USER = {
   name: "게스트",
   handle: "doma.guest",
   bio: "판결을 겨루는 사람. 증거 없으면 말하지 않는다.",
-  joinedLabel: "2026년 3월부터",
-  following: 128,
-  followers: 940,
+  joinedLabel: "2026년 11월부터",
+  following: 0,
+  followers: 0,
 };
 
 /**
- * 게이미피케이션 목
- * 시즌 승수 → 사다리 (ARCHITECT→I–IV→BRONZE) · 패 0
+ * 게이미피케이션 — 실공유 제 1회 시작 상태
  */
 export const PROFILE_GAMER: UserProfileType = withResolvedTier({
   id: "user-doma-guest",
   username: PROFILE_USER.name,
-  /** 이번 시즌 승수 → II */
-  score: 48,
-  winsSeason: 48,
-  wins: 160,
-  losses: 30,
-  tierPeakSeason: "I",
-  seasonHistory: [
-    {
-      seasonId: "2026-Q3",
-      label: "2026 Q3",
-      tierFinal: "III",
-      tierPeak: "II",
-      wins: 36,
-    },
-    {
-      seasonId: "2026-Q2",
-      label: "2026 Q2",
-      tierFinal: "IV",
-      tierPeak: "III",
-      wins: 22,
-    },
-  ],
-  dailyTitles: [
-    createDailyTitle("10.14", "PROPOSER"),
-    createDailyTitle("10.24", "FINGER"),
-    createDailyTitle("10.12", "SPEAR"),
-    createDailyTitle("10.11", "SHIELD"),
-    createDailyTitle("09.30", "VICTOR"),
-  ],
+  score: 0,
+  winsSeason: 0,
+  wins: 0,
+  losses: 0,
+  tierPeakSeason: "BRONZE",
+  seasonHistory: [],
+  dailyTitles: [createDailyTitle("11.13", "PROPOSER")],
   /** 기본 B&W — 스킨 UI 없음 */
   cosmetics: {},
 });
 
-/** 성향 — 흑(도전자)·백(방어자) 참여·승패·지지 비율 목 */
+/** 성향 — 제 1회 전, 참여 기록 없음 */
 export const PROFILE_AFFINITY: AffinityStats = {
-  challengerJoined: 14,
-  defenderJoined: 9,
-  challengerWins: 8,
-  defenderWins: 5,
-  challengerSupportPct: 61,
-  defenderSupportPct: 39,
+  challengerJoined: 0,
+  defenderJoined: 0,
+  challengerWins: 0,
+  defenderWins: 0,
+  challengerSupportPct: 50,
+  defenderSupportPct: 50,
 };
 
-export const PROFILE_POSTS: ProfilePost[] = [
-  {
-    id: "pp-1",
-    side: "NEXUS",
-    text: "지성의 핵심이 패턴 인식이라면, ‘완전히’의 기준을 감정으로 낮추지 말자.",
-    likes: 42,
-    timeLabel: "2시간",
-    opinionId: "op-guest-1",
-  },
-  {
-    id: "pp-2",
-    side: "AEGIS",
-    text: "모델은 답을 만들지만 질문을 발명하지 못한다. 그 자리는 아직 인간이다.",
-    likes: 31,
-    timeLabel: "어제",
-  },
-  {
-    id: "pp-3",
-    side: "NEXUS",
-    text: "대체는 한 번에 오지 않는다. 위임의 곡선이 이미 시작됐다.",
-    likes: 18,
-    timeLabel: "3일",
-  },
-  {
-    id: "pp-4",
-    side: "AEGIS",
-    text: "증거가 쌓이기 전에 ‘완전 대체’를 말하면, 그건 판결이 아니라 구호다.",
-    likes: 27,
-    timeLabel: "4일",
-  },
-  {
-    id: "pp-5",
-    side: "NEXUS",
-    text: "벤치마크가 흔들려도 질문은 남는다. 그 질문을 누가 붙드느냐가 전장이다.",
-    likes: 15,
-    timeLabel: "6일",
-  },
-];
+/** 실공유 — 프로필 예시 글 없음 */
+export const PROFILE_POSTS: ProfilePost[] = [];
 
 /** 프로필용 최근 전투 요약 (목 — 이용자 관점 승/패) */
 export const PROFILE_RECENT_BATTLES = BATTLE_HISTORY.slice(-5)
@@ -184,44 +125,10 @@ export const PROFILE_SCORE_HISTORY: ScoreEvent[] = (() => {
   return rows;
 })();
 
-const FOLLOW_NAMES = [
-  ["아레나", "arena.one", "판결문만 남긴다."],
-  ["창끝", "spear.tip", "흑으로 증명."],
-  ["방패선", "aegis.line", "백의 자리."],
-  ["각주", "evidence.note", "각주가 곧 주장."],
-  ["한줄", "one.line", "한 줄로 끝내기."],
-  ["데일리", "daily.round", "매일 한 판."],
-  ["침묵", "silent.pulse", "말하지 않을 자유."],
-  ["판결", "verdict.now", "24시간 안에."],
-];
+/** 실공유 — 팔로 네트워크 데모 없음 */
+export const PROFILE_FOLLOWING: FollowUser[] = [];
 
-export const PROFILE_FOLLOWING: FollowUser[] = FOLLOW_NAMES.map((n, i) => ({
-  id: `fg-${i}`,
-  name: n[0],
-  handle: n[1],
-  bio: n[2],
-}));
-
-export const PROFILE_FOLLOWERS: FollowUser[] = [
-  ...FOLLOW_NAMES.slice().reverse().map((n, i) => ({
-    id: `fr-${i}`,
-    name: n[0],
-    handle: `${n[1]}_f`,
-    bio: n[2],
-  })),
-  {
-    id: "fr-x",
-    name: "관전",
-    handle: "watcher.one",
-    bio: "지켜보는 사람.",
-  },
-  {
-    id: "fr-y",
-    name: "증인",
-    handle: "witness.arc",
-    bio: "기록만 한다.",
-  },
-];
+export const PROFILE_FOLLOWERS: FollowUser[] = [];
 
 export type TitleDetail = DailyTitle & {
   round: number;
@@ -233,7 +140,7 @@ export const PROFILE_TITLE_DETAILS: TitleDetail[] = [
   {
     ...createDailyTitle("11.13", "PROPOSER"),
     round: 1,
-    topic: "AI는 인간 지성을 대체하는가?",
+    topic: "의대 정원 확대는 필요하다",
     note: "제 1회 전장 주제 제안자. 성 토마스의 허리띠 — 만져서 증명.",
   },
 ];
