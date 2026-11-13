@@ -15,7 +15,7 @@ export type ShareResult = {
 };
 
 export const MOCK_SHARE_RESULT: ShareResult = {
-  round: 411,
+  round: 1,
   topic: "투표 연령을 16세로 낮춰야 하는가?",
   mySide: "NEXUS",
   outcome: "win",

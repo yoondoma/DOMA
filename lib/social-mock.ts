@@ -281,7 +281,7 @@ export const APP_NOTIFICATIONS: AppNotification[] = [
     kind: "battle",
     category: "judgment",
     actor: "DOMA",
-    text: "투표한 의견이 이겼어요 · 제 412회 전투",
+    text: "투표한 의견이 이겼어요 · 제 1회 전투",
     timeLabel: "3시간",
     target: { type: "arena" },
   },

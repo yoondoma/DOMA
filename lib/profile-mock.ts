@@ -161,15 +161,13 @@ export const PROFILE_SCORE_HISTORY: ScoreEvent[] = (() => {
   let score = 48;
   const rows: ScoreEvent[] = [];
   const seed = [
-    { date: "2026-10-13", result: "win" as const, round: 412, topic: "인공지능은 인간의 지성을 완전히 대체할 것인가?" },
-    { date: "2026-10-12", result: "win" as const, round: 411, topic: "표현의 자유는 혐오를 포함해야 하는가?" },
-    { date: "2026-10-11", result: "loss" as const, round: 410, topic: "원격 근무는 생산성을 올리는가?" },
-    { date: "2026-10-10", result: "win" as const, round: 409, topic: "기본소득은 노동 의력을 약화시키는가?" },
-    { date: "2026-10-09", result: "loss" as const, round: 408, topic: "대학 서열은 능력주의의 증명인가?" },
-    { date: "2026-10-08", result: "win" as const, round: 407, topic: "핵발전은 기후 위기의 해법인가?" },
-    { date: "2026-10-07", result: "win" as const, round: 406, topic: "플랫폼 노동은 고용인가?" },
-    { date: "2026-10-06", result: "loss" as const, round: 405, topic: "검열 없는 인터넷은 가능한가?" },
-  ];
+    /* 체험판 제 1회 이전 기록 없음 — 빈 시드 */
+  ] as Array<{
+    date: string;
+    result: "win" | "loss";
+    round: number;
+    topic: string;
+  }>;
   for (const s of seed) {
     const delta = pointDelta(s.result);
     rows.push({
@@ -233,33 +231,9 @@ export type TitleDetail = DailyTitle & {
 
 export const PROFILE_TITLE_DETAILS: TitleDetail[] = [
   {
-    ...createDailyTitle("10.14", "PROPOSER"),
-    round: 412,
-    topic: "인공지능은 인간의 지성을 완전히 대체할 것인가?",
-    note: "그날의 전장 주제를 제시한 제안자. 성 토마스의 허리띠 — 만져서 증명.",
-  },
-  {
-    ...createDailyTitle("10.24", "FINGER"),
-    round: 412,
-    topic: "인공지능은 인간의 지성을 완전히 대체할 것인가?",
-    note: "당일 승리 TOP 의견 · 도마의 손가락(반지). XP 0.",
-  },
-  {
-    ...createDailyTitle("10.12", "SPEAR"),
-    round: 400,
-    topic: "표현의 자유는 혐오를 포함해야 하는가?",
-    note: "도전자 진영 대표 진술.",
-  },
-  {
-    ...createDailyTitle("10.11", "SHIELD"),
-    round: 399,
-    topic: "현금 없는 사회는 자유를 줄이는가?",
-    note: "방어자 진영 대표 진술.",
-  },
-  {
-    ...createDailyTitle("09.30", "VICTOR"),
-    round: 388,
-    topic: "기본소득은 노동 동력을 약화시키는가?",
-    note: "당일 승자 진영 확정.",
+    ...createDailyTitle("11.13", "PROPOSER"),
+    round: 1,
+    topic: "AI는 인간 지성을 대체하는가?",
+    note: "제 1회 전장 주제 제안자. 성 토마스의 허리띠 — 만져서 증명.",
   },
 ];

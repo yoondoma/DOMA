@@ -426,64 +426,45 @@ body {
   animation: header-slot-fade 160ms ease-out;
 }
 
-/* 게이트 전체 — 가벼운 쑥 (튕김·글로우 없음) */
-@keyframes touch-press {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  45% {
-    transform: scale(0.97);
-    opacity: 0.92;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+/* 게이트 문 — 가운데 기준 좌·우 개방 (짧고 묵직 · SF 과장 금지) */
+.door-beyond {
+  background:
+    radial-gradient(ellipse 48% 62% at 50% 46%, rgba(244, 244, 240, 0.06), transparent 70%),
+    #0a0a0a;
+}
+.door-leaf {
+  will-change: transform;
+  transition: transform 0.78s cubic-bezier(0.55, 0.05, 0.2, 1);
+}
+.door-leaf-left.door-open {
+  transform: translateX(-100%);
+}
+.door-leaf-right.door-open {
+  transform: translateX(100%);
+}
+.door-seam {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.12);
+}
+.door-seam-left {
+  right: 0;
+}
+.door-seam-right {
+  left: 0;
+}
+[data-door-entry="1"] .door-seam {
+  opacity: 0;
+  transition: opacity 120ms linear;
 }
 
-.touch-press {
-  animation: touch-press 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-/*
- * 마크 pierce — 창(사각+삼각) tip이 원(방패) 안으로 더 들어가며 누르는 한 동작.
- * viewBox 단위 · 과한 bounce/glow 금지.
- */
-@keyframes mark-pierce-spear {
-  0% {
-    transform: translateY(0);
-  }
-  42% {
-    transform: translateY(3.6px);
-  }
-  100% {
-    transform: translateY(2.8px);
-  }
-}
-
-@keyframes mark-pierce-shield {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  42% {
-    transform: translate(0, 0.7px) scale(0.985, 0.94);
-  }
-  100% {
-    transform: translate(0, 0.45px) scale(0.99, 0.96);
-  }
-}
-
-.mark-pierce .mark-pierce-spear {
-  transform-box: view-box;
-  transform-origin: 24px 38px;
-  animation: mark-pierce-spear 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
+/* 레거시 pierce — 문 입장으로 대체, 클래스만 유지 */
+.mark-pierce .mark-pierce-spear,
 .mark-pierce .mark-pierce-shield {
-  transform-box: view-box;
-  transform-origin: 24px 56px;
-  animation: mark-pierce-shield 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
+  /* no-op: 문 갈라짐 입장 사용 */
 }
 
 /* 스크롤 본문만 — fixed 하단바/시트는 이 노드 밖에 둘 것 */

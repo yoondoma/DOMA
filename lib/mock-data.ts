@@ -13,7 +13,8 @@ function arenaEndsAtIso(): string {
 }
 
 export const INITIAL_ARENA: ArenaState = {
-  round: 412,
+  /** 체험판 — KST 오늘 전투 = 제 1회 */
+  round: 1,
   topic: "AI는 인간 지성을 대체하는가?",
   description: "",
   endsAt: arenaEndsAtIso(),

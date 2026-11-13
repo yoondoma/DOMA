@@ -100,4 +100,5 @@ export const LEGACY_STORE_KEYS = [
   "doma.store.v3",
   "doma.store.v4",
   "doma.store.v5",
+  "doma.store.v6",
 ] as const;

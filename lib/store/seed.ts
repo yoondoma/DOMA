@@ -363,7 +363,7 @@ export function buildSeedSnapshot(now: Date = new Date()): StoreSnapshot {
     lastComposeAtByUser: {},
     /** 홈 아레나 표시용 메타 (UI ArenaState와 병행) */
     arenaMeta: {
-      round: 412,
+      round: 1,
       topicTitle: "AI는 인간 지성을 대체하는가?",
       description: "",
       challengerShare: 58,

@@ -528,7 +528,7 @@ export function ProfileScreen({
                       {b.topic}
                     </p>
                   </button>
-                  {onOpenShareCard && b.round === 411 ? (
+                  {onOpenShareCard && b.round === 1 ? (
                     <button
                       type="button"
                       onClick={onOpenShareCard}
