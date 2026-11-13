@@ -426,22 +426,41 @@ body {
   animation: header-slot-fade 160ms ease-out;
 }
 
-/* 게이트 문 — 터치 전엔 이음선 없음(겹침). 터치 후 좌·우 개방 */
+/* 게이트 문 — 터치 전엔 이음선/틈 없음. 터치 후 좌·우 개방 */
 .door-beyond {
-  background:
-    radial-gradient(ellipse 48% 62% at 50% 46%, rgba(244, 244, 240, 0.06), transparent 70%),
-    #0a0a0a;
+  background-color: #050505;
+  background-image: none;
+}
+[data-door-entry="1"] .door-beyond {
+  background-color: #0a0a0a;
+  background-image: radial-gradient(
+    ellipse 48% 62% at 50% 46%,
+    rgba(244, 244, 240, 0.06),
+    transparent 70%
+  );
 }
 .door-leaf {
   will-change: transform;
   transition: transform 0.78s cubic-bezier(0.55, 0.05, 0.2, 1);
+  width: 50%;
+  right: auto;
 }
-/* 닫힘: 가운데 1px 겹쳐 갈라짐 선이 처음부터 보이지 않게 */
 .door-leaf-left {
-  width: calc(50% + 1px);
+  left: 0;
 }
 .door-leaf-right {
-  width: calc(50% + 1px);
+  left: 50%;
+}
+/* 문짝 안 브랜드 = 뷰포트 전체 폭 기준으로 정렬 → 반쪽끼리 정확히 이어짐 */
+.door-leaf-face {
+  width: 200%;
+  height: 100%;
+}
+.door-leaf-face-left {
+  margin-left: 0;
+}
+.door-leaf-face-right {
+  margin-left: -100%;
 }
 .door-leaf-left.door-open {
   transform: translateX(-100%);

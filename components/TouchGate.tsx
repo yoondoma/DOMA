@@ -72,26 +72,26 @@ export function TouchGate({ onEnter }: TouchGateProps) {
         disabled={opening}
       />
 
-      {/* 왼쪽 문짝 — 닫힌 채엔 이음선 없음(1px 겹침). 터치 후에만 갈라짐 */}
+      {/* 왼쪽 문짝 — 닫힘 시 이음선 없음. 터치 후에만 갈라짐 */}
       <div
-        className={`door-leaf door-leaf-left pointer-events-none absolute inset-y-0 left-0 z-20 overflow-hidden bg-ink ${
+        className={`door-leaf door-leaf-left pointer-events-none absolute top-0 bottom-0 z-20 overflow-hidden bg-ink ${
           opening ? "door-open" : ""
         }`}
         aria-hidden
       >
-        <div className="flex h-full w-[200%] items-center justify-center">
+        <div className="door-leaf-face door-leaf-face-left flex h-full items-center justify-center">
           <GateBrand pressing={opening} />
         </div>
       </div>
 
       {/* 오른쪽 문짝 */}
       <div
-        className={`door-leaf door-leaf-right pointer-events-none absolute inset-y-0 right-0 z-20 overflow-hidden bg-ink ${
+        className={`door-leaf door-leaf-right pointer-events-none absolute top-0 bottom-0 z-20 overflow-hidden bg-ink ${
           opening ? "door-open" : ""
         }`}
         aria-hidden
       >
-        <div className="ml-[-100%] flex h-full w-[200%] items-center justify-center">
+        <div className="door-leaf-face door-leaf-face-right flex h-full items-center justify-center">
           <GateBrand pressing={opening} />
         </div>
       </div>
