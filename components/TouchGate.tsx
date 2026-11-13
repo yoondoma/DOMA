@@ -72,9 +72,9 @@ export function TouchGate({ onEnter }: TouchGateProps) {
         disabled={opening}
       />
 
-      {/* 왼쪽 문짝 — 시각만 (터치 통과) */}
+      {/* 왼쪽 문짝 — 닫힌 채엔 이음선 없음(1px 겹침). 터치 후에만 갈라짐 */}
       <div
-        className={`door-leaf door-leaf-left pointer-events-none absolute inset-y-0 left-0 z-20 w-1/2 overflow-hidden bg-ink ${
+        className={`door-leaf door-leaf-left pointer-events-none absolute inset-y-0 left-0 z-20 overflow-hidden bg-ink ${
           opening ? "door-open" : ""
         }`}
         aria-hidden
@@ -82,12 +82,11 @@ export function TouchGate({ onEnter }: TouchGateProps) {
         <div className="flex h-full w-[200%] items-center justify-center">
           <GateBrand pressing={opening} />
         </div>
-        <div className="door-seam door-seam-left" />
       </div>
 
-      {/* 오른쪽 문짝 — 시각만 (터치 통과) */}
+      {/* 오른쪽 문짝 */}
       <div
-        className={`door-leaf door-leaf-right pointer-events-none absolute inset-y-0 right-0 z-20 w-1/2 overflow-hidden bg-ink ${
+        className={`door-leaf door-leaf-right pointer-events-none absolute inset-y-0 right-0 z-20 overflow-hidden bg-ink ${
           opening ? "door-open" : ""
         }`}
         aria-hidden
@@ -95,7 +94,6 @@ export function TouchGate({ onEnter }: TouchGateProps) {
         <div className="ml-[-100%] flex h-full w-[200%] items-center justify-center">
           <GateBrand pressing={opening} />
         </div>
-        <div className="door-seam door-seam-right" />
       </div>
 
       {/* 피드백 — 문 위 하단, 열릴 때 같이 사라짐 */}

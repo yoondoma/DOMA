@@ -426,7 +426,7 @@ body {
   animation: header-slot-fade 160ms ease-out;
 }
 
-/* 게이트 문 — 가운데 기준 좌·우 개방 (짧고 묵직 · SF 과장 금지) */
+/* 게이트 문 — 터치 전엔 이음선 없음(겹침). 터치 후 좌·우 개방 */
 .door-beyond {
   background:
     radial-gradient(ellipse 48% 62% at 50% 46%, rgba(244, 244, 240, 0.06), transparent 70%),
@@ -436,29 +436,18 @@ body {
   will-change: transform;
   transition: transform 0.78s cubic-bezier(0.55, 0.05, 0.2, 1);
 }
+/* 닫힘: 가운데 1px 겹쳐 갈라짐 선이 처음부터 보이지 않게 */
+.door-leaf-left {
+  width: calc(50% + 1px);
+}
+.door-leaf-right {
+  width: calc(50% + 1px);
+}
 .door-leaf-left.door-open {
   transform: translateX(-100%);
 }
 .door-leaf-right.door-open {
   transform: translateX(100%);
-}
-.door-seam {
-  pointer-events: none;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: rgba(255, 255, 255, 0.12);
-}
-.door-seam-left {
-  right: 0;
-}
-.door-seam-right {
-  left: 0;
-}
-[data-door-entry="1"] .door-seam {
-  opacity: 0;
-  transition: opacity 120ms linear;
 }
 
 /* 레거시 pierce — 문 입장으로 대체, 클래스만 유지 */

@@ -91,8 +91,8 @@ export function isSoundUnlocked(): boolean {
 }
 
 /**
- * 시그니처 스팅 — 건조한 타격·도장/금속 (~0.35s).
- * 입장·판결에 동일 재사용. 오케스트라/루프 금지.
+ * 시그니처 스팅 — 클래식·웅장 (고대 콜로세움 입구).
+ * 짧은 브라스 5도 + 저음 팀파니 (~0.55s). SF/전자음 금지. 루프 없음.
  */
 function playSignatureSting(c: AudioContext): void {
   const t0 = c.currentTime;
@@ -100,46 +100,44 @@ function playSignatureSting(c: AudioContext): void {
   master.gain.value = PLAY_GAIN;
   master.connect(c.destination);
 
-  // 저음 도장
-  const thump = c.createOscillator();
-  const thumpG = c.createGain();
-  thump.type = "sine";
-  thump.frequency.setValueAtTime(92, t0);
-  thump.frequency.exponentialRampToValueAtTime(48, t0 + 0.18);
-  thumpG.gain.setValueAtTime(0.0001, t0);
-  thumpG.gain.exponentialRampToValueAtTime(0.55, t0 + 0.01);
-  thumpG.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
-  thump.connect(thumpG);
-  thumpG.connect(master);
-  thump.start(t0);
-  thump.stop(t0 + 0.24);
+  // 따뜻한 브라스 필터
+  const brassLp = c.createBiquadFilter();
+  brassLp.type = "lowpass";
+  brassLp.frequency.setValueAtTime(900, t0);
+  brassLp.frequency.exponentialRampToValueAtTime(420, t0 + 0.5);
+  brassLp.Q.value = 0.7;
+  brassLp.connect(master);
 
-  // 금속 타격
-  const hit = c.createOscillator();
-  const hitG = c.createGain();
-  hit.type = "square";
-  hit.frequency.setValueAtTime(620, t0);
-  hit.frequency.exponentialRampToValueAtTime(180, t0 + 0.08);
-  hitG.gain.setValueAtTime(0.0001, t0);
-  hitG.gain.exponentialRampToValueAtTime(0.22, t0 + 0.006);
-  hitG.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.1);
-  hit.connect(hitG);
-  hitG.connect(master);
-  hit.start(t0);
-  hit.stop(t0 + 0.12);
+  const tone = (
+    freq: number,
+    type: OscillatorType,
+    start: number,
+    dur: number,
+    peak: number,
+    dest: AudioNode,
+  ) => {
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, t0 + start);
+    g.gain.setValueAtTime(0.0001, t0 + start);
+    g.gain.exponentialRampToValueAtTime(peak, t0 + start + 0.04);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + start + dur);
+    o.connect(g);
+    g.connect(dest);
+    o.start(t0 + start);
+    o.stop(t0 + start + dur + 0.02);
+  };
 
-  // 짧은 잔향 톤
-  const ring = c.createOscillator();
-  const ringG = c.createGain();
-  ring.type = "triangle";
-  ring.frequency.value = 240;
-  ringG.gain.setValueAtTime(0.0001, t0 + 0.04);
-  ringG.gain.exponentialRampToValueAtTime(0.12, t0 + 0.055);
-  ringG.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.32);
-  ring.connect(ringG);
-  ringG.connect(master);
-  ring.start(t0 + 0.04);
-  ring.stop(t0 + 0.34);
+  // 팀파니 저음 — 묵직한 입구
+  tone(55, "sine", 0, 0.42, 0.48, master);
+  tone(82.4, "sine", 0.01, 0.36, 0.28, master);
+
+  // 브라스 완전5도 (C3–G3) — 짧고 웅장
+  tone(130.81, "sawtooth", 0.02, 0.48, 0.14, brassLp);
+  tone(196.0, "sawtooth", 0.03, 0.46, 0.11, brassLp);
+  // 옥타브 살짝 — 홀 잔향감
+  tone(261.63, "triangle", 0.05, 0.4, 0.07, brassLp);
 }
 
 /** 입장·판결만 스팅. 지지/진영전환/안건확정은 no-op (수한 확정) */
