@@ -451,17 +451,6 @@ body {
 .door-leaf-right {
   left: 50%;
 }
-/* 문짝 안 브랜드 = 뷰포트 전체 폭 기준으로 정렬 → 반쪽끼리 정확히 이어짐 */
-.door-leaf-face {
-  width: 200%;
-  height: 100%;
-}
-.door-leaf-face-left {
-  margin-left: 0;
-}
-.door-leaf-face-right {
-  margin-left: -100%;
-}
 .door-leaf-left.door-open {
   transform: translateX(-100%);
 }

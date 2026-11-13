@@ -79,7 +79,8 @@ export function TouchGate({ onEnter }: TouchGateProps) {
         }`}
         aria-hidden
       >
-        <div className="door-leaf-face door-leaf-face-left flex h-full items-center justify-center">
+        {/* w-[200%] = 게이트 전체 폭. 좌·우 반쪽이 한 브랜드로 이어짐 */}
+        <div className="flex h-full w-[200%] items-center justify-center">
           <GateBrand pressing={opening} />
         </div>
       </div>
@@ -91,7 +92,7 @@ export function TouchGate({ onEnter }: TouchGateProps) {
         }`}
         aria-hidden
       >
-        <div className="door-leaf-face door-leaf-face-right flex h-full items-center justify-center">
+        <div className="ml-[-100%] flex h-full w-[200%] items-center justify-center">
           <GateBrand pressing={opening} />
         </div>
       </div>
