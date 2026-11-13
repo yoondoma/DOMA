@@ -8,7 +8,7 @@ function pad2(n: number): string {
 }
 
 /** KST 달력 부품 (UTC 메서드로 오프셋 보정) */
-function kstParts(now: Date = new Date()) {
+export function kstParts(now: Date = new Date()) {
   const kst = new Date(now.getTime() + KST_OFFSET_MS);
   return {
     y: kst.getUTCFullYear(),
@@ -50,6 +50,12 @@ export function arenaDayId(now: Date = new Date()): DayId {
       prev.getUTCDate(),
     );
   }
+  return formatDayId(y, m, d);
+}
+
+/** 달력용 오늘(KST) YYYY-MM-DD */
+export function kstCalendarDayId(now: Date = new Date()): DayId {
+  const { y, m, d } = kstParts(now);
   return formatDayId(y, m, d);
 }
 

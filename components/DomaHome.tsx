@@ -26,6 +26,7 @@ import { SettingsSheet } from "@/components/SettingsSheet";
 import { PROFILE_USER } from "@/lib/profile-mock";
 import { ContextualShareCard } from "@/components/ContextualShareCard";
 import { ShareResultCard } from "@/components/ShareResultCard";
+import { CampRightIndicator } from "@/components/CampRightIndicator";
 import { SupportBar } from "@/components/SupportBar";
 import { TomorrowCompose } from "@/components/TomorrowCompose";
 import { TomorrowField } from "@/components/TomorrowField";
@@ -638,14 +639,25 @@ export function DomaHome() {
       ) : null}
 
       {campSupportOpen ? (
-        <SupportBar
-          nexusPercent={nexusPercent}
-          aegisPercent={aegisPercent}
-          nexusVotes={INITIAL_ARENA.nexusVotes}
-          aegisVotes={INITIAL_ARENA.aegisVotes}
-          joined={joined}
-          onJoin={handleJoin}
-        />
+        <>
+          <CampRightIndicator
+            joined={joined}
+            onPickHint={() => {
+              document
+                .querySelector<HTMLElement>("[data-thumb-zone]")
+                ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+              showToast("하단에서 진영을 고르세요");
+            }}
+          />
+          <SupportBar
+            nexusPercent={nexusPercent}
+            aegisPercent={aegisPercent}
+            nexusVotes={INITIAL_ARENA.nexusVotes}
+            aegisVotes={INITIAL_ARENA.aegisVotes}
+            joined={joined}
+            onJoin={handleJoin}
+          />
+        </>
       ) : null}
 
       <BattleCalendar
@@ -661,36 +673,6 @@ export function DomaHome() {
         onClose={() => setSearchOpen(false)}
         uiDemo={uiDemo}
         onRetry={onRetry}
-        onSelect={(item) => {
-          setSearchOpen(false);
-          const nav = item.nav;
-          if (!nav) {
-            showToast("이동할 수 없는 항목입니다");
-            return;
-          }
-          if (nav.surface === "calendar") {
-            setCalendarOpen(true);
-            showToast("전투 기록으로 이동했습니다");
-            return;
-          }
-          if (nav.surface === "tomorrow") {
-            setGuestProfile(null);
-            setHomeSurface("tomorrow");
-            setNavTab("home");
-            showToast("내일의 주제로 이동했습니다");
-            return;
-          }
-          setGuestProfile(null);
-          setHomeSurface("today");
-          setArenaView(nav.side ?? "intro");
-          setFocusOpinionId(nav.opinionId ?? null);
-          setNavTab("home");
-          showToast(
-            nav.opinionId
-              ? "해당 글로 이동했습니다"
-              : "오늘 전장으로 이동했습니다",
-          );
-        }}
       />
       <SettingsSheet
         open={settingsOpen}

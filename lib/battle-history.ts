@@ -179,6 +179,19 @@ export const BATTLE_HISTORY: BattleDay[] = [
 export const BATTLE_YEAR = 2026;
 export const BATTLE_MONTH = 10;
 
-export function battleByDate(date: string): BattleDay | undefined {
+export function battleByDate(
+  date: string,
+  _now?: Date,
+): BattleDay | undefined {
   return BATTLE_HISTORY.find((b) => b.date === date);
+}
+
+/** 달력용 히스토리 (목) */
+export function getBattleHistory(_now?: Date): BattleDay[] {
+  return BATTLE_HISTORY;
+}
+
+/** 달력 표시 연·월 */
+export function battleMonth(_now?: Date): { year: number; month: number } {
+  return { year: BATTLE_YEAR, month: BATTLE_MONTH };
 }
